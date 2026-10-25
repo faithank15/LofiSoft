@@ -47,9 +47,9 @@ class OwnerOnboardingPage extends GetView<OnboardingController> {
                     onPageChanged: controller.onPageChanged,
                     physics: const ClampingScrollPhysics(),
                     children: const [
-                      _StepE5WelcomeView(),
-                      _StepE6ProcessView(),
-                      _StepE7VerificationView(),
+                      _OwnerWelcomeView(),
+                      _OwnerProcessView(),
+                      _OwnerVerificationView(),
                     ],
                   ),
                 ),
@@ -113,8 +113,8 @@ class OwnerOnboardingPage extends GetView<OnboardingController> {
 }
 
 /// Étape E5 : Bienvenue et aperçu des loyers
-class _StepE5WelcomeView extends GetView<OnboardingController> {
-  const _StepE5WelcomeView();
+class _OwnerWelcomeView extends GetView<OnboardingController> {
+  const _OwnerWelcomeView();
 
   @override
   Widget build(BuildContext context) {
@@ -162,8 +162,8 @@ class _StepE5WelcomeView extends GetView<OnboardingController> {
 }
 
 /// Étape E6 : Les 3 étapes de configuration
-class _StepE6ProcessView extends GetView<OnboardingController> {
-  const _StepE6ProcessView();
+class _OwnerProcessView extends GetView<OnboardingController> {
+  const _OwnerProcessView();
 
   static const List<StepListItem> _items = [
     StepListItem(
@@ -224,8 +224,8 @@ class _StepE6ProcessView extends GetView<OnboardingController> {
 }
 
 /// Étape E7 : Demande du badge Vérifié
-class _StepE7VerificationView extends GetView<OnboardingController> {
-  const _StepE7VerificationView();
+class _OwnerVerificationView extends GetView<OnboardingController> {
+  const _OwnerVerificationView();
 
   @override
   Widget build(BuildContext context) {
