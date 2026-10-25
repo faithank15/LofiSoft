@@ -41,8 +41,26 @@ abstract final class AppColors {
   /// Sable : fonds d'illustrations.
   static const sand = Color(0xFFEBDFC6);
 
+  /// Vert doux : fond d'illustration « chambre » (maquette E3).
+  static const illustrationSage = Color(0xFFD8EAC9);
+
+  /// Pêche : fond d'illustration « studio » (maquette E3).
+  static const illustrationPeach = Color(0xFFF0D3C3);
+
+  /// Menthe grisée : fond d'illustration « appartement » (maquette E3).
+  static const illustrationMint = Color(0xFFCFE5D8);
+
   /// Argile : cœur des favoris, "en retard" dans les illustrations.
   static const clay = Color(0xFFC75B39);
+
+  /// Argile soutenu : fond de la carte « Propriétaire » (maquette E1).
+  static const clayDeep = Color(0xFFB14A2B);
+
+  /// Argile très clair : texte secondaire sur fond argile (maquette E1).
+  static const claySoft = Color(0xFFFBE3D8);
+
+  /// Terracotta : façade d'immeuble dans les illustrations (maquettes E1, E3).
+  static const terracotta = Color(0xFFE4B79F);
 
   // ---- Statuts (TEXTE coloré, jamais de fond teinté) ---------------------
   /// Payé, Loué, Vérifié.
