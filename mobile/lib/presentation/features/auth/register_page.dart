@@ -62,17 +62,25 @@ class _RegisterPageState extends State<RegisterPage> {
             Obx(
               () => RoleSegment(
                 options: const [
-                  RoleOption(title: 'Locataire', subtitle: 'Je cherche un logement'),
-                  RoleOption(title: 'Propriétaire', subtitle: 'Je loue mes logements'),
+                  RoleOption(
+                    title: 'Locataire',
+                    subtitle: 'Je cherche un logement',
+                  ),
+                  RoleOption(
+                    title: 'Propriétaire',
+                    subtitle: 'Je loue mes logements',
+                  ),
                 ],
                 selectedIndex: controller.role.value == UserRole.OWNER ? 1 : 0,
-                onChanged: (i) =>
-                    controller.selectRole(i == 1 ? UserRole.OWNER : UserRole.TENANT),
+                onChanged: (i) => controller.selectRole(
+                  i == 1 ? UserRole.OWNER : UserRole.TENANT,
+                ),
               ),
             ),
             gap,
             AppTextField(
               label: 'Nom complet',
+              hintText: 'Patrick Agossa',
               controller: _name,
               textInputAction: TextInputAction.next,
               autofillHints: const [AutofillHints.name],
@@ -81,6 +89,7 @@ class _RegisterPageState extends State<RegisterPage> {
             gap,
             AppTextField(
               label: 'Adresse e-mail',
+              hintText: 'patrick.agossa@exemple.bj',
               controller: _email,
               keyboardType: TextInputType.emailAddress,
               textInputAction: TextInputAction.next,
@@ -90,6 +99,7 @@ class _RegisterPageState extends State<RegisterPage> {
             gap,
             AppTextField(
               label: 'Téléphone',
+              hintText: '01 97 12 34 56',
               controller: _phone,
               prefixText: '+229',
               keyboardType: TextInputType.phone,
@@ -101,6 +111,7 @@ class _RegisterPageState extends State<RegisterPage> {
             Obx(
               () => AppTextField(
                 label: 'Mot de passe',
+                hintText: '••••••••••',
                 controller: _password,
                 obscureText: controller.hidePassword.value,
                 onToggleObscure: controller.togglePassword,
@@ -128,7 +139,9 @@ class _RegisterPageState extends State<RegisterPage> {
                 child: Text(
                   message,
                   textAlign: TextAlign.center,
-                  style: AppTextStyles.caption.copyWith(color: AppColors.statusBad),
+                  style: AppTextStyles.caption.copyWith(
+                    color: AppColors.statusBad,
+                  ),
                 ),
               );
             }),
@@ -137,7 +150,6 @@ class _RegisterPageState extends State<RegisterPage> {
               () => AppButton(
                 label: 'Créer mon compte',
                 isLoading: controller.isLoading,
-                // Désactivé tant que les conditions ne sont pas acceptées
                 onPressed: controller.acceptedTerms.value ? _submit : null,
               ),
             ),

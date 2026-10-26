@@ -51,6 +51,7 @@ class _LoginPageState extends State<LoginPage> {
           children: [
             AppTextField(
               label: 'Adresse e-mail',
+              hintText: 'patrick.agossa@exemple.bj',
               controller: _email,
               keyboardType: TextInputType.emailAddress,
               textInputAction: TextInputAction.next,
@@ -61,6 +62,7 @@ class _LoginPageState extends State<LoginPage> {
             Obx(
               () => AppTextField(
                 label: 'Mot de passe',
+                hintText: '••••••••••',
                 controller: _password,
                 obscureText: controller.hidePassword.value,
                 onToggleObscure: controller.togglePassword,
@@ -88,7 +90,9 @@ class _LoginPageState extends State<LoginPage> {
                 child: Text(
                   message,
                   textAlign: TextAlign.center,
-                  style: AppTextStyles.caption.copyWith(color: AppColors.statusBad),
+                  style: AppTextStyles.caption.copyWith(
+                    color: AppColors.statusBad,
+                  ),
                 ),
               );
             }),
@@ -100,14 +104,17 @@ class _LoginPageState extends State<LoginPage> {
               ),
             ),
             const SizedBox(height: AppSpacing.screen),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+            Wrap(
+              alignment: WrapAlignment.center,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: AppSpacing.xs,
               children: [
                 Text('Pas encore de compte ?', style: AppTextStyles.subtitle),
                 AppButton(
                   label: 'Créer un compte',
                   variant: AppButtonVariant.text,
                   expanded: false,
+                  height: AppSizes.tap,
                   onPressed: () => Get.toNamed(AppRoutes.register),
                 ),
               ],
