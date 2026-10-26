@@ -1,22 +1,44 @@
 import 'package:flutter/material.dart';
-
 import '../../../core/theme/app_colors.dart';
 
-/// Séparateur fin. `indent` décale le début du trait (pour aligner sur du texte).
+/// Séparateur visuel fin standardisé LofiSoft.
+///
+/// Respecte la couleur de trait officielle [AppColors.line] avec une épaisseur
+/// unitaire de 1.0 pixel, disponible en horizontal ou vertical.
 class AppDivider extends StatelessWidget {
-  const AppDivider({super.key, this.indent = 0});
-
+  final Color color;
+  final double thickness;
   final double indent;
+  final double endIndent;
+  final Axis axis;
+  final double? length;
+
+  const AppDivider({
+    super.key,
+    this.color = AppColors.line,
+    this.thickness = 1.0,
+    this.indent = 0.0,
+    this.endIndent = 0.0,
+    this.axis = Axis.horizontal,
+    this.length,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(left: indent),
-      child: const SizedBox(
-        height: 1,
-        width: double.infinity,
-        child: ColoredBox(color: AppColors.line),
-      ),
+    if (axis == Axis.vertical) {
+      return Container(
+        width: thickness,
+        height: length,
+        margin: EdgeInsets.only(top: indent, bottom: endIndent),
+        color: color,
+      );
+    }
+
+    return Container(
+      height: thickness,
+      width: length,
+      margin: EdgeInsets.only(left: indent, right: endIndent),
+      color: color,
     );
   }
 }

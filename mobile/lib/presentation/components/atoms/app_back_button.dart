@@ -1,33 +1,47 @@
 import 'package:flutter/material.dart';
-
+import 'package:get/get.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 
-/// Flèche de retour (zone tactile de 44 x 44).
+/// Atome officiel LofiSoft de retour arrière.
 ///
-/// Sans `onPressed`, elle fait simplement « retour » (Navigator.maybePop), ce qui
-/// fonctionne aussi avec la navigation GetX.
-///
-/// ```dart
-/// AppBackButton()                      // flèche sombre
-/// AppBackButton(color: Colors.white)   // sur un bandeau vert
-/// ```
+/// Garantit une surface tactile minimale de 44x44 (conforme à [AppSizes.tap])
+/// et s'adapte aux fonds clairs ou sombres.
 class AppBackButton extends StatelessWidget {
-  const AppBackButton({super.key, this.onPressed, this.color = AppColors.ink});
+  const AppBackButton({
+    super.key,
+    this.onPressed,
+    this.isLight = false,
+    this.color,
+  });
 
+  /// Action déclenchée. Par défaut : [Get.back].
   final VoidCallback? onPressed;
-  final Color color;
+
+  /// Si vrai, applique la couleur blanche pour les fonds vert foncé.
+  final bool isLight;
+
+  /// Couleur personnalisée explicite (prioritaire sur [isLight]).
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
+    final effectiveColor =
+        color ?? (isLight ? AppColors.surface : AppColors.ink);
+
     return SizedBox(
       width: AppSizes.tap,
       height: AppSizes.tap,
       child: IconButton(
         padding: EdgeInsets.zero,
+        splashRadius: 22,
+        onPressed: onPressed ?? () => Get.back(),
+        icon: Icon(
+          Icons.arrow_back_ios_new_rounded,
+          size: 20,
+          color: effectiveColor,
+        ),
         tooltip: 'Retour',
-        onPressed: onPressed ?? () => Navigator.of(context).maybePop(),
-        icon: Icon(Icons.arrow_back_ios_new_rounded, size: 22, color: color),
       ),
     );
   }
