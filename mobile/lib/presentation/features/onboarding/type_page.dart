@@ -4,11 +4,8 @@ import 'package:get/get.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../components/molecules/housing_scene.dart';
-import '../../components/molecules/onboarding_footer.dart';
-import '../../components/molecules/onboarding_scaffold.dart';
-import '../../components/molecules/onboarding_title.dart';
+import '../../components/skeletons/onboarding_scaffold.dart';
 import '../../components/molecules/selection_check.dart';
-import '../../routes/app_routes.dart';
 import 'type_controller.dart';
 
 /// Écran E3 · Locataire 2 : type (choix du type de logement).
@@ -24,15 +21,13 @@ class TypePage extends GetView<TypeController> {
     return OnboardingScaffold(
       step: 2,
       onBack: () => Get.back(),
-      onSkip: () => Get.offNamed(AppRoutes.onboardingBudget),
+      title: 'Quel type de logement ?',
+      subtitle: 'Choisissez-en un ou plusieurs.',
+      primaryLabel: 'Continuer',
+      onPrimary: controller.continuer,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const OnboardingTitle(
-            title: 'Quel type de logement ?',
-            subtitle: 'Choisissez-en un ou plusieurs.',
-          ),
-          const SizedBox(height: 22),
           Obx(
             () => Column(
               children: [
@@ -89,10 +84,6 @@ class TypePage extends GetView<TypeController> {
             ),
           ),
         ],
-      ),
-      footer: OnboardingFooter(
-        label: 'Continuer',
-        onPressed: controller.continuer,
       ),
     );
   }

@@ -17,6 +17,8 @@ class DevMenuPage extends StatelessWidget {
     ('Connexion', AppRoutes.login),
     ('Inscription', AppRoutes.register),
     ('Onboarding', AppRoutes.onboarding),
+    ('Onboarding locataire (ville)', AppRoutes.onboardingVille),
+    ('Onboarding propriétaire', AppRoutes.onboardingProprietaire),
     ('Annonces', AppRoutes.listings),
     ('Suivi du loyer', AppRoutes.rentTracking),
     ('Tableau de bord propriétaire', AppRoutes.ownerDashboard),

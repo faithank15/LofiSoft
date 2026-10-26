@@ -3,9 +3,7 @@ import 'package:get/get.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
-import '../../components/molecules/onboarding_footer.dart';
-import '../../components/molecules/onboarding_scaffold.dart';
-import '../../components/molecules/onboarding_title.dart';
+import '../../components/skeletons/onboarding_scaffold.dart';
 import '../../components/molecules/selection_check.dart';
 import 'budget_controller.dart';
 
@@ -22,15 +20,15 @@ class BudgetPage extends GetView<BudgetController> {
     return OnboardingScaffold(
       step: 3,
       onBack: () => Get.back(),
-      onSkip: controller.continuer,
+      title: 'Votre budget par mois ?',
+      subtitle: 'Le loyer maximum que vous pouvez payer.',
+      primaryLabel: 'Voir mes logements',
+      onPrimary: controller.continuer,
+      secondaryLabel: 'Voir tous les logements',
+      onSecondary: controller.voirTousLesLogements,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const OnboardingTitle(
-            title: 'Votre budget par mois ?',
-            subtitle: 'Le loyer maximum que vous pouvez payer.',
-          ),
-          const SizedBox(height: 22),
           // Tranches de budget (une par ligne, pleine largeur)
           Obx(
             () => Column(
@@ -48,12 +46,6 @@ class BudgetPage extends GetView<BudgetController> {
             ),
           ),
         ],
-      ),
-      footer: OnboardingFooter(
-        label: 'Voir mes logements',
-        onPressed: controller.continuer,
-        secondaryLabel: 'Voir tous les logements',
-        onSecondaryPressed: controller.voirTousLesLogements,
       ),
     );
   }

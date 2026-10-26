@@ -54,7 +54,12 @@ abstract final class AppPages {
       binding: AuthBinding(),
     ),
 
-    GetPage(name: AppRoutes.onboarding,     page: () => const PlaceholderPage(title: 'Onboarding')),
+    // Point d'entrée de l'onboarding (utilisé par le splash à la première ouverture).
+    GetPage(
+      name: AppRoutes.onboarding,
+      page: () => const WelcomePage(),
+      binding: WelcomeBinding(),
+    ),
     GetPage(name: AppRoutes.listings,       page: () => const PlaceholderPage(title: 'Annonces')),
     GetPage(name: AppRoutes.rentTracking,   page: () => const PlaceholderPage(title: 'Suivi du loyer')),
     GetPage(name: AppRoutes.admin,          page: () => const PlaceholderPage(title: 'Administration')),
@@ -83,6 +88,13 @@ abstract final class AppPages {
     ),
     GetPage(
       name: AppRoutes.ownerOnboarding,
+      page: () => const OwnerOnboardingPage(),
+      binding: OnboardingBinding(),
+      transition: Transition.fadeIn,
+    ),
+    // Alias : WelcomeController et BudgetController naviguent vers cette route.
+    GetPage(
+      name: AppRoutes.onboardingProprietaire,
       page: () => const OwnerOnboardingPage(),
       binding: OnboardingBinding(),
       transition: Transition.fadeIn,
