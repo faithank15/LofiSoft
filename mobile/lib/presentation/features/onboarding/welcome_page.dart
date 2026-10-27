@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
-import '../../components/molecules/housing_scene.dart';
+import '../../components/molecules/profile_illustration.dart';
 import 'welcome_controller.dart';
 
 /// Écran E1 · Bienvenue : profil (onboarding locataire / propriétaire).
@@ -42,7 +42,7 @@ class WelcomePage extends GetView<WelcomeController> {
                           title: 'Locataire',
                           subtitle:
                               'Je cherche un logement ou je paie mon loyer.',
-                          scene: HousingSceneKind.maison,
+                          scene: ProfileKind.locataire,
                           onTap: controller.choisirLocataire,
                         ),
                         const SizedBox(height: 14),
@@ -53,7 +53,7 @@ class WelcomePage extends GetView<WelcomeController> {
                           title: 'Propriétaire',
                           subtitle:
                               'Je loue mes logements et je suis les loyers.',
-                          scene: HousingSceneKind.appartement,
+                          scene: ProfileKind.proprietaire,
                           onTap: controller.choisirProprietaire,
                         ),
                         const SizedBox(height: 14),
@@ -225,7 +225,7 @@ class _ProfileCard extends StatelessWidget {
   final Color subtitleColor;
   final String title;
   final String subtitle;
-  final HousingSceneKind scene;
+  final ProfileKind scene;
   final VoidCallback onTap;
 
   const _ProfileCard({
@@ -263,9 +263,7 @@ class _ProfileCard extends StatelessWidget {
             Positioned(
               right: -6,
               bottom: 0,
-              width: 150,
-              height: 120,
-              child: HousingScene(kind: scene),
+              child: ProfileIllustration(kind: scene),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(22, 22, 22, 20),
@@ -332,7 +330,7 @@ class _ChooseChip extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          const Icon(Icons.arrow_forward, size: 18, color: AppColors.ink),
+          const Icon(Icons.chevron_right, size: 20, color: AppColors.ink),
         ],
       ),
     );
