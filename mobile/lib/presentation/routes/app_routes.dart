@@ -23,6 +23,7 @@ abstract final class AppRoutes {
   // Accueil de chaque profil
   static const listings = '/listings';
   static const listingDetails = '/listings/details/:id';
+  static const favorites = '/listings/favorites';
 
   static const rentTracking = '/rent-tracking';
   static const payment = '/payment';

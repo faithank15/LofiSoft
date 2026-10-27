@@ -1,3 +1,7 @@
+import '../features/listings/listing_details_page.dart';
+import '../features/listings/favorites_page.dart';
+import '../features/listings/listing_binding.dart';
+import '../features/listings/listings_feed_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -55,7 +59,7 @@ abstract final class AppPages {
     ),
 
     GetPage(name: AppRoutes.onboarding,     page: () => const PlaceholderPage(title: 'Onboarding')),
-    GetPage(name: AppRoutes.listings,       page: () => const PlaceholderPage(title: 'Annonces')),
+
     GetPage(name: AppRoutes.rentTracking,   page: () => const PlaceholderPage(title: 'Suivi du loyer')),
     GetPage(name: AppRoutes.admin,          page: () => const PlaceholderPage(title: 'Administration')),
     GetPage(name: AppRoutes.forgotPassword, page: () => const PlaceholderPage(title: 'Mot de passe oublié')),
@@ -90,7 +94,10 @@ abstract final class AppPages {
     // GetPage(name: AppRoutes.onboarding, page: () => const OnboardingPage(), binding: OnboardingBinding()),
 
     // ---- Lot 1 : annonces ----
-    // GetPage(name: AppRoutes.listings, page: () => const ListingsFeedPage(), binding: ListingBinding()),
+    GetPage(name: AppRoutes.listings, page: () => const ListingsFeedPage(), binding: ListingBinding()),
+    GetPage(name: AppRoutes.favorites, page: () => const FavoritesPage(), binding: ListingBinding()),
+    GetPage(name: AppRoutes.listingDetails, page: () => const ListingDetailsPage(), binding: ListingBinding()),
+
 
     // ---- Lot 5 : suivi du loyer (locataire) ----
     // GetPage(name: AppRoutes.rentTracking, ...),
