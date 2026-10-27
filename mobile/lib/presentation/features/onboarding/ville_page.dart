@@ -3,11 +3,8 @@ import 'package:get/get.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
-import '../../components/molecules/onboarding_footer.dart';
-import '../../components/molecules/onboarding_scaffold.dart';
-import '../../components/molecules/onboarding_title.dart';
+import '../../components/skeletons/onboarding_scaffold.dart';
 import '../../components/molecules/selection_chip.dart';
-import '../../routes/app_routes.dart';
 import 'ville_controller.dart';
 
 /// Écran E2 · Locataire 1 : où ? (choix de ville et de quartiers).
@@ -23,16 +20,13 @@ class VillePage extends GetView<VilleController> {
     return OnboardingScaffold(
       step: 1,
       onBack: () => Get.back(),
-      onSkip: () => Get.offNamed(AppRoutes.onboardingBudget),
+      title: 'Où voulez-vous habiter ?',
+      subtitle: 'Nous vous montrerons d\'abord les logements de ces zones.',
+      primaryLabel: 'Continuer',
+      onPrimary: controller.continuer,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const OnboardingTitle(
-            title: 'Où voulez-vous habiter ?',
-            subtitle:
-                'Nous vous montrerons d\'abord les logements de ces zones.',
-          ),
-          const SizedBox(height: 22),
           // Pastilles de villes
           Obx(
             () => Wrap(
@@ -82,10 +76,6 @@ class VillePage extends GetView<VilleController> {
           const _UseLocationButton(),
           const SizedBox(height: 8),
         ],
-      ),
-      footer: OnboardingFooter(
-        label: 'Continuer',
-        onPressed: controller.continuer,
       ),
     );
   }

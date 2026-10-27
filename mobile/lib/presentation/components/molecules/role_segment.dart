@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_shadows.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
 
 /// Une option du sélecteur : un titre et une courte phrase.
@@ -15,17 +16,6 @@ class RoleOption {
 
 /// Sélecteur à bascule « Locataire / Propriétaire » (écran Inscription).
 /// Composant générique : il ne connaît pas `UserRole`, il renvoie l'INDEX choisi.
-///
-/// ```dart
-/// Obx(() => RoleSegment(
-///   options: const [
-///     RoleOption(title: 'Locataire', subtitle: 'Je cherche un logement'),
-///     RoleOption(title: 'Propriétaire', subtitle: 'Je loue mes logements'),
-///   ],
-///   selectedIndex: controller.role.value == UserRole.tenant ? 0 : 1,
-///   onChanged: (i) => controller.role.value = i == 0 ? UserRole.tenant : UserRole.owner,
-/// ))
-/// ```
 class RoleSegment extends StatelessWidget {
   const RoleSegment({
     super.key,
@@ -58,7 +48,11 @@ class RoleSegment extends StatelessWidget {
 }
 
 class _Segment extends StatelessWidget {
-  const _Segment({required this.option, required this.selected, required this.onTap});
+  const _Segment({
+    required this.option,
+    required this.selected,
+    required this.onTap,
+  });
 
   final RoleOption option;
   final bool selected;
@@ -77,7 +71,9 @@ class _Segment extends StatelessWidget {
         decoration: BoxDecoration(
           color: selected ? AppColors.green : AppColors.surface,
           borderRadius: radius,
-          border: selected ? null : Border.all(color: AppColors.line, width: 1.5),
+          border: selected
+              ? null
+              : Border.all(color: AppColors.line, width: 1.5),
           boxShadow: selected ? AppShadows.button : null,
         ),
         child: Material(
@@ -85,27 +81,39 @@ class _Segment extends StatelessWidget {
           child: InkWell(
             borderRadius: radius,
             onTap: onTap,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  option.title,
-                  style: AppTextStyles.bodyStrong.copyWith(
-                    color: selected ? AppColors.surface : AppColors.ink,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.lg,
+                vertical: AppSpacing.xs,
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    option.title,
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.bodyStrong.copyWith(
+                      color: selected ? AppColors.surface : AppColors.ink,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  option.subtitle,
-                  style: AppTextStyles.caption.copyWith(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: selected ? AppColors.mint : AppColors.muted,
+                  const SizedBox(height: 2),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      option.subtitle,
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      style: AppTextStyles.caption.copyWith(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w600,
+                        color: selected ? AppColors.mint : AppColors.muted,
+                      ),
+                    ),
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
