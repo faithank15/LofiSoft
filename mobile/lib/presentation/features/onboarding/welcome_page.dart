@@ -25,15 +25,18 @@ class WelcomePage extends GetView<WelcomeController> {
             Expanded(
               child: LayoutBuilder(
                 builder: (BuildContext context, BoxConstraints constraints) {
-                  // Les cartes remplissent la place disponible, mais ne
-                  // descendent jamais sous une hauteur lisible : sur un petit
-                  // écran la page défile au lieu de déborder.
+                  // Les cartes se partagent exactement la place disponible
+                  // (18 de marge haute + 14 entre les cartes), sans jamais
+                  // descendre sous une hauteur lisible : sur un petit écran
+                  // la page défile au lieu de déborder.
                   final double cardHeight =
-                      ((constraints.maxHeight - 14) / 2).clamp(176.0, 400.0);
+                      ((constraints.maxHeight - 18 - 14) / 2)
+                          .clamp(176.0, double.infinity);
 
                   return SingleChildScrollView(
                     padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         _ProfileCard(
                           height: cardHeight,
@@ -56,7 +59,6 @@ class WelcomePage extends GetView<WelcomeController> {
                           scene: ProfileKind.proprietaire,
                           onTap: controller.choisirProprietaire,
                         ),
-                        const SizedBox(height: 14),
                       ],
                     ),
                   );
@@ -114,7 +116,7 @@ class _TopBlock extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           Text(
-            'Bienvenue. Vous êtes…',
+            'Bienvenue.\nVous êtes…',
             style: AppTextStyles.display.copyWith(
               fontSize: 36,
               height: 1.1,
