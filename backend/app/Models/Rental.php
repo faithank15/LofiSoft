@@ -13,32 +13,25 @@ class Rental extends Model
     use HasUuids;
 
     protected $fillable = [
-        'rental_unit_id',
+        'housing_id',
         'tenant_id',
-        'date_debut',
-        'date_fin',
-        'loyer_mensuel',
-        'caution',
-        'jour_echeance',
-        'periodicite',
-        'statut',
+        'status',
+        'started_at',
+        'ended_at',
     ];
 
     protected function casts(): array
     {
         return [
-            'statut' => RentalStatus::class,
-            'date_debut' => 'date',
-            'date_fin' => 'date',
-            'loyer_mensuel' => 'decimal:2',
-            'caution' => 'decimal:2',
-            'jour_echeance' => 'integer',
+            'status' => RentalStatus::class,
+            'started_at' => 'date',
+            'ended_at' => 'date',
         ];
     }
 
-    public function rentalUnit(): BelongsTo
+    public function housing(): BelongsTo
     {
-        return $this->belongsTo(RentalUnit::class);
+        return $this->belongsTo(Housing::class);
     }
 
     public function tenant(): BelongsTo
@@ -46,8 +39,13 @@ class Rental extends Model
         return $this->belongsTo(User::class, 'tenant_id');
     }
 
-    public function installments(): HasMany
+    public function periods(): HasMany
     {
-        return $this->hasMany(Installment::class);
+        return $this->hasMany(RentPeriod::class);
+    }
+
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
     }
 }

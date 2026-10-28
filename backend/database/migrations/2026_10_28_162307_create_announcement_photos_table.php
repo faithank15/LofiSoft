@@ -11,9 +11,8 @@ return new class extends Migration
         Schema::create('announcement_photos', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignUuid('announcement_id')->constrained('announcements')->cascadeOnDelete();
-            $table->string('image_url');
-            $table->string('image_storage_key')->nullable();
-            $table->unsignedSmallInteger('ordre')->default(0);
+            $table->string('url');
+            $table->unsignedSmallInteger('position')->default(0);
             $table->timestamps();
         });
     }

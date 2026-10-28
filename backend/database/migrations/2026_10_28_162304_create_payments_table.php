@@ -10,14 +10,16 @@ return new class extends Migration
     {
         Schema::create('payments', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignUuid('installment_id')->constrained('installments')->cascadeOnDelete();
-            $table->foreignUuid('user_id')->constrained('users')->cascadeOnDelete();
-            $table->decimal('montant', 12, 2);
-            $table->timestamp('date_paiement')->useCurrent();
+            $table->foreignUuid('rental_id')->constrained('rentals')->cascadeOnDelete();
+            $table->string('period', 7);
+            $table->unsignedInteger('amount');
+            $table->string('operator');
+            $table->string('phone');
+            $table->string('status')->default('PENDING');
             $table->string('reference')->unique();
-            $table->string('operateur');
-            $table->string('telephone');
-            $table->boolean('est_paye')->default(false);
+            $table->string('provider_ref')->nullable();
+            $table->timestamp('paid_at')->nullable();
+            $table->text('note')->nullable();
             $table->timestamps();
         });
     }

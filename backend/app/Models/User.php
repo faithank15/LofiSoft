@@ -6,6 +6,7 @@ use App\Enums\UserRole;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -17,53 +18,40 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, HasUuids, Notifiable;
 
-    /**
-     * @var list<string>
-     */
     protected $fillable = [
         'nom',
         'prenoms',
         'email',
         'telephone',
+        'password',
         'role',
         'actif',
-        'password',
+        'identity_verified',
     ];
 
-    /**
-     * @var list<string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
             'role' => UserRole::class,
             'actif' => 'boolean',
+            'identity_verified' => 'boolean',
+            'password' => 'hashed',
         ];
     }
 
-    public function ownerProfile(): HasOne
+    public function housings(): HasMany
     {
-        return $this->hasOne(OwnerProfile::class);
-    }
-
-    public function properties(): HasMany
-    {
-        return $this->hasMany(Property::class);
+        return $this->hasMany(Housing::class, 'owner_id');
     }
 
     public function announcements(): HasMany
     {
-        return $this->hasMany(Announcement::class);
+        return $this->hasMany(Announcement::class, 'owner_id');
     }
 
     public function rentals(): HasMany
@@ -71,13 +59,18 @@ class User extends Authenticatable
         return $this->hasMany(Rental::class, 'tenant_id');
     }
 
-    public function payments(): HasMany
+    public function activeRental(): HasOne
     {
-        return $this->hasMany(Payment::class);
+        return $this->hasOne(Rental::class, 'tenant_id')->where('status', 'ACTIVE');
     }
 
-    public function reportsMade(): HasMany
+    public function favorites(): BelongsToMany
     {
-        return $this->hasMany(Report::class, 'reporter_id');
+        return $this->belongsToMany(Announcement::class, 'favorites', 'user_id', 'announcement_id');
+    }
+
+    public function identityRequests(): HasMany
+    {
+        return $this->hasMany(IdentityRequest::class, 'owner_id');
     }
 }

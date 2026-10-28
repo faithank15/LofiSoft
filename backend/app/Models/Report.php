@@ -12,32 +12,27 @@ class Report extends Model
     use HasUuids;
 
     protected $fillable = [
-        'reporter_id',
-        'reported_id',
         'announcement_id',
-        'raison',
-        'statut',
+        'reporter_id',
+        'reason',
+        'details',
+        'status',
     ];
 
     protected function casts(): array
     {
         return [
-            'statut' => ReportStatus::class,
+            'status' => ReportStatus::class,
         ];
-    }
-
-    public function reporter(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'reporter_id');
-    }
-
-    public function reportedUser(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'reported_id');
     }
 
     public function announcement(): BelongsTo
     {
         return $this->belongsTo(Announcement::class);
+    }
+
+    public function reporter(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'reporter_id');
     }
 }

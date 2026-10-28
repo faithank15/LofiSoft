@@ -10,11 +10,11 @@ return new class extends Migration
     {
         Schema::create('reports', function (Blueprint $table) {
             $table->uuid('id')->primary();
+            $table->foreignUuid('announcement_id')->constrained('announcements')->cascadeOnDelete();
             $table->foreignUuid('reporter_id')->constrained('users')->cascadeOnDelete();
-            $table->foreignUuid('reported_id')->nullable()->constrained('users')->nullOnDelete();
-            $table->foreignUuid('announcement_id')->nullable()->constrained('announcements')->cascadeOnDelete();
-            $table->text('raison');
-            $table->string('statut')->default('PENDING');
+            $table->string('reason');
+            $table->text('details')->nullable();
+            $table->string('status')->default('PENDING');
             $table->timestamps();
         });
     }

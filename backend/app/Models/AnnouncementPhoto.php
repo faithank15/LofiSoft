@@ -12,15 +12,14 @@ class AnnouncementPhoto extends Model
 
     protected $fillable = [
         'announcement_id',
-        'image_url',
-        'image_storage_key',
-        'ordre',
+        'url',
+        'position',
     ];
 
     protected function casts(): array
     {
         return [
-            'ordre' => 'integer',
+            'position' => 'integer',
         ];
     }
 

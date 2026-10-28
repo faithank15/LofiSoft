@@ -10,35 +10,37 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Str;
 
-class RentalUnit extends Model
+class Housing extends Model
 {
     use HasUuids;
 
     protected $fillable = [
-        'property_id',
-        'nom',
-        'description',
-        'adresse',
+        'owner_id',
+        'title',
         'type',
-        'loyer_mensuel',
-        'code_logement',
-        'est_disponible',
+        'rent',
+        'due_day',
+        'city',
+        'district',
+        'code',
+        'photos',
     ];
 
     protected function casts(): array
     {
         return [
             'type' => AccommodationType::class,
-            'loyer_mensuel' => 'decimal:2',
-            'est_disponible' => 'boolean',
+            'rent' => 'integer',
+            'due_day' => 'integer',
+            'photos' => 'array',
         ];
     }
 
     protected static function booted(): void
     {
-        static::creating(function (RentalUnit $unit) {
-            if (empty($unit->code_logement)) {
-                $unit->code_logement = self::generateUniqueCode();
+        static::creating(function (Housing $housing) {
+            if (empty($housing->code)) {
+                $housing->code = self::generateUniqueCode();
             }
         });
     }
@@ -46,17 +48,15 @@ class RentalUnit extends Model
     public static function generateUniqueCode(): string
     {
         do {
-            $first = Str::upper(Str::random(3));
-            $second = Str::upper(Str::random(3));
-            $code = "{$first}-{$second}";
-        } while (self::where('code_logement', $code)->exists());
+            $code = Str::upper(Str::random(3)) . '-' . Str::upper(Str::random(3));
+        } while (self::where('code', $code)->exists());
 
         return $code;
     }
 
-    public function property(): BelongsTo
+    public function owner(): BelongsTo
     {
-        return $this->belongsTo(Property::class);
+        return $this->belongsTo(User::class, 'owner_id');
     }
 
     public function rentals(): HasMany
@@ -66,7 +66,7 @@ class RentalUnit extends Model
 
     public function activeRental(): HasOne
     {
-        return $this->hasOne(Rental::class)->where('statut', 'ACTIVE');
+        return $this->hasOne(Rental::class)->where('status', 'ACTIVE');
     }
 
     public function announcement(): HasOne

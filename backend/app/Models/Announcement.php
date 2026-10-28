@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Enums\AccommodationType;
 use App\Enums\AnnouncementStatus;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Announcement extends Model
@@ -13,45 +15,50 @@ class Announcement extends Model
     use HasUuids;
 
     protected $fillable = [
-        'user_id',
-        'rental_unit_id',
-        'titre',
+        'owner_id',
+        'housing_id',
+        'title',
+        'type',
+        'rent',
+        'deposit_months',
+        'city',
+        'district',
+        'rooms',
         'description',
-        'loyer_mensuel',
-        'ville',
-        'quartier',
-        'adresse',
-        'point_repere',
-        'latitude',
-        'longitude',
-        'statut',
-        'date_publication',
+        'status',
+        'published_at',
     ];
 
     protected function casts(): array
     {
         return [
-            'statut' => AnnouncementStatus::class,
-            'loyer_mensuel' => 'decimal:2',
-            'latitude' => 'decimal:8',
-            'longitude' => 'decimal:8',
-            'date_publication' => 'datetime',
+            'type' => AccommodationType::class,
+            'status' => AnnouncementStatus::class,
+            'rent' => 'integer',
+            'deposit_months' => 'integer',
+            'rooms' => 'integer',
+            'published_at' => 'datetime',
         ];
     }
 
     public function owner(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class, 'owner_id');
     }
 
-    public function rentalUnit(): BelongsTo
+    public function housing(): BelongsTo
     {
-        return $this->belongsTo(RentalUnit::class);
+        return $this->belongsTo(Housing::class);
     }
 
     public function photos(): HasMany
     {
-        return $this->hasMany(AnnouncementPhoto::class)->orderBy('ordre');
+        return $this->hasMany(AnnouncementPhoto::class)->orderBy('position');
+    }
+
+    public function favoritedBy(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'favorites', 'announcement_id', 'user_id');
     }
 
     public function reports(): HasMany

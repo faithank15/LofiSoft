@@ -8,19 +8,18 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('owner_profiles', function (Blueprint $table) {
+        Schema::create('favorites', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignUuid('user_id')->constrained('users')->cascadeOnDelete();
-            $table->string('identity_document_url')->nullable();
-            $table->string('selfie_url')->nullable();
-            $table->boolean('is_verified')->default(false);
-            $table->timestamp('verified_at')->nullable();
+            $table->foreignUuid('announcement_id')->constrained('announcements')->cascadeOnDelete();
             $table->timestamps();
+
+            $table->unique(['user_id', 'announcement_id']);
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('owner_profiles');
+        Schema::dropIfExists('favorites');
     }
 };
