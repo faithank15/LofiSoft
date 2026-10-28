@@ -1,0 +1,31 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class AnnouncementPhoto extends Model
+{
+    use HasUuids;
+
+    protected $fillable = [
+        'announcement_id',
+        'image_url',
+        'image_storage_key',
+        'ordre',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'ordre' => 'integer',
+        ];
+    }
+
+    public function announcement(): BelongsTo
+    {
+        return $this->belongsTo(Announcement::class);
+    }
+}

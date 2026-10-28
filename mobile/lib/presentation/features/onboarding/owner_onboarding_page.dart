@@ -12,9 +12,7 @@ import '../../components/molecules/owner_step_list.dart';
 import 'onboarding_controller.dart';
 
 /// Écran d'onboarding propriétaire assemblant les maquettes E5, E6 et E7.
-///
-/// Consomme strictement les atomes [AppBackButton], [AppButton], [ScreenTitle]
-/// et les molécules [OwnerStepList] et [OwnerIllustrationPanel].
+
 class OwnerOnboardingPage extends GetView<OnboardingController> {
   const OwnerOnboardingPage({super.key});
 
