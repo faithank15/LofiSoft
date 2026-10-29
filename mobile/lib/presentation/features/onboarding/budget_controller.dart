@@ -1,6 +1,5 @@
 import 'package:get/get.dart';
-import '../../../core/theme/app_colors.dart';
-import '../../routes/app_pages.dart';
+import '../../../data/cache/app_storage.dart';
 import '../../routes/app_routes.dart';
 
 /// Contrôleur de l'écran E4 (choix du budget — locataire).
@@ -38,34 +37,19 @@ class BudgetController extends GetxController {
     selectedBudget.value = budget;
   }
 
-  /// Navigue vers l'écran suivant (propriétaire — E5).
-  ///
-  /// Tant que l'écran E5 n'est pas implémenté, on ne navigue pas : on
-  /// prévient l'utilisateur au lieu de planter sur une route inconnue.
-  void continuer() {
-    if (!AppPages.hasRoute(AppRoutes.onboardingProprietaire)) {
-      Get.snackbar(
-        'Bientôt disponible',
-        'La suite du parcours propriétaire arrive.',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.green.withValues(alpha: 0.9),
-        colorText: AppColors.surface,
-        duration: const Duration(seconds: 2),
-      );
-      return;
-    }
-    Get.toNamed(AppRoutes.onboardingProprietaire);
+  /// Enregistre le budget, termine l'onboarding et ouvre le fil d'annonces filtré.
+  Future<void> continuer() async {
+    final storage = Get.find<AppStorage>();
+    await storage.savePreferences(storage.preferences.copyWith(budgetLabel: selectedBudget.value));
+    await storage.markOnboardingDone();
+    Get.offAllNamed(AppRoutes.listings);
   }
 
-  /// Action secondaire : voir tous les logements.
-  void voirTousLesLogements() {
-    Get.snackbar(
-      'Information',
-      'Tous les logements disponibles.',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: AppColors.green.withValues(alpha: 0.9),
-      colorText: AppColors.surface,
-      duration: const Duration(seconds: 2),
-    );
+  /// Action secondaire : voir tous les logements, sans critères.
+  Future<void> voirTousLesLogements() async {
+    final storage = Get.find<AppStorage>();
+    await storage.clearPreferences();
+    await storage.markOnboardingDone();
+    Get.offAllNamed(AppRoutes.listings);
   }
 }

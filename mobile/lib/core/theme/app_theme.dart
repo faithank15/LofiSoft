@@ -4,9 +4,7 @@ import 'app_colors.dart';
 import 'app_radius.dart';
 import 'app_text_styles.dart';
 
-/// Assemblage du thème Material 3 de l'application.
-///
-/// À brancher UNE fois dans `app.dart` :
+
 ///   GetMaterialApp(theme: AppTheme.light, ...)
 ///
 /// Les composants utilisent d'abord AppColors / AppTextStyles directement.
@@ -78,6 +76,6 @@ abstract final class AppTheme {
   }
 
   /// Pas de mode sombre dans les maquettes pour l'instant : on renvoie le clair.
-  /// À remplacer si l'équipe décide d'en faire un.
+
   /// static ThemeData get dark => light;
 }

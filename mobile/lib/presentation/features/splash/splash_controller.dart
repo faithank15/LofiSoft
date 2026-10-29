@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 
 import '../../../data/cache/app_storage.dart';
 import '../../../data/cache/auth_storage.dart';
+import '../../../data/repo/auth_repository.dart';
 import '../../../domain/models/enums.dart';
 import '../../routes/app_routes.dart';
 
@@ -17,6 +18,9 @@ import '../../routes/app_routes.dart';
 class SplashController extends GetxController {
   /// Durée minimale d'affichage : celle de l'animation de SplashView + une pause.
   static const _minimumDisplay = Duration(milliseconds: 2600);
+
+  /// Attente maximale de la revalidation de session (/auth/me).
+  static const _sessionCheckTimeout = Duration(seconds: 5);
 
   @override
   void onReady() {
@@ -35,15 +39,23 @@ class SplashController extends GetxController {
       Get.offAllNamed(AppRoutes.onboarding);
       return;
     }
-    final token = auth.token;
-    final role = auth.role;
-    if (token != null && token.isNotEmpty && role != null) {
-      Get.offAllNamed(switch (role) {
-        UserRole.TENANT => AppRoutes.rentTracking,
-        UserRole.OWNER => AppRoutes.ownerDashboard,
-        UserRole.ADMIN => AppRoutes.admin,
-      });
-      return;
+    // Session en cache : on la revalide auprès du serveur (jeton expiré, rôle modifié).
+    if (auth.hasSession) {
+      // Le lancement ne doit jamais rester bloqué : au-delà de quelques secondes, on garde le cache.
+      final user = await Get
+          .find<AuthRepository>()
+          .refreshSession()
+          .timeout(_sessionCheckTimeout, onTimeout: () => auth.user)
+          .catchError((_) => auth.user);
+      final role = user?.role;
+      if (role != null) {
+        Get.offAllNamed(switch (role) {
+          UserRole.TENANT => AppRoutes.rentTracking,
+          UserRole.OWNER => AppRoutes.ownerDashboard,
+          UserRole.ADMIN => AppRoutes.admin,
+        });
+        return;
+      }
     }
     Get.offAllNamed(AppRoutes.listings);
   }

@@ -261,11 +261,13 @@ class _OwnerVerificationView extends GetView<OnboardingController> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              AppButton(
-                label: 'Envoyer ma pièce d’identité',
-                variant: AppButtonVariant.primary,
-                isLoading: controller.isLoading.value,
-                onPressed: () => controller.pickIdentityDocument(),
+              Obx(
+                () => AppButton(
+                  label: 'Envoyer ma pièce d’identité',
+                  variant: AppButtonVariant.primary,
+                  isLoading: controller.isLoading.value,
+                  onPressed: () => controller.pickIdentityDocument(),
+                ),
               ),
               const SizedBox(height: AppSpacing.xs),
               AppButton(

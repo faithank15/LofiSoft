@@ -1,4 +1,6 @@
 import '../features/listings/listing_details_page.dart';
+import '../features/rental/join_housing_binding.dart';
+import '../features/rental/join_housing_page.dart';
 import '../features/listings/favorites_page.dart';
 import '../features/listings/listing_binding.dart';
 import '../features/listings/listings_feed_page.dart';
@@ -58,6 +60,12 @@ abstract final class AppPages {
       binding: AuthBinding(),
     ),
 
+    GetPage(
+      name: AppRoutes.joinHousing,
+      page: () => const JoinHousingPage(),
+      binding: JoinHousingBinding(),
+    ),
+
     // Point d'entrée de l'onboarding (utilisé par le splash à la première ouverture).
     GetPage(
       name: AppRoutes.onboarding,
@@ -107,7 +115,7 @@ abstract final class AppPages {
     // ---- Lot 1 : annonces ----
     GetPage(name: AppRoutes.listings, page: () => const ListingsFeedPage(), binding: ListingBinding()),
     GetPage(name: AppRoutes.favorites, page: () => const FavoritesPage(), binding: ListingBinding()),
-    GetPage(name: AppRoutes.listingDetails, page: () => const ListingDetailsPage(), binding: ListingBinding()),
+    GetPage(name: AppRoutes.listingDetails, page: () => const ListingDetailsPage(), binding: ListingDetailsBinding()),
 
 
     // ---- Lot 5 : suivi du loyer (locataire) ----

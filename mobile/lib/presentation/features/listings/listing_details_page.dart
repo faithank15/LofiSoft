@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import 'listings_controller.dart';
+import '../../../core/utils/currency_formatter.dart';
+import '../../../domain/models/announcement_model.dart';
+import '../../components/atoms/app_network_image.dart';
+import '../../shared/error_view.dart';
+import '../../shared/load_status.dart';
+import '../../shared/loading_view.dart';
+import 'listing_details_controller.dart';
 
 /// Couleurs de la maquette A3.
 class _C {
@@ -19,16 +25,6 @@ class _C {
 class ListingDetailsPage extends StatelessWidget {
   const ListingDetailsPage({super.key});
 
-  String _formatPrice(num price) {
-    final s = price.round().toString();
-    final buffer = StringBuffer();
-    for (int i = 0; i < s.length; i++) {
-      if (i > 0 && (s.length - i) % 3 == 0) buffer.write(' ');
-      buffer.write(s[i]);
-    }
-    return buffer.toString();
-  }
-
   String _initials(String name) {
     final parts = name.trim().split(' ').where((p) => p.isNotEmpty).toList();
     if (parts.isEmpty) return '';
@@ -42,22 +38,31 @@ class ListingDetailsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.find<ListingsController>();
-    final id = Get.parameters['id'] ?? '';
-    final item = controller.byId(id);
-
-    if (item == null) {
-      return Scaffold(
-        backgroundColor: _C.cream,
-        appBar: AppBar(
+    final controller = Get.find<ListingDetailsController>();
+    return Obx(() {
+      final item = controller.item.value;
+      if (controller.status.value == LoadStatus.failure) {
+        return Scaffold(
           backgroundColor: _C.cream,
-          elevation: 0,
-          foregroundColor: _C.ink,
-        ),
-        body: const Center(child: Text('Annonce introuvable')),
-      );
-    }
+          appBar: AppBar(backgroundColor: _C.cream, elevation: 0, foregroundColor: _C.ink),
+          body: ErrorView(
+            message: controller.errorMessage.value ?? 'Annonce introuvable.',
+            onRetry: controller.load,
+          ),
+        );
+      }
+      if (item == null) {
+        return Scaffold(
+          backgroundColor: _C.cream,
+          appBar: AppBar(backgroundColor: _C.cream, elevation: 0, foregroundColor: _C.ink),
+          body: const LoadingView(),
+        );
+      }
+      return _content(context, controller, item);
+    });
+  }
 
+  Widget _content(BuildContext context, ListingDetailsController controller, AnnouncementModel item) {
     final topInset = MediaQuery.of(context).padding.top;
 
     return Scaffold(
@@ -69,13 +74,25 @@ class ListingDetailsPage extends StatelessWidget {
               child: Stack(
                 children: [
                   // Image
-                  Container(
+                  SizedBox(
                     height: 290,
                     width: double.infinity,
-                    color: _C.imageBg,
-                    child: const Center(
-                      child: Icon(Icons.apartment, size: 120, color: _C.green),
-                    ),
+                    child: item.photos.isEmpty
+                        ? Container(
+                            color: _C.imageBg,
+                            child: const Center(
+                              child: Icon(Icons.apartment, size: 120, color: _C.green),
+                            ),
+                          )
+                        : PageView.builder(
+                            itemCount: item.photos.length,
+                            onPageChanged: (i) => controller.photoIndex.value = i,
+                            itemBuilder: (_, i) => AppNetworkImage(
+                              url: item.photos[i],
+                              width: MediaQuery.of(context).size.width,
+                              height: 290,
+                            ),
+                          ),
                   ),
                   // Panneau d'infos
                   Padding(
@@ -96,7 +113,7 @@ class ListingDetailsPage extends StatelessWidget {
                             TextSpan(
                               children: [
                                 TextSpan(
-                                  text: '${_formatPrice(item.price)} ',
+                                  text: '${CurrencyFormatter.number(item.rent)} ',
                                   style: const TextStyle(
                                     fontSize: 32,
                                     fontWeight: FontWeight.w800,
@@ -123,39 +140,12 @@ class ListingDetailsPage extends StatelessWidget {
                               color: _C.ink,
                             ),
                           ),
-
-                          // Équipements
-                          if (item.features.isNotEmpty) ...[
-                            const SizedBox(height: 16),
-                            Wrap(
-                              spacing: 8,
-                              runSpacing: 8,
-                              children: item.features
-                                  .map(
-                                    (f) => Container(
-                                  height: 38,
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 14),
-                                  alignment: Alignment.center,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius:
-                                    BorderRadius.circular(19),
-                                    border: Border.all(color: _C.border),
-                                  ),
-                                  child: Text(
-                                    f,
-                                    style: const TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w600,
-                                      color: _C.ink,
-                                    ),
-                                  ),
-                                ),
-                              )
-                                  .toList(),
-                            ),
-                          ],
+                          const SizedBox(height: 4),
+                          Text(
+                            '${item.rooms} pièce${item.rooms > 1 ? 's' : ''}'
+                            '${item.depositMonths > 0 ? ' · Caution : ${item.depositMonths} mois' : ''}',
+                            style: const TextStyle(fontSize: 15, color: _C.grey),
+                          ),
 
                           // Description
                           if (item.description.isNotEmpty) ...[
@@ -215,15 +205,6 @@ class ListingDetailsPage extends StatelessWidget {
                                           color: _C.ink,
                                         ),
                                       ),
-                                      if (item.locationHint.isNotEmpty)
-                                        Text(
-                                          item.locationHint,
-                                          style: const TextStyle(
-                                            fontSize: 14,
-                                            height: 1.35,
-                                            color: _C.grey,
-                                          ),
-                                        ),
                                     ],
                                   ),
                                 ),
@@ -287,14 +268,6 @@ class ListingDetailsPage extends StatelessWidget {
                                             ),
                                             const SizedBox(width: 8),
                                           ],
-                                          if (item.ownerRating != null)
-                                            Text(
-                                              '${item.ownerRating.toString().replaceAll('.', ',')} sur 5 · ${item.ownerReviews} avis',
-                                              style: const TextStyle(
-                                                fontSize: 14,
-                                                color: _C.grey,
-                                              ),
-                                            ),
                                         ],
                                       ),
                                     ],
@@ -321,18 +294,15 @@ class ListingDetailsPage extends StatelessWidget {
                     top: topInset + 14,
                     right: 14,
                     child: Obx(
-                          () => _RoundButton(
-                        icon: controller.isFavorite(item.id)
-                            ? Icons.favorite
-                            : Icons.favorite_border,
-                        color: controller.isFavorite(item.id)
-                            ? const Color(0xFFC8553D)
-                            : _C.ink,
-                        onTap: () => controller.toggleFavorite(item.id),
+                      () => _RoundButton(
+                        icon: controller.isFavorite.value ? Icons.favorite : Icons.favorite_border,
+                        color: controller.isFavorite.value ? const Color(0xFFC8553D) : _C.ink,
+                        onTap: controller.toggleFavorite,
                       ),
                     ),
                   ),
                   // Compteur de photos
+                  if (item.photos.length > 1)
                   Positioned(
                     top: 216,
                     right: 14,
@@ -344,14 +314,14 @@ class ListingDetailsPage extends StatelessWidget {
                         color: _C.ink,
                         borderRadius: BorderRadius.circular(15),
                       ),
-                      child: const Text(
-                        '1 / 8',
-                        style: TextStyle(
+                      child: Obx(() => Text(
+                        '${controller.photoIndex.value + 1} / ${item.photos.length}',
+                        style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
                           color: Colors.white,
                         ),
-                      ),
+                      )),
                     ),
                   ),
                 ],

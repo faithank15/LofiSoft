@@ -8,3 +8,12 @@ enum AnnouncementStatus { DRAFT, PUBLISHED, CANCELED, CLOSED }
 enum AccommodationType { HOUSE, ROOM, OTHER }
 
 enum ReportStatus { PENDING, RESOLVED, DISMISSED }
+
+
+enum RentStatus { PAID, PARTIAL, LATE, UPCOMING }
+
+enum PaymentStatus { PENDING, SUCCESS, FAILED }
+
+enum Operator { MTN, MOOV, CASH }
+
+enum IdentityStatus { PENDING, APPROVED, REJECTED }

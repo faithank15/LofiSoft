@@ -41,7 +41,35 @@ class AuthRepository {
     return login(email: email, password: password);
   }
 
-  Future<void> logout() => _storage.clear();
+  /// Revalide la session au lancement : relit le profil (`/auth/me`) et le met en cache.
+  /// Jeton refusé (401) : ApiClient a déjà effacé la session, on renvoie `null`.
+  /// Autre erreur (réseau, serveur) : on garde la session en cache et on renvoie le profil connu.
+  Future<UserModel?> refreshSession() async {
+    final token = _storage.token;
+    if (token == null || token.isEmpty) return null;
+    try {
+      final user = UserModel.fromJson(_extractUser(await _service.me()));
+      await _storage.saveSession(token: token, user: user);
+      return user;
+    } on UnauthorizedException {
+      await _storage.clear();
+      return null;
+    } on AppException {
+      // Réseau coupé, serveur en panne ou erreur 5xx : on garde la session en cache.
+      return _storage.user;
+    }
+  }
+
+  /// Ferme la session : révoque le jeton côté serveur (sans bloquer si le réseau manque),
+  /// puis efface la session locale.
+  Future<void> logout() async {
+    try {
+      await _service.logout();
+    } on AppException {
+      // Le jeton local est effacé quoi qu'il arrive.
+    }
+    await _storage.clear();
+  }
 
   Future<void> forgotPassword(String email) => _service.forgotPassword(email);
 

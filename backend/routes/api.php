@@ -10,6 +10,8 @@ use App\Http\Controllers\Api\RentalController;
 use App\Http\Controllers\Api\UploadController;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/health', fn () => response()->json(['message' => 'LofiSoft API is Healthy']));
+
 // 1. Authentification & Profil
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
@@ -25,7 +27,7 @@ Route::prefix('auth')->group(function () {
 Route::middleware('auth:sanctum')->group(function () {
     Route::put('/me', [AuthController::class, 'updateProfile']);
     Route::put('/me/password', [AuthController::class, 'updatePassword']);
-    Route::post('/me/identity', [AuthController::class, 'submitIdentity']);
+    Route::post('/me/identity', [AuthController::class, 'submitIdentity'])->middleware('role:OWNER');
 });
 
 // 2. Annonces publiques
@@ -34,11 +36,13 @@ Route::get('/announcements/{announcement}', [AnnouncementController::class, 'sho
 
 // 3. Annonces protégées & Favoris
 Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/announcements', [AnnouncementController::class, 'store']);
-    Route::put('/announcements/{announcement}', [AnnouncementController::class, 'update']);
-    Route::post('/announcements/{announcement}/publish', [AnnouncementController::class, 'publish']);
-    Route::post('/announcements/{announcement}/cancel', [AnnouncementController::class, 'cancel']);
-    Route::get('/me/announcements', [AnnouncementController::class, 'myAnnouncements']);
+    Route::middleware('role:OWNER')->group(function () {
+        Route::post('/announcements', [AnnouncementController::class, 'store']);
+        Route::put('/announcements/{announcement}', [AnnouncementController::class, 'update']);
+        Route::post('/announcements/{announcement}/publish', [AnnouncementController::class, 'publish']);
+        Route::post('/announcements/{announcement}/cancel', [AnnouncementController::class, 'cancel']);
+        Route::get('/me/announcements', [AnnouncementController::class, 'myAnnouncements']);
+    });
 
     Route::get('/me/favorites', [AnnouncementController::class, 'myFavorites']);
     Route::put('/announcements/{announcement}/favorite', [AnnouncementController::class, 'addFavorite']);
@@ -50,12 +54,14 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::get('/housings/lookup', [HousingController::class, 'lookup']);
 
 Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/housings', [HousingController::class, 'store']);
-    Route::get('/housings', [HousingController::class, 'index']);
-    Route::get('/housings/{housing}', [HousingController::class, 'show']);
-    Route::put('/housings/{housing}', [HousingController::class, 'update']);
+    Route::middleware('role:OWNER')->group(function () {
+        Route::post('/housings', [HousingController::class, 'store']);
+        Route::get('/housings', [HousingController::class, 'index']);
+        Route::get('/housings/{housing}', [HousingController::class, 'show']);
+        Route::put('/housings/{housing}', [HousingController::class, 'update']);
+    });
 
-    Route::post('/rentals/join', [RentalController::class, 'join']);
+    Route::post('/rentals/join', [RentalController::class, 'join'])->middleware('role:TENANT');
     Route::get('/me/rental', [RentalController::class, 'currentRental']);
     Route::post('/rentals/{rental}/end', [RentalController::class, 'end']);
 });
@@ -65,7 +71,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me/rent', [RentalController::class, 'currentRent']);
     Route::get('/me/rent/periods', [RentalController::class, 'rentPeriods']);
 
-    Route::post('/payments', [PaymentController::class, 'store']);
+    Route::post('/payments', [PaymentController::class, 'store'])->middleware('role:TENANT');
     Route::get('/payments/{payment}', [PaymentController::class, 'show']);
     Route::get('/me/payments', [PaymentController::class, 'myPayments']);
     Route::get('/payments/{payment}/receipt', [PaymentController::class, 'receipt']);
@@ -74,7 +80,7 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::post('/payments/webhook', [PaymentController::class, 'webhook']);
 
 // 6. Espace Propriétaire
-Route::middleware('auth:sanctum')->prefix('owner')->group(function () {
+Route::middleware(['auth:sanctum', 'role:OWNER'])->prefix('owner')->group(function () {
     Route::get('/dashboard', [OwnerDashboardController::class, 'dashboard']);
     Route::get('/tenants', [OwnerDashboardController::class, 'tenants']);
     Route::get('/tenants/{rentalId}', [OwnerDashboardController::class, 'tenantDetails']);
@@ -85,7 +91,7 @@ Route::middleware('auth:sanctum')->prefix('owner')->group(function () {
 });
 
 // 7. Espace Administration
-Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
+Route::middleware(['auth:sanctum', 'role:ADMIN'])->prefix('admin')->group(function () {
     Route::get('/identity-requests', [AdminController::class, 'identityRequests']);
     Route::post('/identity-requests/{identityRequest}/approve', [AdminController::class, 'approveIdentity']);
     Route::post('/identity-requests/{identityRequest}/reject', [AdminController::class, 'rejectIdentity']);

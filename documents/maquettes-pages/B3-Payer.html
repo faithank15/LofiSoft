@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>B3 · Payer mon loyer</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+@property --k { syntax: '<integer>'; inherits: false; initial-value: 426; }
+@keyframes kup { from { --k: 0; } to { --k: 426; } }
+@keyframes fillw { from { width: 0; } to { width: 65.7%; } }
+.cnt::before { counter-reset: k var(--k); content: counter(k) ' 800'; animation: kup 2.2s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.fillbar { animation: fillw 2.2s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.sun { animation: sunx 2.2s cubic-bezier(0.16, 1, 0.3, 1) both; }
+@keyframes sunx { from { left: -12px; } to { left: 222px; } }
+</style>
+
+<style>
+body{margin:0;background:#0B1210;font-family:'Plus Jakarta Sans',system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;gap:14px;padding:24px 0 40px}
+.tag{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:700;color:#F2EFE6}
+.tag b{background:#1F8A72;color:#fff;border-radius:10px;padding:5px 12px;font-size:16px;font-weight:800}
+.tag a{font-weight:600;color:#9FB3AB;text-decoration:none;font-size:14px;margin-left:8px}
+.phone{border-radius:34px;overflow:hidden;box-shadow:0 0 0 1px rgba(255,255,255,.14);width:390px;height:844px}
+</style></head><body>
+<div class="tag"><b>B3</b>Payer mon loyer<a href="index.html">← Tous les écrans</a></div>
+<div class="phone">
+<div style="width: 390px; height: 844px; box-sizing: border-box; position: relative; overflow: hidden; background: #F7F3EA; color: #10231E; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; display: flex; flex-direction: column">
+
+<div style="height: 60px; flex-shrink: 0; display: flex; align-items: center; gap: 4px; padding: 0 8px; background: #F7F3EA"><button type="button" aria-label="Retour" style="width: 44px; height: 44px; border: 0; background: transparent; display: flex; align-items: center; justify-content: center; padding: 0"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10231E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><div style="flex-grow: 1; font-size: 20px; font-weight: 800; letter-spacing: -0.01em; color: #10231E">Payer mon loyer</div></div>
+<div style="flex-grow: 1; padding: 6px 20px 0; display: flex; flex-direction: column; gap: 18px; overflow: hidden">
+  <div style="display: flex; flex-direction: column; background: #FFFFFF; border: 1px solid #E1DACB; border-radius: 22px; box-shadow: 0 1px 2px rgba(16,35,30,0.06), 0 10px 26px -8px rgba(16,35,30,0.16); padding: 14px 16px; gap: 10px"><div style="display: flex; justify-content: space-between; align-items: baseline"><span style="font-size: 15px; color: #55645E">Loyer de novembre</span><span style="font-size: 16px; font-weight: 800">Reste 60 000 FCFA</span></div><div style="height: 10px; border-radius: 5px; background: #E1DACB"><div style="width: 60%; height: 10px; border-radius: 5px; background: #0F5C4D"></div></div><span style="font-size: 14px; color: #55645E">90 000 déjà payés sur 150 000 · avant le 5 novembre</span></div>
+  <div style="display: flex; flex-direction: column; gap: 10px"><span style="font-size: 17px; font-weight: 800">Combien voulez-vous payer ?</span>
+    <div style="height: 76px; box-sizing: border-box; padding: 0 20px; border: 2.5px solid #0F5C4D; border-radius: 20px; background: #FFFFFF; box-shadow: 0 12px 24px -8px rgba(15, 92, 77, 0.4); display: flex; align-items: center; gap: 10px"><span style="flex-grow: 1; font-size: 36px; font-weight: 800; letter-spacing: -0.02em">30 000</span><span style="font-size: 17px; font-weight: 700; color: #55645E">FCFA</span></div>
+    <span style="font-size: 14px; line-height: 1.4; color: #55645E">Vous pouvez payer en plusieurs fois. Minimum : 1 000 FCFA par paiement.</span></div>
+  <div style="display: flex; flex-direction: column; gap: 10px"><span style="font-size: 17px; font-weight: 800">Payer avec</span><div style="display: flex; gap: 12px"><div style="flex: 1; height: 60px; border: 2.5px solid #0F5C4D; border-radius: 18px; background: #FFFFFF; box-shadow: 0 1px 2px rgba(16,35,30,0.06), 0 10px 26px -8px rgba(16,35,30,0.16); display: flex; align-items: center; justify-content: space-between; padding: 0 14px; font-size: 16px; font-weight: 800">MTN Mobile Money<span style="width: 26px; height: 26px; flex-shrink: 0; border-radius: 13px; background: #0F5C4D; display: flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg></span></div><div style="flex: 1; height: 60px; border: 1.5px solid #E1DACB; border-radius: 18px; background: #FFFFFF; box-shadow: 0 1px 2px rgba(16,35,30,0.06), 0 10px 26px -8px rgba(16,35,30,0.16); display: flex; align-items: center; justify-content: space-between; padding: 0 14px; font-size: 16px; font-weight: 800">Moov Money<span style="width: 26px; height: 26px; flex-shrink: 0; border-radius: 13px; border: 2px solid #E1DACB"></span></div></div></div>
+  <div style="display: flex; flex-direction: column; gap: 7px; "><span style="font-size: 15px; font-weight: 800">Numéro à débiter</span><div style="display: flex; align-items: center; gap: 10px; height: 54px; box-sizing: border-box; padding: 0 16px; border: 1.5px solid #E1DACB; border-radius: 16px; background: #FFFFFF; box-shadow: 0 1px 2px rgba(16, 35, 30, 0.05); "><span style="font-size: 16px; font-weight: 700; color: #55645E">+229</span><span style="flex-grow: 1; font-size: 16px; color: #10231E; font-weight: 600">01 97 12 34 56</span></div></div>
+</div>
+<div style="flex-shrink: 0; display: flex; flex-direction: column; gap: 4px; padding: 12px 20px 24px; background: #FFFFFF; border-top: 1px solid #E1DACB; box-shadow: 0 -8px 22px -10px rgba(16,35,30,0.16); position: relative"><div style="display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 8px"><span style="font-size: 15px; color: #55645E">Frais pour vous</span><span style="font-size: 15px; font-weight: 800; color: #0B6B3A">Aucun</span></div><button type="button" style="width: 100%; height: 58px; border: 0; border-radius: 18px; background: #0F5C4D; color: #FFFFFF; box-shadow: 0 10px 20px -8px rgba(15,92,77,0.6); font-family: inherit; font-size: 17px; font-weight: 800">Payer</button></div>
+</div>
+</div>
+</body></html>

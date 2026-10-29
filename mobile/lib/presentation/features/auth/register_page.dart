@@ -13,7 +13,7 @@ import '../../components/molecules/role_segment.dart';
 import '../../components/skeletons/auth_scaffold.dart';
 import 'auth_controller.dart';
 
-/// A6 · Inscription.
+/// A6 Inscription.
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
 

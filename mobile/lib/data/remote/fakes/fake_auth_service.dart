@@ -1,4 +1,7 @@
+import 'package:get/get.dart';
+
 import '../../../core/errors/app_exception.dart';
+import '../../cache/auth_storage.dart';
 import '../../../domain/models/enums.dart';
 import '../services/auth_service.dart';
 
@@ -29,7 +32,7 @@ class FakeAuthService extends AuthService {
     await Future<void>.delayed(_delay);
     final account = _accounts[email.trim().toLowerCase()];
     if (account == null || password != _password) {
-      throw const UnauthorizedException('E-mail ou mot de passe incorrect.');
+      throw const UnauthorizedException('Email ou mot de passe incorrect.');
     }
     return _session(
       id: email,
@@ -65,12 +68,28 @@ class FakeAuthService extends AuthService {
   }
 
   @override
-  Future<Map<String, dynamic>> me() async => throw const UnauthorizedException();
+  Future<Map<String, dynamic>> me() async {
+    final user = Get.find<AuthStorage>().user;
+    if (user == null) throw const UnauthorizedException();
+    return <String, dynamic>{'user': user.toJson()};
+  }
 
   @override
   Future<Map<String, dynamic>> forgotPassword(String email) async {
     await Future<void>.delayed(_delay);
     return <String, dynamic>{'message': 'ok'};
+  }
+
+  @override
+  Future<Map<String, dynamic>> logout() async => <String, dynamic>{};
+
+  @override
+  Future<Map<String, dynamic>> submitIdentity({
+    required String idImageUrl,
+    required String selfieUrl,
+  }) async {
+    await Future<void>.delayed(_delay);
+    return <String, dynamic>{'id': 'fake-identity', 'status': 'PENDING'};
   }
 
   Map<String, dynamic> _session({

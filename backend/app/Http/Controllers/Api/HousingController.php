@@ -19,10 +19,6 @@ class HousingController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        if ($request->user()->role->value !== 'OWNER') {
-            return response()->json(['message' => 'Action réservée aux propriétaires.'], Response::HTTP_FORBIDDEN);
-        }
-
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:150'],
             'type' => ['required', 'string', 'in:HOUSE,ROOM,OTHER'],
@@ -85,6 +81,8 @@ class HousingController extends Controller
                 'city' => $housing->city,
                 'district' => $housing->district,
                 'rent' => (int) $housing->rent,
+                'due_day' => (int) $housing->due_day,
+                'owner_verified' => (bool) ($housing->owner?->identity_verified ?? false),
                 'owner_name' => trim(($housing->owner?->prenoms ?? '') . ' ' . ($housing->owner?->nom ?? '')),
             ],
         ]);

@@ -13,18 +13,8 @@ use Symfony\Component\HttpFoundation\Response;
 
 class AdminController extends Controller
 {
-    private function ensureAdmin(Request $request): ?JsonResponse
-    {
-        if ($request->user()->role->value !== 'ADMIN') {
-            return response()->json(['message' => 'Accès réservé aux administrateurs.'], Response::HTTP_FORBIDDEN);
-        }
-        return null;
-    }
-
     public function identityRequests(Request $request): JsonResponse
     {
-        if ($err = $this->ensureAdmin($request)) return $err;
-
         $status = $request->query('status', 'PENDING');
         $requests = IdentityRequest::with('owner')->where('status', $status)->latest()->get();
 
@@ -47,7 +37,9 @@ class AdminController extends Controller
 
     public function approveIdentity(Request $request, IdentityRequest $identityRequest): JsonResponse
     {
-        if ($err = $this->ensureAdmin($request)) return $err;
+        if ($identityRequest->status->value !== 'PENDING') {
+            return response()->json(['message' => 'Cette demande a déjà été traitée.'], Response::HTTP_CONFLICT);
+        }
 
         $identityRequest->update([
             'status' => 'APPROVED',
@@ -61,11 +53,13 @@ class AdminController extends Controller
 
     public function rejectIdentity(Request $request, IdentityRequest $identityRequest): JsonResponse
     {
-        if ($err = $this->ensureAdmin($request)) return $err;
-
         $validated = $request->validate([
             'reason' => ['required', 'string'],
         ]);
+
+        if ($identityRequest->status->value !== 'PENDING') {
+            return response()->json(['message' => 'Cette demande a déjà été traitée.'], Response::HTTP_CONFLICT);
+        }
 
         $identityRequest->update([
             'status' => 'REJECTED',
@@ -78,8 +72,6 @@ class AdminController extends Controller
 
     public function reports(Request $request): JsonResponse
     {
-        if ($err = $this->ensureAdmin($request)) return $err;
-
         $status = $request->query('status', 'PENDING');
         $reports = Report::with('announcement')->where('status', $status)->latest()->get();
 
@@ -105,8 +97,6 @@ class AdminController extends Controller
 
     public function resolveReport(Request $request, Report $report): JsonResponse
     {
-        if ($err = $this->ensureAdmin($request)) return $err;
-
         $validated = $request->validate([
             'action' => ['required', 'string', 'in:REMOVE_ANNOUNCEMENT,WARN_OWNER'],
         ]);
@@ -122,8 +112,6 @@ class AdminController extends Controller
 
     public function dismissReport(Request $request, Report $report): JsonResponse
     {
-        if ($err = $this->ensureAdmin($request)) return $err;
-
         $report->update(['status' => 'DISMISSED']);
 
         return response()->json(['message' => 'Signalement ignoré.']);
@@ -131,8 +119,6 @@ class AdminController extends Controller
 
     public function users(Request $request): JsonResponse
     {
-        if ($err = $this->ensureAdmin($request)) return $err;
-
         $query = User::query();
 
         if ($request->filled('role')) {
@@ -142,9 +128,9 @@ class AdminController extends Controller
         if ($request->filled('q')) {
             $q = $request->query('q');
             $query->where(function ($sub) use ($q) {
-                $sub->where('nom', 'ilike', "%{$q}%")
-                    ->orWhere('prenoms', 'ilike', "%{$q}%")
-                    ->orWhere('email', 'ilike', "%{$q}%");
+                $sub->where('nom', 'like', "%{$q}%")
+                    ->orWhere('prenoms', 'like', "%{$q}%")
+                    ->orWhere('email', 'like', "%{$q}%");
             });
         }
 
@@ -153,11 +139,16 @@ class AdminController extends Controller
 
     public function toggleUserActive(Request $request, User $user): JsonResponse
     {
-        if ($err = $this->ensureAdmin($request)) return $err;
-
         $validated = $request->validate([
             'actif' => ['required', 'boolean'],
         ]);
+
+        if ($user->is($request->user()) && ! $validated['actif']) {
+            return response()->json([
+                'message' => 'Vous ne pouvez pas suspendre votre propre compte.',
+                'errors' => ['actif' => ['Action impossible sur votre propre compte.']],
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
 
         $user->update(['actif' => $validated['actif']]);
 
