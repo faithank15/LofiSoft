@@ -56,20 +56,32 @@ class OnboardingScaffold extends StatelessWidget {
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(AppSpacing.screen, AppSpacing.sm, AppSpacing.screen, 0),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.screen,
+                AppSpacing.sm,
+                AppSpacing.screen,
+                0,
+              ),
               child: Row(
                 children: [
-                  if (onBack != null) AppBackButton(onPressed: onBack, color: AppColors.ink),
+                  if (onBack != null)
+                    AppBackButton(onPressed: onBack, color: AppColors.ink),
                   if (step != null && totalSteps != null) ...[
                     const SizedBox(width: AppSpacing.md),
-                    Expanded(child: StepProgressBar(current: step!, total: totalSteps!)),
+                    Expanded(
+                      child: StepProgressBar(
+                        current: step!,
+                        total: totalSteps!,
+                      ),
+                    ),
                   ],
                 ],
               ),
             ),
             Expanded(
               child: SingleChildScrollView(
-                keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
                 padding: const EdgeInsets.fromLTRB(
                   AppSpacing.screen,
                   AppSpacing.xl,
