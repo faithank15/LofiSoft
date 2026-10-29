@@ -9,14 +9,14 @@ abstract final class AppRoutes {
   static const joinHousing = '/join-housing';
 
   // Onboarding (lots 3 et 4)
-  static const welcome = '/welcome';
+  // Parcours locataire : /onboarding -> /onboarding/ville -> /onboarding/type
+  //                      -> /onboarding/budget
+  // Parcours propriétaire : /onboarding -> /onboarding/proprietaire (E5 → E7)
   static const onboarding = '/onboarding';
   static const onboardingVille = '/onboarding/ville';
   static const onboardingType = '/onboarding/type';
   static const onboardingBudget = '/onboarding/budget';
   static const onboardingProprietaire = '/onboarding/proprietaire';
-  static const tenantOnboarding = '/onboarding/tenant';
-  static const ownerOnboarding = '/onboarding/owner';
 
   static const dev = '/dev';
 

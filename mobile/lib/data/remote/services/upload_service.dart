@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
 
-import '../../../core/network/api_client.dart';
+import '../api_client.dart';
 
 /// Envoi d'une image au serveur, qui renvoie son URL (`{ "url": "..." }`).
 /// `kind` : announcement_photo, identity_id ou identity_selfie.

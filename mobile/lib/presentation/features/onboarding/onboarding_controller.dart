@@ -3,10 +3,10 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../core/errors/app_exception.dart';
-import '../../../data/cache/app_storage.dart';
 import '../../../data/cache/auth_storage.dart';
 import '../../../data/repo/identity_repository.dart';
 import '../../routes/app_routes.dart';
+import 'onboarding_completion.dart';
 
 /// Contrôleur GetX gérant l'état et les transitions de l'onboarding.
 ///
@@ -132,7 +132,6 @@ class OnboardingController extends GetxController {
   }
 
   Future<void> finishOnboarding() async {
-    await Get.find<AppStorage>().markOnboardingDone();
-    Get.offAllNamed(AppRoutes.ownerDashboard);
+    await OnboardingCompletion.terminerProprietaire();
   }
 }

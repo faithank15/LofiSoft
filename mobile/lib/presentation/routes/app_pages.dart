@@ -7,11 +7,8 @@ import '../features/rental/join_housing_page.dart';
 import '../features/listings/favorites_page.dart';
 import '../features/listings/listing_binding.dart';
 import '../features/listings/listings_feed_page.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_text_styles.dart';
 import '../features/auth/auth_binding.dart';
 import '../features/auth/login_page.dart';
 import '../features/auth/register_page.dart';
@@ -28,7 +25,8 @@ import '../features/onboarding/welcome_page.dart';
 import '../features/splash/splash_binding.dart';
 import '../features/splash/splash_page.dart';
 import '../shared/placeholder_page.dart';
-import '../shared/dev_menu_page.dart';
+import '../features/dev/dev_menu_page.dart';
+import '../features/owner_dashboard/owner_dashboard_page.dart';
 import '../../core/constants/app_config.dart';
 
 import 'app_routes.dart';
@@ -38,10 +36,6 @@ import 'app_routes.dart';
 abstract final class AppPages {
 
   static const initial = AppConfig.useFakeApi ? AppRoutes.dev : AppRoutes.splash;
-
-  /// Indique si une route est déjà déclarée dans [pages] (évite de naviguer
-  /// vers une page pas encore implémentée).
-  static bool hasRoute(String name) => pages.any((page) => page.name == name);
 
   static final pages = <GetPage<dynamic>>[
     // ---- Lot 2 : démarrage et authentification ----
@@ -82,11 +76,6 @@ abstract final class AppPages {
 
     // ---- Lots 3 et 4 : onboarding ----
     GetPage(
-      name: AppRoutes.welcome,
-      page: () => const WelcomePage(),
-      binding: WelcomeBinding(),
-    ),
-    GetPage(
       name: AppRoutes.onboardingVille,
       page: () => const VillePage(),
       binding: VilleBinding(),
@@ -101,13 +90,7 @@ abstract final class AppPages {
       page: () => const BudgetPage(),
       binding: BudgetBinding(),
     ),
-    GetPage(
-      name: AppRoutes.ownerOnboarding,
-      page: () => const OwnerOnboardingPage(),
-      binding: OnboardingBinding(),
-      transition: Transition.fadeIn,
-    ),
-    // Alias : WelcomeController et BudgetController naviguent vers cette route.
+    // Parcours propriétaire : E5 (bienvenue) → E6 (étapes) → E7 (badge vérifié).
     GetPage(
       name: AppRoutes.onboardingProprietaire,
       page: () => const OwnerOnboardingPage(),
@@ -129,55 +112,11 @@ abstract final class AppPages {
     // Page d'atterrissage temporaire, à remplacer par le vrai tableau de bord.
     GetPage(
       name: AppRoutes.ownerDashboard,
-      page: () => const _OwnerDashboardPlaceholderPage(),
+      page: () => const OwnerDashboardPage(),
       transition: Transition.fadeIn,
     ),
 
     // ---- Lot 10 : administration ----
     // GetPage(name: AppRoutes.admin, ...),
   ];
-}
-
-/// Écran d'atterrissage temporaire pour valider la sortie de l'onboarding
-/// avant la livraison complète du Lot 7.
-class _OwnerDashboardPlaceholderPage extends StatelessWidget {
-  const _OwnerDashboardPlaceholderPage();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.paper,
-      appBar: AppBar(
-        title: const Text('Tableau de bord propriétaire'),
-        automaticallyImplyLeading: false,
-      ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.check_circle_rounded,
-                size: 64,
-                color: AppColors.statusOk,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Onboarding terminé avec succès',
-                style: AppTextStyles.title,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Redirection opérationnelle vers AppRoutes.ownerDashboard',
-                style: AppTextStyles.subtitle,
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 }

@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
 
-import '../../../core/network/api_client.dart';
+import '../api_client.dart';
 
 /// Appels HTTP bruts du code logement et de la location du locataire.
 class RentalService extends GetxService {

@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 
 import '../../../data/cache/app_storage.dart';
 import '../../routes/app_routes.dart';
+import 'onboarding_completion.dart';
 
 /// Contrôleur de l'écran E3 (choix du type de logement — locataire).
 class TypeController extends GetxController {
@@ -34,4 +35,7 @@ class TypeController extends GetxController {
     await storage.savePreferences(storage.preferences.copyWith(types: selectedTypes.toList()));
     Get.toNamed(AppRoutes.onboardingBudget);
   }
+
+  /// Action « Passer » : quitte le parcours locataire sans aller au bout.
+  Future<void> passer() => OnboardingCompletion.terminerLocataire();
 }

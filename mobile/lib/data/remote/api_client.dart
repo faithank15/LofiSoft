@@ -5,10 +5,10 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
-import '../../data/cache/auth_storage.dart';
-import '../constants/app_config.dart';
-import '../errors/app_exception.dart';
-import 'json_utils.dart';
+import '../cache/auth_storage.dart';
+import '../../core/constants/app_config.dart';
+import '../../core/errors/app_exception.dart';
+import '../../core/utils/json_utils.dart';
 
 /// Client HTTP unique de l'application.
 /// - ajoute le jeton `Authorization: Bearer ...` quand une session existe ;
@@ -17,7 +17,7 @@ import 'json_utils.dart';
 /// - sur un 401 avec jeton (session expirée), efface la session locale.
 ///
 /// Il ne navigue JAMAIS : c'est aux contrôleurs et aux middlewares de réagir.
-/// Enregistré dans main.dart : `Get.put(ApiClient(authStorage: Get.find()))`.
+/// Enregistré par `initializeDependencies()` (lib/di/injector.dart).
 class ApiClient {
   ApiClient({required AuthStorage authStorage, http.Client? client})
       : _auth = authStorage,

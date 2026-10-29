@@ -76,7 +76,7 @@ class AuthController extends GetxController {
       // Un nouveau compte passe par l'onboarding de son rôle (critères du locataire,
       // ou étapes du propriétaire avec la demande du badge Vérifié).
       Get.offAllNamed(
-        role.value == UserRole.OWNER ? AppRoutes.ownerOnboarding : AppRoutes.onboardingVille,
+        role.value == UserRole.OWNER ? AppRoutes.onboardingProprietaire : AppRoutes.onboardingVille,
       );
     } on AppException catch (e) {
       _fail(e.message);

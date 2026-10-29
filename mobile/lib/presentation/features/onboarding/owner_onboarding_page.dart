@@ -3,15 +3,18 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../../core/theme/app_text_styles.dart';
-import '../../components/atoms/app_back_button.dart';
 import '../../components/atoms/app_button.dart';
 import '../../components/atoms/screen_title.dart';
+import '../../components/molecules/bottom_cta_bar.dart';
+import '../../components/molecules/onboarding_top_nav.dart';
 import '../../components/molecules/owner_illustration_panel.dart';
 import '../../components/molecules/owner_step_list.dart';
 import 'onboarding_controller.dart';
 
 /// Écran d'onboarding propriétaire assemblant les maquettes E5, E6 et E7.
+///
+/// Référence de design du parcours : la barre haute et la zone d'action basse
+/// sont partagées avec le parcours locataire (E2 → E4).
 
 class OwnerOnboardingPage extends GetView<OnboardingController> {
   const OwnerOnboardingPage({super.key});
@@ -38,7 +41,13 @@ class OwnerOnboardingPage extends GetView<OnboardingController> {
           body: SafeArea(
             child: Column(
               children: [
-                _buildTopNavigation(isDark: isDark),
+                OnboardingTopNav(
+                  currentStep: controller.currentStep.value,
+                  totalSteps: 3,
+                  onSkip: controller.skip,
+                  onBack: controller.previousStep,
+                  isLight: isDark,
+                ),
                 Expanded(
                   child: PageView(
                     controller: controller.pageController,
@@ -57,56 +66,6 @@ class OwnerOnboardingPage extends GetView<OnboardingController> {
         ),
       );
     });
-  }
-
-  Widget _buildTopNavigation({required bool isDark}) {
-    final skipColor = isDark ? AppColors.mint : AppColors.muted;
-    final activeSegment = isDark ? AppColors.surface : AppColors.green;
-    final inactiveSegment = isDark
-        ? AppColors.surface.withValues(alpha: 0.25)
-        : AppColors.line;
-
-    return Container(
-      height: AppSizes.appBar,
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-      child: Row(
-        children: [
-          AppBackButton(isLight: isDark, onPressed: controller.previousStep),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-              child: Row(
-                children: List.generate(3, (index) {
-                  final isReached = controller.currentStep.value >= index;
-                  return Expanded(
-                    child: Container(
-                      height: 6,
-                      margin: EdgeInsets.only(
-                        right: index < 2 ? AppSpacing.xs : 0,
-                      ),
-                      decoration: BoxDecoration(
-                        color: isReached ? activeSegment : inactiveSegment,
-                        borderRadius: BorderRadius.circular(3),
-                      ),
-                    ),
-                  );
-                }),
-              ),
-            ),
-          ),
-          TextButton(
-            onPressed: controller.skip,
-            child: Text(
-              'Passer',
-              style: AppTextStyles.label.copyWith(
-                color: skipColor,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }
 
@@ -141,18 +100,10 @@ class _OwnerWelcomeView extends GetView<OnboardingController> {
             ),
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.screen,
-            AppSpacing.sm,
-            AppSpacing.screen,
-            AppSpacing.xl,
-          ),
-          child: AppButton(
-            label: 'Continuer',
-            variant: AppButtonVariant.surface,
-            onPressed: controller.nextStep,
-          ),
+        BottomCtaBar(
+          primaryLabel: 'Continuer',
+          onPrimary: controller.nextStep,
+          primaryVariant: AppButtonVariant.surface,
         ),
       ],
     );
@@ -203,18 +154,9 @@ class _OwnerProcessView extends GetView<OnboardingController> {
             ),
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.screen,
-            AppSpacing.sm,
-            AppSpacing.screen,
-            AppSpacing.xl,
-          ),
-          child: AppButton(
-            label: 'Continuer',
-            variant: AppButtonVariant.primary,
-            onPressed: controller.nextStep,
-          ),
+        BottomCtaBar(
+          primaryLabel: 'Continuer',
+          onPrimary: controller.nextStep,
         ),
       ],
     );
@@ -251,32 +193,16 @@ class _OwnerVerificationView extends GetView<OnboardingController> {
             ),
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.screen,
-            AppSpacing.xs,
-            AppSpacing.screen,
-            AppSpacing.lg,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Obx(
-                () => AppButton(
-                  label: 'Envoyer ma pièce d’identité',
-                  variant: AppButtonVariant.primary,
-                  isLoading: controller.isLoading.value,
-                  onPressed: () => controller.pickIdentityDocument(),
-                ),
-              ),
-              const SizedBox(height: AppSpacing.xs),
-              AppButton(
-                label: 'Plus tard',
-                variant: AppButtonVariant.text,
-                height: AppSizes.tap,
-                onPressed: controller.finishOnboarding,
-              ),
-            ],
+        // `Obx` local : les vues du PageView sont construites hors du `Obx`
+        // de la page, l'indicateur de chargement doit donc s'abonner
+        // lui-même à l'état asynchrone.
+        Obx(
+          () => BottomCtaBar(
+            primaryLabel: 'Envoyer ma pièce d’identité',
+            onPrimary: () => controller.pickIdentityDocument(),
+            isLoading: controller.isLoading.value,
+            secondaryLabel: 'Plus tard',
+            onSecondary: controller.finishOnboarding,
           ),
         ),
       ],

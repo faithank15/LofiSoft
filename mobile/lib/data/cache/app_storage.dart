@@ -1,11 +1,11 @@
 import 'package:get_storage/get_storage.dart';
 
-import '../../core/network/json_utils.dart';
+import '../../core/utils/json_utils.dart';
 import '../../domain/models/search_preferences.dart';
 
 /// Cache local de l'application : indicateurs de première ouverture et données
 /// conservées pour la consultation hors connexion (échéances, reçus, coordonnées).
-/// Enregistré une fois dans main.dart : `Get.put(AppStorage())`.
+/// Enregistré par `initializeDependencies()` (lib/di/injector.dart).
 class AppStorage {
   late final GetStorage _box = GetStorage();
 

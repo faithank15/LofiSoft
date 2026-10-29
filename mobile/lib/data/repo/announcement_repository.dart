@@ -1,4 +1,4 @@
-import '../../core/network/json_utils.dart';
+import '../../core/utils/json_utils.dart';
 import '../../domain/models/announcement_model.dart';
 import '../remote/services/announcement_service.dart';
 

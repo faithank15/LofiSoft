@@ -77,7 +77,7 @@ void main() {
       await tester.pumpWidget(GetMaterialApp(
         home: const SizedBox(),
         getPages: [
-          for (final name in [AppRoutes.login, AppRoutes.rentTracking, AppRoutes.listings, AppRoutes.ownerOnboarding, AppRoutes.onboardingVille, AppRoutes.ownerDashboard])
+          for (final name in [AppRoutes.login, AppRoutes.rentTracking, AppRoutes.listings, AppRoutes.onboardingProprietaire, AppRoutes.onboardingVille, AppRoutes.ownerDashboard])
             GetPage(name: name, page: () => const SizedBox()),
         ],
         routingCallback: (r) {

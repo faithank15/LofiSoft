@@ -18,8 +18,10 @@ class VillePage extends GetView<VilleController> {
   @override
   Widget build(BuildContext context) {
     return OnboardingScaffold(
-      step: 1,
+      step: 0,
+      totalSteps: 3,
       onBack: () => Get.back(),
+      onSkip: controller.passer,
       title: 'Où voulez-vous habiter ?',
       subtitle: 'Nous vous montrerons d\'abord les logements de ces zones.',
       primaryLabel: 'Continuer',

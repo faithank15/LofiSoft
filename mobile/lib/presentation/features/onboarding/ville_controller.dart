@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 
 import '../../../data/cache/app_storage.dart';
 import '../../routes/app_routes.dart';
+import 'onboarding_completion.dart';
 
 /// Contrôleur de l'écran E2 (choix de ville et quartiers — locataire).
 class VilleController extends GetxController {
@@ -69,4 +70,7 @@ class VilleController extends GetxController {
     ));
     Get.toNamed(AppRoutes.onboardingType);
   }
+
+  /// Action « Passer » : quitte le parcours locataire sans aller au bout.
+  Future<void> passer() => OnboardingCompletion.terminerLocataire();
 }

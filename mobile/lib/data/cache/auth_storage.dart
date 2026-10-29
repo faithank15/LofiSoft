@@ -1,11 +1,11 @@
 import 'package:get_storage/get_storage.dart';
 
-import '../../core/network/json_utils.dart';
+import '../../core/utils/json_utils.dart';
 import '../../domain/models/enums.dart';
 import '../../domain/models/user_model.dart';
 
 /// Session active conservée sur le téléphone : jeton, rôle et profil.
-/// Enregistré une fois dans main.dart : `Get.put(AuthStorage())`.
+/// Enregistré par `initializeDependencies()` (lib/di/injector.dart).
 class AuthStorage {
   late final GetStorage _box = GetStorage();
 

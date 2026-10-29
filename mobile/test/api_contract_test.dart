@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mobile/core/network/api_client.dart';
+import 'package:mobile/data/remote/api_client.dart';
 import 'package:mobile/data/remote/fakes/fake_announcement_service.dart';
 import 'package:mobile/data/repo/announcement_repository.dart';
 import 'package:mobile/domain/models/announcement_model.dart';

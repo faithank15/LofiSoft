@@ -1,4 +1,4 @@
-import '../../core/network/json_utils.dart';
+import '../../core/utils/json_utils.dart';
 
 /// Logement retrouvé grâce à son code, avant que le locataire confirme (écran B1).
 /// `dueDay` et `ownerVerified` sont facultatifs : l'API de base ne les renvoie pas encore.

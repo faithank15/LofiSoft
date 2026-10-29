@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
 import '../../../data/cache/app_storage.dart';
-import '../../routes/app_routes.dart';
+import 'onboarding_completion.dart';
 
 /// Contrôleur de l'écran E4 (choix du budget — locataire).
 class BudgetController extends GetxController {
@@ -41,15 +41,16 @@ class BudgetController extends GetxController {
   Future<void> continuer() async {
     final storage = Get.find<AppStorage>();
     await storage.savePreferences(storage.preferences.copyWith(budgetLabel: selectedBudget.value));
-    await storage.markOnboardingDone();
-    Get.offAllNamed(AppRoutes.listings);
+    await OnboardingCompletion.terminerLocataire();
   }
 
   /// Action secondaire : voir tous les logements, sans critères.
   Future<void> voirTousLesLogements() async {
     final storage = Get.find<AppStorage>();
     await storage.clearPreferences();
-    await storage.markOnboardingDone();
-    Get.offAllNamed(AppRoutes.listings);
+    await OnboardingCompletion.terminerLocataire();
   }
+
+  /// Action « Passer » : quitte le parcours locataire sans aller au bout.
+  Future<void> passer() => OnboardingCompletion.terminerLocataire();
 }

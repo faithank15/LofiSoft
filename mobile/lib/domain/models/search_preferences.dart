@@ -1,4 +1,4 @@
-import '../../core/network/json_utils.dart';
+import '../../core/utils/json_utils.dart';
 
 /// Critères choisis par le locataire pendant l'onboarding (E2, E3, E4).
 /// Conservés sur le téléphone ; ils servent de filtres par défaut au fil d'annonces.

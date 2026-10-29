@@ -1,4 +1,4 @@
-import '../../core/network/json_utils.dart';
+import '../../core/utils/json_utils.dart';
 import 'enums.dart';
 
 /// Annonce telle que l'API la renvoie (fil, détail, favoris).

@@ -18,8 +18,10 @@ class BudgetPage extends GetView<BudgetController> {
   @override
   Widget build(BuildContext context) {
     return OnboardingScaffold(
-      step: 3,
+      step: 2,
+      totalSteps: 3,
       onBack: () => Get.back(),
+      onSkip: controller.passer,
       title: 'Votre budget par mois ?',
       subtitle: 'Le loyer maximum que vous pouvez payer.',
       primaryLabel: 'Voir mes logements',

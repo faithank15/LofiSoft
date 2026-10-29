@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
 
-import '../../../core/network/api_client.dart';
+import '../api_client.dart';
 
 /// Appels HTTP bruts des annonces et des favoris. Renvoie le JSON du serveur.
 class AnnouncementService extends GetxService {

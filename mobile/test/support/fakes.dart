@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:mobile/core/network/api_client.dart';
+import 'package:mobile/data/remote/api_client.dart';
 import 'package:mobile/data/cache/app_storage.dart';
 import 'package:mobile/data/cache/auth_storage.dart';
 import 'package:mobile/domain/models/enums.dart';
