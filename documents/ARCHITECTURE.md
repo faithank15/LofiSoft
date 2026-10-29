@@ -158,15 +158,16 @@ Conformément au document `LofiSoft-composants.pdf`, ces composants sont **100 %
   - `screen_title.dart` : En-tête de page avec titre et sous-titre stylisés.
   - `skyline_band.dart` : Frise graphique décorative de toits de maisons.
   - `status_text.dart` : Badge textuel coloré (Payé, Partiel, En retard, Loué, Libre).
-  - `step_progress_bar.dart` : Indicateur d'étapes (1/3, 2/3, 3/3).
+  - `step_progress_bar.dart` : Indicateur d'étapes (1/3, 2/3, 3/3), couleurs et espacement paramétrables (barre haute d'onboarding).
 
-- `molecules/` (22 assemblages) :
+- `molecules/` (23 assemblages) :
   - `auth_header.dart` : Bandeau supérieur vert avec logo et ligne de toits.
   - `role_segment.dart` : Sélecteur à bascule Locataire / Propriétaire.
   - `code_input.dart` : Champ de saisie segmenté pour code logement.
   - `select_card.dart` : Grande carte interactive de sélection de profil ou de ville.
   - `budget_input.dart` : Double champ de budget minimum et maximum en FCFA.
-  - `bottom_cta_bar.dart` : Barre fixe en bas d'écran avec bouton principal et lien retour.
+  - `bottom_cta_bar.dart` : Barre d'action basse (bouton principal + action secondaire optionnelle). Ne dessine aucun fond : c'est l'écran parent qui fournit la couleur. Gère elle-même le `SafeArea` bas pour que le bouton ne passe jamais sous la barre de navigation système.
+  - `onboarding_top_nav.dart` : Barre haute commune des écrans d'onboarding (bouton retour, segments d'avancement, action « Passer »), partagée par les parcours locataire E1 → E4 et propriétaire E5 → E7.
   - `step_list.dart` : Liste verticale d'étapes d'accompagnement.
   - `illustration_panel.dart` : Panneau illustré de présentation.
   - `listing_card.dart` : Carte d'annonce avec photo, prix en FCFA, localisation et badge.
@@ -186,7 +187,7 @@ Conformément au document `LofiSoft-composants.pdf`, ces composants sont **100 %
 
 - `skeletons/` (3 gabarits de mise en page réutilisables) :
   - `auth_scaffold.dart` : Structure de base pour connexion et inscription (bandeau vert + panneau papier blanc arrondi).
-  - `onboarding_scaffold.dart` : Structure avec barre d'étapes supérieure, contenu déroulant et CTA fixe en bas.
+  - `onboarding_scaffold.dart` : Structure des écrans de parcours : `OnboardingTopNav` en haut, contenu déroulant au centre, `BottomCtaBar` fixe en bas. Même grammaire visuelle pour les deux parcours d'onboarding.
   - `splash_view.dart` : Écran d'accueil et d'animation de démarrage.
 
 #### `presentation/features/` (Modules Métier de l'Application)
@@ -199,7 +200,10 @@ Chaque fonctionnalité est strictement autonome dans son répertoire et comporte
 - `auth/` : Écrans de connexion, d'inscription et de réinitialisation de mot de passe.
 - `dev/` : Menu de développement, accessible uniquement en mode fake API (`/dev`). Regroupe les raccourcis vers les écrans en construction.
 - `listings/` : Consultation du catalogue d'annonces, recherche par filtres et formulaire de publication de logement.
-- `onboarding/` : Parcours guidé de première ouverture différencié pour locataires et propriétaires.
+- `onboarding/` : Parcours guidé de première ouverture, différencié selon le profil choisi sur E1 :
+  - Parcours locataire **E1 → E4** : `welcome_page.dart` (choix du profil), `ville_page.dart`, `type_page.dart`, `budget_page.dart` — chaque étape passe par `OnboardingScaffold` (`step` / `totalSteps: 3` / `onSkip`).
+  - Parcours propriétaire **E5 → E7** : `owner_onboarding_page.dart` (`PageView` : bienvenue, étapes, badge vérifié).
+  - Fichiers transverses du parcours : `onboarding_completion.dart` (fin de parcours : `markOnboardingDone()` puis redirection — `/listings` pour le locataire, `/owner-dashboard` pour le propriétaire) et `tenant_preferences.dart` (persistance des choix du locataire — ville, quartiers, types, budget — dans `AppStorage`).
 - `owner_dashboard/` : Vue synthétique du bailleur (jauge d'encaissement des loyers, alertes impayés). `owner_dashboard_page.dart` est pour l'instant la page d'atterrissage temporaire qui valide la fin de l'onboarding, en attente du Lot 7.
 - `owner_properties/` : Liste et gestion des propriétés et espaces louables du propriétaire.
 - `payment/` : Parcours de règlement de loyer en ligne (KKiaPay MTN/Moov) et consultation des reçus.
@@ -218,6 +222,14 @@ Composants transverses d'états d'écran :
 - `loading_view.dart` : Widget centré de chargement adaptatif.
 - `error_view.dart` : Widget d'affichage d'erreur avec message et bouton de nouvel essai.
 - `empty_view.dart` : Widget affichant un état vide avec icône et libellé explicatif.
+
+---
+
+### 2.6 Tests : `mobile/test/`
+- `widget_test.dart` : Test de fumée vérifiant qu'`initializeDependencies()` enregistre bien les singletons (`AuthStorage`, `AppStorage`, `ApiClient`). Le `MethodChannel` `path_provider` y est mocké.
+- `onboarding_test.dart` : Tests du parcours d'onboarding — chaque écran E1 → E7 est pompé en 390 × 844 et doit s'afficher sans débordement ; vérifie aussi la navigation E1 → E2, E1 → E5, le parcours complet E1 → E4 → catalogue, et l'action « Passer ».
+- `onboarding_goldens_test.dart` + `goldens/` : Captures d'écran de référence des 7 écrans d'onboarding (390 × 844), régénérables avec `flutter test --update-goldens test/onboarding_goldens_test.dart`.
+- `support/app_fonts.dart` : Charge la vraie police *Plus Jakarta Sans* dans le moteur de test (`FontLoader`) — sans cela, `flutter test` mesure chaque glyphe à `fontSize` de large et signale de faux débordements.
 
 ---
 

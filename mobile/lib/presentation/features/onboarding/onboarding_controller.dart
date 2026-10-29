@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import '../../routes/app_routes.dart';
+import 'onboarding_completion.dart';
 
 /// Contrôleur GetX gérant l'état et les transitions de l'onboarding.
 ///
@@ -93,6 +93,6 @@ class OnboardingController extends GetxController {
   }
 
   void finishOnboarding() {
-    Get.offAllNamed(AppRoutes.ownerDashboard);
+    OnboardingCompletion.terminerProprietaire();
   }
 }

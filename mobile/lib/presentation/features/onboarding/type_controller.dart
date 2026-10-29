@@ -1,5 +1,7 @@
 import 'package:get/get.dart';
 import '../../routes/app_routes.dart';
+import 'onboarding_completion.dart';
+import 'tenant_preferences.dart';
 
 /// Contrôleur de l'écran E3 (choix du type de logement — locataire).
 class TypeController extends GetxController {
@@ -26,8 +28,12 @@ class TypeController extends GetxController {
     }
   }
 
-  /// Navigue vers l'écran suivant (propriétaire — E5, à implémenter).
-  void continuer() {
+  /// Navigue vers l'écran suivant (choix du budget — E4).
+  Future<void> continuer() async {
+    await TenantPreferences.enregistrer(types: selectedTypes.toList());
     Get.toNamed(AppRoutes.onboardingBudget);
   }
+
+  /// Action « Passer » : quitte le parcours locataire sans aller au bout.
+  Future<void> passer() => OnboardingCompletion.terminerLocataire();
 }

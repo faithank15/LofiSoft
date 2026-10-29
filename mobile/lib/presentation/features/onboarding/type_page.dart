@@ -19,8 +19,10 @@ class TypePage extends GetView<TypeController> {
   @override
   Widget build(BuildContext context) {
     return OnboardingScaffold(
-      step: 2,
+      step: 1,
+      totalSteps: 3,
       onBack: () => Get.back(),
+      onSkip: controller.passer,
       title: 'Quel type de logement ?',
       subtitle: 'Choisissez-en un ou plusieurs.',
       primaryLabel: 'Continuer',

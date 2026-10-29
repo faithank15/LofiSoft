@@ -28,10 +28,6 @@ abstract final class AppPages {
 
   static const initial = AppConfig.useFakeApi ? AppRoutes.dev : AppRoutes.splash;
 
-  /// Indique si une route est déjà déclarée dans [pages] (évite de naviguer
-  /// vers une page pas encore implémentée).
-  static bool hasRoute(String name) => pages.any((page) => page.name == name);
-
   static final pages = <GetPage<dynamic>>[
     // ---- Lot 2 : démarrage et authentification ----
     GetPage(name: AppRoutes.dev, page: () => const DevMenuPage()),
@@ -65,11 +61,6 @@ abstract final class AppPages {
 
     // ---- Lots 3 et 4 : onboarding ----
     GetPage(
-      name: AppRoutes.welcome,
-      page: () => const WelcomePage(),
-      binding: WelcomeBinding(),
-    ),
-    GetPage(
       name: AppRoutes.onboardingVille,
       page: () => const VillePage(),
       binding: VilleBinding(),
@@ -84,13 +75,7 @@ abstract final class AppPages {
       page: () => const BudgetPage(),
       binding: BudgetBinding(),
     ),
-    GetPage(
-      name: AppRoutes.ownerOnboarding,
-      page: () => const OwnerOnboardingPage(),
-      binding: OnboardingBinding(),
-      transition: Transition.fadeIn,
-    ),
-    // Alias : WelcomeController et BudgetController naviguent vers cette route.
+    // Parcours propriétaire : E5 (bienvenue) → E6 (étapes) → E7 (badge vérifié).
     GetPage(
       name: AppRoutes.onboardingProprietaire,
       page: () => const OwnerOnboardingPage(),

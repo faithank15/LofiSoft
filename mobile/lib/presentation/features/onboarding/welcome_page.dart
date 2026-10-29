@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../components/molecules/housing_scene.dart';
 import 'welcome_controller.dart';
@@ -29,10 +30,16 @@ class WelcomePage extends GetView<WelcomeController> {
                   // descendent jamais sous une hauteur lisible : sur un petit
                   // écran la page défile au lieu de déborder.
                   final double cardHeight =
-                      ((constraints.maxHeight - 14) / 2).clamp(176.0, 400.0);
+                      ((constraints.maxHeight - AppSpacing.lg) / 2)
+                          .clamp(176.0, 400.0);
 
                   return SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.screen,
+                      AppSpacing.lg,
+                      AppSpacing.screen,
+                      0,
+                    ),
                     child: Column(
                       children: [
                         _ProfileCard(
@@ -45,7 +52,7 @@ class WelcomePage extends GetView<WelcomeController> {
                           scene: HousingSceneKind.maison,
                           onTap: controller.choisirLocataire,
                         ),
-                        const SizedBox(height: 14),
+                        const SizedBox(height: AppSpacing.lg),
                         _ProfileCard(
                           height: cardHeight,
                           background: AppColors.clayDeep,
@@ -56,30 +63,36 @@ class WelcomePage extends GetView<WelcomeController> {
                           scene: HousingSceneKind.appartement,
                           onTap: controller.choisirProprietaire,
                         ),
-                        const SizedBox(height: 14),
+                        const SizedBox(height: AppSpacing.lg),
                       ],
                     ),
                   );
                 },
               ),
             ),
-            // Lien secondary : largeur intrinsèque, centré (comme la maquette).
+            // Lien secondaire : largeur intrinsèque, centré (comme la maquette).
             Padding(
-              padding: const EdgeInsets.fromLTRB(24, 6, 24, 16),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.xl,
+                AppSpacing.sm,
+                AppSpacing.xl,
+                AppSpacing.lg,
+              ),
               child: Center(
                 child: TextButton(
                   onPressed: controller.dejaUnCompte,
                   style: TextButton.styleFrom(
                     foregroundColor: AppColors.green,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                    minimumSize: const Size(0, 48),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                      vertical: AppSpacing.md,
+                    ),
+                    minimumSize: const Size(0, AppSizes.buttonSmall),
                     shape: const RoundedRectangleBorder(),
                   ),
                   child: Text(
                     "J'ai déjà un compte",
                     style: AppTextStyles.body.copyWith(
-                      fontSize: 16,
                       fontWeight: FontWeight.w700,
                       color: AppColors.green,
                     ),
@@ -101,7 +114,12 @@ class _TopBlock extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 18, 24, 0),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.screen,
+        AppSpacing.lg,
+        AppSpacing.screen,
+        0,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -112,7 +130,7 @@ class _TopBlock extends StatelessWidget {
               _Wordmark(),
             ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: AppSpacing.lg),
           Text(
             'Bienvenue. Vous êtes…',
             style: AppTextStyles.display.copyWith(
@@ -240,67 +258,76 @@ class _ProfileCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: height,
-        clipBehavior: Clip.antiAlias,
-        decoration: BoxDecoration(
-          color: background,
-          borderRadius: BorderRadius.circular(28),
-          boxShadow: [
-            BoxShadow(
-              color: background.withValues(alpha: 0.55),
-              blurRadius: 26,
-              spreadRadius: -8,
-              offset: const Offset(0, 14),
-            ),
-          ],
-        ),
-        child: Stack(
-          children: [
-            // Illustration en bas à droite
-            Positioned(
-              right: -6,
-              bottom: 0,
-              width: 150,
-              height: 120,
-              child: HousingScene(kind: scene),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(22, 22, 22, 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: AppTextStyles.display.copyWith(
-                      fontSize: 30,
-                      height: 1.1,
-                      letterSpacing: -0.6,
-                      color: AppColors.surface,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 190),
-                    child: Text(
-                      subtitle,
-                      style: AppTextStyles.body.copyWith(
-                        fontSize: 16,
-                        height: 1.4,
-                        color: subtitleColor,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  const Spacer(),
-                  const _ChooseChip(),
-                ],
+    return Container(
+      height: height,
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: [
+          BoxShadow(
+            color: background.withValues(alpha: 0.55),
+            blurRadius: 26,
+            spreadRadius: -8,
+            offset: const Offset(0, 14),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          splashColor: AppColors.surface.withValues(alpha: 0.14),
+          highlightColor: AppColors.surface.withValues(alpha: 0.07),
+          child: Stack(
+            children: [
+              // Illustration en bas à droite
+              Positioned(
+                right: -6,
+                bottom: 0,
+                width: 150,
+                height: 120,
+                child: HousingScene(kind: scene),
               ),
-            ),
-          ],
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.xl,
+                  AppSpacing.xl,
+                  AppSpacing.xl,
+                  AppSpacing.lg,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: AppTextStyles.display.copyWith(
+                        fontSize: 30,
+                        height: 1.1,
+                        letterSpacing: -0.6,
+                        color: AppColors.surface,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 190),
+                      child: Text(
+                        subtitle,
+                        style: AppTextStyles.body.copyWith(
+                          height: 1.4,
+                          color: subtitleColor,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const Spacer(),
+                    const _ChooseChip(),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

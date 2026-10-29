@@ -1,10 +1,13 @@
 import 'package:get/get.dart';
-import '../../../core/theme/app_colors.dart';
-import '../../routes/app_pages.dart';
-import '../../routes/app_routes.dart';
+
+import 'onboarding_completion.dart';
+import 'tenant_preferences.dart';
 
 /// Contrôleur de l'écran E4 (choix du budget — locataire).
 class BudgetController extends GetxController {
+  /// Valeur enregistrée quand l'utilisateur choisit de voir tous les logements.
+  static const budgetSansFiltre = 'all';
+
   /// Liste des tranches de budget proposées.
   static const _budgets = [
     'Moins de 100 000 FCFA',
@@ -38,34 +41,20 @@ class BudgetController extends GetxController {
     selectedBudget.value = budget;
   }
 
-  /// Navigue vers l'écran suivant (propriétaire — E5).
-  ///
-  /// Tant que l'écran E5 n'est pas implémenté, on ne navigue pas : on
-  /// prévient l'utilisateur au lieu de planter sur une route inconnue.
-  void continuer() {
-    if (!AppPages.hasRoute(AppRoutes.onboardingProprietaire)) {
-      Get.snackbar(
-        'Bientôt disponible',
-        'La suite du parcours propriétaire arrive.',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.green.withValues(alpha: 0.9),
-        colorText: AppColors.surface,
-        duration: const Duration(seconds: 2),
-      );
-      return;
-    }
-    Get.toNamed(AppRoutes.onboardingProprietaire);
+  /// Action principale « Voir mes logements » : termine le parcours locataire
+  /// en conservant la tranche de budget choisie.
+  Future<void> continuer() async {
+    await TenantPreferences.enregistrer(budget: selectedBudget.value);
+    await OnboardingCompletion.terminerLocataire();
   }
 
-  /// Action secondaire : voir tous les logements.
-  void voirTousLesLogements() {
-    Get.snackbar(
-      'Information',
-      'Tous les logements disponibles.',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: AppColors.green.withValues(alpha: 0.9),
-      colorText: AppColors.surface,
-      duration: const Duration(seconds: 2),
-    );
+  /// Action secondaire « Voir tous les logements » : termine le parcours
+  /// locataire sans filtre de budget.
+  Future<void> voirTousLesLogements() async {
+    await TenantPreferences.enregistrer(budget: budgetSansFiltre);
+    await OnboardingCompletion.terminerLocataire();
   }
+
+  /// Action « Passer » : quitte le parcours locataire sans aller au bout.
+  Future<void> passer() => OnboardingCompletion.terminerLocataire();
 }
