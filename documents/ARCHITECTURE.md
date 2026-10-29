@@ -39,8 +39,13 @@ Flux de données unidirectionnel :
 ## 2. Cartographie Complète des Dossiers et Fichiers
 
 ### 2.1 Racine `lib/`
-- `main.dart` : Point d'entrée de l'application. Initialise le stockage synchrone (`GetStorage`), enregistre les singletons d'infrastructure (`AuthStorage`, `AppStorage`, `ApiClient`), et démarre l'application.
+- `main.dart` : Point d'entrée de l'application. Initialise le stockage synchrone (`GetStorage`), délègue l'enregistrement des singletons d'infrastructure à `initializeDependencies()`, et démarre l'application.
 - `app.dart` : Déclare l'instance principale `GetMaterialApp`, configure la charte graphique globale (thème clair/sombre), et applique la table des routes.
+
+#### `di/`
+Le dossier `di/` vit **à la racine de `lib/`**, hors des couches `core/`, `data/`, `domain/` et `presentation/`. C'est le point de composition de l'application : il est le seul endroit autorisé à relier entre elles les briques d'infrastructure, ce qui garantit qu'aucune couche ne dépend d'une couche supérieure (en particulier, `core/` ne dépend jamais de `data/`).
+
+- `injector.dart` : Fonction `initializeDependencies()` qui enregistre les singletons d'infrastructure (`AuthStorage`, `AppStorage`, `ApiClient`) via `Get.put(..., permanent: true)`. Appelée une seule fois depuis `main.dart`, après `GetStorage.init()`.
 
 ---
 
@@ -57,10 +62,6 @@ Ce dossier contient tout le code transverse réutilisable, indépendant de toute
 #### `core/logging/`
 - `app_logger.dart` : Journalisation conditionnelle. N'imprime des logs qu'en mode débogage (`kDebugMode`). Ne journalise jamais les mots de passe, tokens JWT ni données sensibles.
 
-#### `core/network/`
-- `api_client.dart` : Client HTTP unique étendant `GetConnect` ou basé sur `http`. Gère l'injection systématique du jeton d'authentification Bearer, intercepte les retours HTTP 401 pour déconnecter la session expirée, et applique le timeout réseau.
-- `json_utils.dart` : Fonctions utilitaires sécurisant la conversion de payloads dynamiques (`asJsonMap`, gestion des listes).
-
 #### `core/theme/` (Fondations du Design System)
 - `app_colors.dart` : Palette officielle LofiSoft (Vert Lofi `#0F5C4D`, Ambre `#F2B134`, Vert profond `#12211D`, Gris vert `#4F625C`, Brume `#F4F8F6`, Trait `#D5E2DC`).
 - `app_radius.dart` : Constantes de rayons de courbure pour les cartes, champs et boutons.
@@ -70,8 +71,11 @@ Ce dossier contient tout le code transverse réutilisable, indépendant de toute
 - `app_theme.dart` : Assemblage des thèmes `ThemeData` Material 3 (clair et sombre).
 
 #### `core/utils/`
+Helpers purs, sans aucune dépendance vers `data/`, `domain/` ou `presentation/`.
+- `cloudinary.dart` : Construction des URL d'images Cloudinary à partir des clés de transformation.
 - `currency_formatter.dart` : Formatage strict des montants en Francs CFA (ex: `75 000 FCFA`).
 - `date_format.dart` : Formatage court et lisible des dates en français sans dépendance lourde.
+- `json_utils.dart` : Fonctions utilitaires sécurisant la conversion de payloads dynamiques (`asJsonMap`, `asJsonList`).
 - `validators.dart` : Fonctions de validation pour champs de saisie (e-mail valide, numéro béninois `+229`, mot de passe fort, champ obligatoire).
 
 ---
@@ -82,6 +86,13 @@ Gère l'accès direct aux données distantes (API REST Laravel sur Render) et la
 #### `data/cache/`
 - `auth_storage.dart` : Persistance de la session active (jeton JWT d'accès, rôle utilisateur, profil en cache) via `GetStorage`.
 - `app_storage.dart` : Moteur de cache local permettant la consultation hors-ligne (stockage des dernières échéances de loyer, historique récent des reçus et coordonnées du propriétaire).
+
+#### `data/remote/`
+- `api_client.dart` : Client HTTP unique de l'application, basé sur `http`. Gère l'injection systématique du jeton d'authentification Bearer, intercepte les retours HTTP 401 pour déconnecter la session expirée, et applique le timeout réseau. Il est placé dans la couche `data` (et non dans `core/`) car il dépend du cache de session `AuthStorage` : le noyau transverse `core/` ne doit jamais dépendre de la couche données.
+
+#### `data/remote/fakes/`
+Implémentations simulées des services distants, activables **sans serveur** via `--dart-define=USE_FAKE_API=true` (voir `AppConfig.useFakeApi` et `AuthBinding`).
+- `fake_auth_service.dart` : Simule l'authentification (connexion, inscription) avec une latence artificielle et des comptes de test (`locataire@lofi.bj`, `proprio@lofi.bj`, `admin@lofi.bj` — mot de passe `Test1234`). Le `repository` sous-jacent reste le vrai : il ne contient aucune donnée simulée.
 
 #### `data/remote/services/`
 Classes dérivées de `GetxService` effectuant les requêtes HTTP brutes via `ApiClient` :
@@ -186,9 +197,10 @@ Chaque fonctionnalité est strictement autonome dans son répertoire et comporte
 
 - `admin/` : Gestion des signalements et modération des annonces par l'administrateur.
 - `auth/` : Écrans de connexion, d'inscription et de réinitialisation de mot de passe.
+- `dev/` : Menu de développement, accessible uniquement en mode fake API (`/dev`). Regroupe les raccourcis vers les écrans en construction.
 - `listings/` : Consultation du catalogue d'annonces, recherche par filtres et formulaire de publication de logement.
 - `onboarding/` : Parcours guidé de première ouverture différencié pour locataires et propriétaires.
-- `owner_dashboard/` : Vue synthétique du bailleur (jauge d'encaissement des loyers, alertes impayés).
+- `owner_dashboard/` : Vue synthétique du bailleur (jauge d'encaissement des loyers, alertes impayés). `owner_dashboard_page.dart` est pour l'instant la page d'atterrissage temporaire qui valide la fin de l'onboarding, en attente du Lot 7.
 - `owner_properties/` : Liste et gestion des propriétés et espaces louables du propriétaire.
 - `payment/` : Parcours de règlement de loyer en ligne (KKiaPay MTN/Moov) et consultation des reçus.
 - `rent_tracking/` : Espace locataire de suivi de l'échéance en cours, montants restants et paiements fractionnés.
@@ -220,6 +232,21 @@ Chaque route applicative déclare **son propre binding** dans `app_pages.dart`. 
 Règle absolue d'enregistrement :
 - **Couche Données (`Repository`, `Service`)** : Utiliser `Get.lazyPut(..., fenix: true)`. Le flag `fenix: true` permet à GetX de recréer l'instance si l'utilisateur y revient plus tard, tout en libérant la mémoire quand elle n'est plus active.
 - **Contrôleur Métier (`GetxController`)** : Utiliser `Get.lazyPut(...)` sans `fenix`. Une instance neuve est créée à l'ouverture de l'écran et détruite automatiquement à sa fermeture.
+
+**Singletons d'infrastructure** : `AuthStorage`, `AppStorage` et `ApiClient` ne sont enregistrés **que** par `initializeDependencies()` (`lib/di/injector.dart`), au démarrage de l'application. Aucun binding de fonctionnalité ne doit les ré-enregistrer.
+
+**Choix du service réel ou simulé** : lorsqu'un service dispose d'une version fake (voir `data/remote/fakes/`), le binding sélectionne l'implémentation au moment de l'enregistrement, sur la base du mode de compilation :
+
+```dart
+Get.lazyPut<AuthService>(
+  () => AppConfig.useFakeApi
+      ? FakeAuthService(Get.find())
+      : AuthService(Get.find()),
+  fenix: true,
+);
+```
+
+Avec `--dart-define=USE_FAKE_API=true`, l'application démarre sur la route `/dev` (menu de développement) et toute l'authentification est servie par `FakeAuthService`, sans appel réseau.
 
 ```dart
 // Exemple : presentation/features/listings/listing_binding.dart

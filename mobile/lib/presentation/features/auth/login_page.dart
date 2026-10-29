@@ -11,7 +11,7 @@ import '../../components/skeletons/auth_scaffold.dart';
 import '../../routes/app_routes.dart';
 import 'auth_controller.dart';
 
-/// A5 · Connexion.
+/// A5  Connexion.
 /// StatefulWidget car la page possède des champs de texte : ses TextEditingController
 /// sont créés ici et libérés dans dispose() (règle de l'architecture).
 class LoginPage extends StatefulWidget {

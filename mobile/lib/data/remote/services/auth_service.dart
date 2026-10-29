@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
 
-import '../../../core/network/api_client.dart';
+import '../api_client.dart';
 import '../../../domain/models/enums.dart';
 
 /// Appels HTTP bruts d'authentification. Ne décide de rien : renvoie le JSON du serveur.

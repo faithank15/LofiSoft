@@ -1,5 +1,5 @@
 import '../../core/errors/app_exception.dart';
-import '../../core/network/json_utils.dart';
+import '../../core/utils/json_utils.dart';
 import '../../domain/models/enums.dart';
 import '../../domain/models/user_model.dart';
 import '../cache/auth_storage.dart';
