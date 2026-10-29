@@ -26,6 +26,7 @@ abstract final class AppRoutes {
   static const favorites = '/listings/favorites';
 
   static const rentTracking = '/rent-tracking';
+  static const paymentHistory = '/rent-tracking/history';
   static const payment = '/payment';
 
   static const ownerDashboard = '/owner/dashboard';

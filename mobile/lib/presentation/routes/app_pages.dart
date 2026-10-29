@@ -1,3 +1,6 @@
+import '../features/rent_tracking/payment_history_page.dart';
+import '../features/rent_tracking/rent_tracking_binding.dart';
+import '../features/rent_tracking/rent_tracking_page.dart';
 import '../features/listings/listing_details_page.dart';
 import '../features/rental/join_housing_binding.dart';
 import '../features/rental/join_housing_page.dart';
@@ -72,7 +75,8 @@ abstract final class AppPages {
       page: () => const WelcomePage(),
       binding: WelcomeBinding(),
     ),
-    GetPage(name: AppRoutes.rentTracking,   page: () => const PlaceholderPage(title: 'Suivi du loyer')),
+    GetPage(name: AppRoutes.rentTracking, page: () => const RentTrackingPage(), binding: RentTrackingBinding()),
+    GetPage(name: AppRoutes.paymentHistory, page: () => const PaymentHistoryPage(), binding: RentTrackingBinding()),
     GetPage(name: AppRoutes.admin,          page: () => const PlaceholderPage(title: 'Administration')),
     GetPage(name: AppRoutes.forgotPassword, page: () => const PlaceholderPage(title: 'Mot de passe oublié')),
 
