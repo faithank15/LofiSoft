@@ -29,8 +29,11 @@ abstract final class AppRoutes {
   static const paymentHistory = '/rent-tracking/history';
   static const payment = '/payment';
 
+  // Espace Propriétaire (lots 7 et 8)
   static const ownerDashboard = '/owner/dashboard';
   static const ownerProperties = '/owner/properties';
+  static const ownerPropertyDetail = '/owner/properties/detail/:id';
+  static const ownerPropertyCreate = '/owner/properties/create';
 
   static const admin = '/admin';
   static const adminReports = '/admin/reports';
