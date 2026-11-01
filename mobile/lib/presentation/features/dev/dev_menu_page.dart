@@ -37,7 +37,10 @@ class DevMenuPage extends StatelessWidget {
           children: [
             Text('Menu de développement', style: AppTextStyles.title),
             const SizedBox(height: AppSpacing.xs),
-            Text('Touchez un écran pour l’ouvrir.', style: AppTextStyles.subtitle),
+            Text(
+              'Touchez un écran pour l’ouvrir.',
+              style: AppTextStyles.subtitle,
+            ),
             const SizedBox(height: AppSpacing.lg),
             for (final (label, route) in _entries) ...[
               AppButton(
