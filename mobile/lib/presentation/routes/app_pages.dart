@@ -19,7 +19,9 @@ import '../features/onboarding/ville_binding.dart';
 import '../features/onboarding/ville_page.dart';
 import '../features/onboarding/welcome_binding.dart';
 import '../features/onboarding/welcome_page.dart';
+import '../features/owner_dashboard/owner_dashboard_binding.dart';
 import '../features/owner_dashboard/owner_dashboard_page.dart';
+import '../features/owner_dashboard/owner_rents_page.dart';
 import '../features/owner_properties/property_binding.dart';
 import '../features/owner_properties/property_detail_page.dart';
 import '../features/owner_properties/property_form_page.dart';
@@ -134,7 +136,13 @@ abstract final class AppPages {
     GetPage(
       name: AppRoutes.ownerDashboard,
       page: () => const OwnerDashboardPage(),
+      binding: OwnerDashboardBinding(),
       transition: Transition.fadeIn,
+    ),
+    GetPage(
+      name: AppRoutes.ownerRents,
+      page: () => const OwnerRentsPage(),
+      binding: OwnerDashboardBinding(),
     ),
 
     // ---- Lot 8 : logements propriétaire ----

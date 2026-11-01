@@ -32,6 +32,7 @@ abstract final class AppRoutes {
   // Espace Propriétaire (lots 7 et 8)
   static const ownerDashboard = '/owner/dashboard';
   static const ownerProperties = '/owner/properties';
+  static const ownerRents = '/owner/rents';
   static const ownerPropertyDetail = '/owner/properties/detail/:id';
   static const ownerPropertyCreate = '/owner/properties/create';
 
