@@ -2,12 +2,19 @@
 /// Toutes ont la forme `String? Function(String?)` : elles renvoient `null` si la valeur
 /// est valide, sinon le message d'erreur à afficher. Directement utilisables dans
 /// `AppTextField(validator: Validators.email)`.
-///
-/// (Ce fichier peut déjà exister chez un autre membre de l'équipe : garder une seule version.)
 abstract final class Validators {
-  /// Champ obligatoire.
+  /// Champ obligatoire générique.
   static String? requiredField(String? value) {
-    if (value == null || value.trim().isEmpty) return 'Ce champ est obligatoire.';
+    if (value == null || value.trim().isEmpty)
+      return 'Ce champ est obligatoire.';
+    return null;
+  }
+
+  /// Nom ou prénom individuel : au moins 2 caractères.
+  static String? personName(String? value, String label) {
+    final v = value?.trim() ?? '';
+    if (v.isEmpty) return 'Entrez votre $label.';
+    if (v.length < 2) return '$label trop court.';
     return null;
   }
 
@@ -29,7 +36,6 @@ abstract final class Validators {
 
   /// Numéro béninois SANS l'indicatif +229 : 10 chiffres commençant par 01
   /// (format en vigueur depuis la réforme de 2024). Les espaces sont ignorés.
-  /// À confirmer avec le cahier des charges si besoin d'accepter d'autres formats.
   static String? phone(String? value) {
     final digits = (value ?? '').replaceAll(RegExp(r'[\s.\-]'), '');
     if (digits.isEmpty) return 'Entrez votre numéro de téléphone.';
