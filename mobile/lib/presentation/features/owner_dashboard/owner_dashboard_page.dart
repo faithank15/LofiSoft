@@ -4,8 +4,10 @@ import 'package:get/get.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/utils/date_format.dart';
 import '../../components/atoms/app_button.dart';
 import '../../components/atoms/app_card.dart';
+import '../../components/molecules/admin_action_card.dart';
 import '../../components/molecules/app_bottom_nav.dart';
 import '../../components/molecules/rent_gauge.dart';
 import '../../components/molecules/tenant_tile.dart';
@@ -81,7 +83,7 @@ class OwnerDashboardPage extends GetView<OwnerDashboardController> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Bonjour ${controller.ownerFirstName}',
+                  controller.ownerFirstName.isEmpty ? 'Bonjour' : 'Bonjour ${controller.ownerFirstName}',
                   style:
                   AppTextStyles.title.copyWith(color: AppColors.surface),
                 ),
@@ -122,8 +124,9 @@ class OwnerDashboardPage extends GetView<OwnerDashboardController> {
                     Expanded(
                       child: AppButton(
                         label: 'Nouvelle annonce',
-                        onPressed: () =>
-                            Get.toNamed(AppRoutes.ownerAnnouncementCreate),
+                        onPressed: () => Get.toNamed(
+                          housings == 0 ? AppRoutes.ownerHousingCreate : AppRoutes.ownerAnnouncementCreate,
+                        ),
                       ),
                     ),
                     const SizedBox(width: AppSpacing.md),
@@ -131,13 +134,47 @@ class OwnerDashboardPage extends GetView<OwnerDashboardController> {
                       child: AppButton(
                         label: 'Ajouter un locataire',
                         variant: AppButtonVariant.outline,
-                        onPressed: () =>
-                            Get.toNamed(AppRoutes.ownerPropertyCreate),
+                        // Un locataire se rattache à un logement : sans logement, on en crée un d'abord.
+                        onPressed: () => Get.toNamed(
+                          housings == 0 ? AppRoutes.ownerHousingCreate : AppRoutes.ownerPropertyCreate,
+                        ),
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: AppSpacing.xl),
+
+                // Demandes de location à confirmer
+                Obx(() {
+                  final pending = controller.requests.toList();
+                  if (pending.isEmpty) return const SizedBox.shrink();
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Demandes de location', style: AppTextStyles.section),
+                      const SizedBox(height: AppSpacing.sm),
+                      for (final r in pending) ...[
+                        AdminActionCard(
+                          title: r.tenantName,
+                          subtitle: [
+                            'Souhaite rejoindre ${r.housing}',
+                            if (r.requestedAt != null) AppDateFormat.ago(r.requestedAt!).toLowerCase(),
+                          ].join(' · '),
+                          primaryLabel: 'Accepter',
+                          onPrimary: controller.busyRequests.contains(r.rentalId)
+                              ? null
+                              : () => controller.acceptRequest(r),
+                          dangerLabel: 'Refuser',
+                          onDanger: controller.busyRequests.contains(r.rentalId)
+                              ? null
+                              : () => controller.rejectRequest(r),
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+                      ],
+                      const SizedBox(height: AppSpacing.sm),
+                    ],
+                  );
+                }),
 
                 // À suivre
                 Text('À suivre', style: AppTextStyles.section),

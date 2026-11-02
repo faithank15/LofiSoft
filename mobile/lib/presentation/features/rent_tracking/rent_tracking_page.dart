@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_radius.dart';
@@ -13,7 +14,11 @@ import '../../components/molecules/app_bottom_nav.dart';
 import '../../components/molecules/offline_banner.dart';
 import '../../components/molecules/payment_row.dart';
 import '../../components/molecules/rent_card.dart';
+import '../../../domain/models/tenant_rent_model.dart';
 import '../../routes/app_routes.dart';
+import '../../shared/error_view.dart';
+import '../../shared/load_status.dart';
+import '../../shared/loading_view.dart';
 import 'rent_tracking_controller.dart';
 
 /// Mon loyer · B2 (en ligne) et B6 (hors ligne) : même page, deux états.
@@ -28,6 +33,29 @@ class RentTrackingPage extends StatelessWidget {
       backgroundColor: AppColors.paper,
       body: SafeArea(
         child: Obx(() {
+          switch (controller.loadStatus.value) {
+            case LoadStatus.initial:
+            case LoadStatus.loading:
+              return const LoadingView();
+            case LoadStatus.failure:
+              return ErrorView(
+                message: controller.errorMessage.value ?? 'Chargement impossible.',
+                onRetry: controller.load,
+              );
+            case LoadStatus.loaded:
+              break;
+          }
+          if (controller.phase.value == RentalPhase.none) {
+            return _NoRental(onJoin: controller.joinHousing);
+          }
+          if (controller.phase.value == RentalPhase.pending) {
+            return _PendingRental(
+              housing: controller.housing,
+              ownerName: controller.ownerName,
+              onRefresh: controller.load,
+            );
+          }
+
           final offline = controller.isOffline.value;
           final lastPayments = controller.lastPayments;
 
@@ -36,7 +64,11 @@ class RentTrackingPage extends StatelessWidget {
               if (offline)
                 OfflineBanner(lastSyncLabel: controller.lastSyncLabel),
               Expanded(
-                child: ListView(
+                child: RefreshIndicator(
+                  color: AppColors.green,
+                  onRefresh: controller.load,
+                  child: ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
                   padding: const EdgeInsets.all(AppSpacing.screen),
                   children: [
                     // Bandeau vert : mois, reste à payer, barre, échéance
@@ -52,7 +84,7 @@ class RentTrackingPage extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Bonjour ${controller.tenantName}',
+                            controller.tenantName.isEmpty ? 'Bonjour' : 'Bonjour ${controller.tenantName}',
                             style: AppTextStyles.title
                                 .copyWith(color: AppColors.surface),
                           ),
@@ -135,11 +167,7 @@ class RentTrackingPage extends StatelessWidget {
                           _SquareIconButton(
                             icon: Icons.call_outlined,
                             label: 'Appeler',
-                            onTap: () => Get.snackbar(
-                              'Bientôt',
-                              "L'appel arrive bientôt.",
-                              snackPosition: SnackPosition.BOTTOM,
-                            ),
+                            onTap: () => _call(controller.ownerPhone),
                           ),
                           if (!offline) ...[
                             const SizedBox(width: AppSpacing.sm),
@@ -156,14 +184,8 @@ class RentTrackingPage extends StatelessWidget {
                         ],
                       ),
                     ),
-
-                    // TEMPORAIRE : pour voir B6 sans couper la connexion.
-                    // À supprimer avant de rendre le travail.
-                    TextButton(
-                      onPressed: controller.toggleOffline,
-                      child: const Text('Tester hors ligne (temporaire)'),
-                    ),
                   ],
+                ),
                 ),
               ),
             ],
@@ -228,6 +250,85 @@ class _SquareIconButton extends StatelessWidget {
           ),
           child: Icon(icon, size: 22, color: AppColors.green),
         ),
+      ),
+    );
+  }
+}
+/// Appelle le propriétaire (ouvre le composeur du téléphone).
+Future<void> _call(String? phone) async {
+  final clean = (phone ?? '').replaceAll(RegExp(r'\s+'), '');
+  if (clean.isEmpty) {
+    Get.snackbar('Appel indisponible', "Le numéro du propriétaire n'est pas connu.", snackPosition: SnackPosition.BOTTOM);
+    return;
+  }
+  final uri = Uri.parse('tel:$clean');
+  if (await canLaunchUrl(uri)) {
+    await launchUrl(uri);
+  } else {
+    Get.snackbar('Appel indisponible', 'Impossible de composer le $phone.', snackPosition: SnackPosition.BOTTOM);
+  }
+}
+
+/// Aucune location : le locataire saisit le code que lui a donné son propriétaire.
+class _NoRental extends StatelessWidget {
+  const _NoRental({required this.onJoin});
+
+  final VoidCallback onJoin;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(AppSpacing.screen),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.vpn_key_outlined, size: 48, color: AppColors.muted),
+          const SizedBox(height: AppSpacing.lg),
+          Text('Vous n’avez pas encore de logement', textAlign: TextAlign.center, style: AppTextStyles.title),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            'Demandez à votre propriétaire le code de votre logement, puis saisissez-le ici.',
+            textAlign: TextAlign.center,
+            style: AppTextStyles.subtitle,
+          ),
+          const SizedBox(height: AppSpacing.xl),
+          AppButton(label: 'Rejoindre mon logement', onPressed: onJoin),
+        ],
+      ),
+    );
+  }
+}
+
+/// Demande envoyée : on attend la réponse du propriétaire.
+class _PendingRental extends StatelessWidget {
+  const _PendingRental({required this.housing, required this.ownerName, required this.onRefresh});
+
+  final String housing;
+  final String ownerName;
+  final VoidCallback onRefresh;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(AppSpacing.screen),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.hourglass_top_rounded, size: 48, color: AppColors.muted),
+          const SizedBox(height: AppSpacing.lg),
+          Text('Demande envoyée', textAlign: TextAlign.center, style: AppTextStyles.title),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            [
+              if (housing.isNotEmpty) housing,
+              if (ownerName.isNotEmpty) '$ownerName doit confirmer votre arrivée.' else 'Votre propriétaire doit confirmer votre arrivée.',
+            ].join('\n'),
+            textAlign: TextAlign.center,
+            style: AppTextStyles.subtitle,
+          ),
+          const SizedBox(height: AppSpacing.xl),
+          AppButton(label: 'Actualiser', variant: AppButtonVariant.outline, onPressed: onRefresh),
+        ],
       ),
     );
   }

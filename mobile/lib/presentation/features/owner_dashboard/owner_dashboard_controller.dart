@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 
 import '../../../core/errors/app_exception.dart';
+import '../../../data/cache/auth_storage.dart';
 import '../../../data/repo/owner_dashboard_repository.dart';
 import '../../../domain/models/enums.dart';
 import '../../../domain/models/owner_dashboard_model.dart';
@@ -9,19 +10,30 @@ import '../../shared/load_status.dart';
 
 /// Contrôleur du tableau de bord propriétaire (C1) et des loyers du mois (C7).
 class OwnerDashboardController extends GetxController {
-  OwnerDashboardController({required OwnerDashboardRepository repository})
-      : _repository = repository;
+  OwnerDashboardController({required OwnerDashboardRepository repository, AuthStorage? authStorage})
+      : _repository = repository,
+        _storage = authStorage;
 
   final OwnerDashboardRepository _repository;
+  final AuthStorage? _storage;
 
-  /// TEMPORAIRE : le prénom viendra du compte connecté.
-  final ownerFirstName = 'Koffi';
+  /// Premier prénom du compte connecté (vide si inconnu).
+  String get ownerFirstName {
+    final prenoms = _storage?.user?.prenoms.trim() ?? '';
+    return prenoms.isEmpty ? '' : prenoms.split(RegExp(r'\s+')).first;
+  }
 
   final Rx<LoadStatus> status = LoadStatus.initial.obs;
   final RxnString errorMessage = RxnString();
 
   final Rxn<OwnerDashboard> dashboard = Rxn<OwnerDashboard>();
   final RxList<TenantRent> tenants = <TenantRent>[].obs;
+
+  /// Demandes de location en attente de réponse.
+  final RxList<RentalRequest> requests = <RentalRequest>[].obs;
+
+  /// Demandes dont une réponse est en cours d'envoi (leurs boutons sont bloqués).
+  final RxSet<String> busyRequests = <String>{}.obs;
 
   final RxBool isReminding = false.obs;
 
@@ -41,6 +53,7 @@ class OwnerDashboardController extends GetxController {
       final list = await _repository.tenants();
       dashboard.value = summary;
       tenants.assignAll(list);
+      await _loadRequests();
       status.value = LoadStatus.loaded;
     } on AppException catch (e) {
       errorMessage.value = e.message;
@@ -48,6 +61,47 @@ class OwnerDashboardController extends GetxController {
     } catch (_) {
       errorMessage.value = 'Impossible de charger le tableau de bord.';
       status.value = LoadStatus.failure;
+    }
+  }
+
+  /// Les demandes sont un plus : si elles échouent, le tableau de bord reste affiché.
+  Future<void> _loadRequests() async {
+    try {
+      requests.assignAll(await _repository.requests());
+    } on AppException {
+      // Liste précédente conservée.
+    }
+  }
+
+  /// Accepte une demande puis recharge les chiffres (un locataire de plus).
+  Future<void> acceptRequest(RentalRequest request) =>
+      _answer(request, _repository.accept, 'Locataire confirmé', reload: true);
+
+  /// Refuse une demande.
+  Future<void> rejectRequest(RentalRequest request) =>
+      _answer(request, _repository.reject, 'Demande refusée');
+
+  Future<void> _answer(
+    RentalRequest request,
+    Future<String> Function(String rentalId) action,
+    String title, {
+    bool reload = false,
+  }) async {
+    if (busyRequests.contains(request.rentalId)) return;
+    busyRequests.add(request.rentalId);
+    try {
+      final message = await action(request.rentalId);
+      requests.removeWhere((r) => r.rentalId == request.rentalId);
+      Get.snackbar(title, message, snackPosition: SnackPosition.BOTTOM);
+      if (reload) await load();
+    } on AppException catch (e) {
+      Get.snackbar('Erreur', e.message, snackPosition: SnackPosition.BOTTOM);
+      // La demande a peut-être déjà été traitée ailleurs : on resynchronise la liste.
+      await _loadRequests();
+    } catch (_) {
+      Get.snackbar('Erreur', "L'action a échoué.", snackPosition: SnackPosition.BOTTOM);
+    } finally {
+      busyRequests.remove(request.rentalId);
     }
   }
 

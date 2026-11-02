@@ -27,6 +27,7 @@ import '../features/onboarding/welcome_page.dart';
 import '../features/owner_dashboard/owner_dashboard_binding.dart';
 import '../features/owner_dashboard/owner_dashboard_page.dart';
 import '../features/owner_dashboard/owner_rents_page.dart';
+import '../features/owner_properties/housing_create_page.dart';
 import '../features/owner_properties/property_binding.dart';
 import '../features/owner_properties/property_detail_page.dart';
 import '../features/owner_properties/property_form_page.dart';
@@ -188,6 +189,11 @@ abstract final class AppPages {
     GetPage(
       name: AppRoutes.ownerPropertyDetail,
       page: () => const PropertyDetailPage(),
+      binding: PropertyBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.ownerHousingCreate,
+      page: () => const HousingCreatePage(),
       binding: PropertyBinding(),
     ),
     GetPage(

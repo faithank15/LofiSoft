@@ -23,7 +23,7 @@ class OwnerDashboardBinding extends Bindings {
     );
 
     Get.lazyPut<OwnerDashboardController>(
-          () => OwnerDashboardController(repository: Get.find()),
+          () => OwnerDashboardController(repository: Get.find(), authStorage: Get.find()),
     );
   }
 }

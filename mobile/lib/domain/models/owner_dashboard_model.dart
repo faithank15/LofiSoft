@@ -151,3 +151,41 @@ class TenantRent {
     return RentStatus.UPCOMING;
   }
 }
+
+/// Une demande de location en attente : un locataire a saisi le code d'un logement.
+/// (une ligne de GET /owner/requests)
+class RentalRequest {
+  const RentalRequest({
+    required this.rentalId,
+    required this.tenantName,
+    required this.housing,
+    this.tenantPhone,
+    this.requestedAt,
+  });
+
+  final String rentalId;
+  final String tenantName;
+  final String? tenantPhone;
+  final String housing;
+  final DateTime? requestedAt;
+
+  /// « PA » pour « Patrick Agossa »
+  String get initials {
+    final parts = tenantName.trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
+    if (parts.isEmpty) return '?';
+    if (parts.length == 1) return parts.first[0].toUpperCase();
+    return (parts.first[0] + parts.last[0]).toUpperCase();
+  }
+
+  factory RentalRequest.fromJson(Map<String, dynamic> json) {
+    final phone = '${json['tenant_phone'] ?? ''}'.trim();
+    final name = '${json['tenant_name'] ?? ''}'.trim();
+    return RentalRequest(
+      rentalId: '${json['rental_id'] ?? ''}',
+      tenantName: name.isEmpty ? 'Locataire' : name,
+      tenantPhone: phone.isEmpty ? null : phone,
+      housing: '${json['housing'] ?? ''}',
+      requestedAt: DateTime.tryParse('${json['requested_at'] ?? ''}')?.toLocal(),
+    );
+  }
+}

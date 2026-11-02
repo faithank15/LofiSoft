@@ -43,7 +43,7 @@ class PropertyListPage extends GetView<PropertyController> {
                     label: '+ Ajouter',
                     expanded: false,
                     height: AppSizes.buttonSmall,
-                    onPressed: () => Get.toNamed(AppRoutes.ownerPropertyCreate),
+                    onPressed: () => Get.toNamed(AppRoutes.ownerHousingCreate),
                   ),
                 ],
               ),

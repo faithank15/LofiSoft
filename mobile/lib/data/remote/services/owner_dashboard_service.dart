@@ -17,4 +17,13 @@ class OwnerDashboardService extends GetxService {
   /// Envoie un rappel de paiement au locataire d'une location.
   Future<Map<String, dynamic>> remind(String rentalId) =>
       _api.post('/owner/rentals/$rentalId/remind');
+
+  /// Demandes de location en attente de réponse.
+  Future<Map<String, dynamic>> requests() => _api.get('/owner/requests');
+
+  /// Accepte la demande : le locataire devient actif sur le logement.
+  Future<Map<String, dynamic>> accept(String rentalId) => _api.post('/owner/rentals/$rentalId/accept');
+
+  /// Refuse la demande : le locataire pourra en faire une autre.
+  Future<Map<String, dynamic>> reject(String rentalId) => _api.post('/owner/rentals/$rentalId/reject');
 }

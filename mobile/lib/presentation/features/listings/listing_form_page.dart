@@ -6,14 +6,19 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/validators.dart';
-import '../../../domain/models/enums.dart';
 import '../../../domain/models/property_model.dart';
 import '../../components/atoms/app_back_button.dart';
 import '../../components/atoms/app_text_field.dart';
 import '../../components/atoms/step_progress_bar.dart';
+import '../../components/atoms/app_button.dart';
 import '../../components/molecules/bottom_cta_bar.dart';
 import '../../components/molecules/photo_picker.dart';
 import '../../components/molecules/selection_chip.dart';
+import '../../routes/app_routes.dart';
+import '../../shared/empty_view.dart';
+import '../../shared/error_view.dart';
+import '../../shared/load_status.dart';
+import '../../shared/loading_view.dart';
 import 'listing_form_controller.dart';
 
 /// C3 et C4 : nouvelle annonce en deux étapes (où ? puis prix et photos).
@@ -50,7 +55,7 @@ class _ListingFormPageState extends State<ListingFormPage> {
     if (housing == null) return;
     _city.text = housing.city;
     _district.text = housing.district;
-    if (_rent.text.isEmpty) _rent.text = '${housing.rent}';
+    _rent.text = '${housing.rent}'; // le loyer de l'annonce part de celui du logement
   }
 
   @override
@@ -118,24 +123,60 @@ class _ListingFormPageState extends State<ListingFormPage> {
                   padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screen),
                   child: StepProgressBar(current: controller.step.value + 1, total: 2),
                 ),
-                Expanded(
-                  child: SingleChildScrollView(
-                    keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-                    padding: const EdgeInsets.all(AppSpacing.screen),
-                    child: second ? _stepTwo() : _stepOne(),
+                if (controller.housing.value == null)
+                  Expanded(child: _noHousing())
+                else ...[
+                  Expanded(
+                    child: SingleChildScrollView(
+                      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                      padding: const EdgeInsets.all(AppSpacing.screen),
+                      child: second ? _stepTwo() : _stepOne(),
+                    ),
                   ),
-                ),
-                BottomCtaBar(
-                  primaryLabel: second ? 'Publier l’annonce' : 'Continuer',
-                  onPrimary: second ? _publish : _next,
-                  isLoading: controller.isSubmitting.value,
-                ),
+                  BottomCtaBar(
+                    primaryLabel: second ? 'Publier l’annonce' : 'Continuer',
+                    onPrimary: second ? _publish : _next,
+                    isLoading: controller.isSubmitting.value,
+                  ),
+                ],
               ],
             );
           }),
         ),
       ),
     );
+  }
+
+  /// Pas de logement choisi : chargement, erreur, ou aucun logement enregistré.
+  Widget _noHousing() {
+    switch (controller.housingsStatus.value) {
+      case LoadStatus.initial:
+      case LoadStatus.loading:
+        return const LoadingView();
+      case LoadStatus.failure:
+        return ErrorView(message: 'Impossible de charger vos logements.', onRetry: controller.loadHousings);
+      case LoadStatus.loaded:
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const EmptyView(
+              label: 'Aucun logement',
+              hint: 'Une annonce se publie pour un logement enregistré. Ajoutez d’abord votre logement.',
+              icon: Icons.apartment_rounded,
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screen),
+              child: AppButton(
+                label: 'Ajouter un logement',
+                onPressed: () async {
+                  await Get.toNamed<void>(AppRoutes.ownerHousingCreate);
+                  await controller.loadHousings();
+                },
+              ),
+            ),
+          ],
+        );
+    }
   }
 
   // ------------------------------------------------------------------ C3
@@ -148,55 +189,32 @@ class _ListingFormPageState extends State<ListingFormPage> {
         children: [
           Text('Où se trouve le logement ?', style: AppTextStyles.title),
           const SizedBox(height: AppSpacing.lg),
-          if (controller.housings.isNotEmpty) ...[
-            Text('Logement concerné', style: AppTextStyles.label),
-            const SizedBox(height: AppSpacing.sm),
-            Wrap(
-              spacing: AppSpacing.sm,
-              runSpacing: AppSpacing.sm,
-              children: [
-                for (final h in controller.housings)
-                  SelectionChip(
-                    label: h.title,
-                    selected: controller.housing.value?.id == h.id,
-                    onTap: () => controller.selectHousing(h),
-                  ),
-              ],
-            ),
-          ] else ...[
-            Text('Type de logement', style: AppTextStyles.label),
-            const SizedBox(height: AppSpacing.sm),
-            Wrap(
-              spacing: AppSpacing.sm,
-              runSpacing: AppSpacing.sm,
-              children: [
-                for (final (t, label) in [
-                  (AccommodationType.HOUSE, 'Maison'),
-                  (AccommodationType.ROOM, 'Chambre'),
-                  (AccommodationType.OTHER, 'Autre'),
-                ])
-                  SelectionChip(
-                    label: label,
-                    selected: controller.type.value == t,
-                    onTap: () => controller.selectType(t),
-                  ),
-              ],
-            ),
-          ],
+          Text('Logement concerné', style: AppTextStyles.label),
+          const SizedBox(height: AppSpacing.sm),
+          Wrap(
+            spacing: AppSpacing.sm,
+            runSpacing: AppSpacing.sm,
+            children: [
+              for (final h in controller.housings)
+                SelectionChip(
+                  label: h.title,
+                  selected: controller.housing.value?.id == h.id,
+                  onTap: () => controller.selectHousing(h),
+                ),
+            ],
+          ),
           const SizedBox(height: AppSpacing.lg),
           AppTextField(
             label: 'Ville',
             controller: _city,
-            hintText: 'Abomey-Calavi',
-            textInputAction: TextInputAction.next,
+            enabled: false, // reprise du logement
             validator: Validators.requiredField,
           ),
           const SizedBox(height: AppSpacing.lg),
           AppTextField(
             label: 'Quartier',
             controller: _district,
-            hintText: 'Togoudo',
-            textInputAction: TextInputAction.done,
+            enabled: false, // repris du logement
             validator: Validators.requiredField,
           ),
         ],

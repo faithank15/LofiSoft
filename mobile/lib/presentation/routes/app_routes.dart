@@ -34,6 +34,10 @@ abstract final class AppRoutes {
   static const ownerProperties = '/owner/properties';
   static const ownerRents = '/owner/rents';
   static const ownerPropertyDetail = '/owner/properties/detail/:id';
+  /// Nouveau logement (bouton « + Ajouter » de C2).
+  static const ownerHousingCreate = '/owner/properties/new';
+
+  /// C6 : ajouter un locataire (donner le code du logement).
   static const ownerPropertyCreate = '/owner/properties/create';
   static const ownerAnnouncementCreate = '/owner/announcements/create';
 

@@ -17,6 +17,7 @@ import 'package:mobile/presentation/components/molecules/photo_picker.dart';
 import 'package:mobile/presentation/features/listings/listing_form_controller.dart';
 import 'package:mobile/presentation/features/listings/listing_form_page.dart';
 import 'package:mobile/presentation/routes/app_routes.dart';
+import 'package:mobile/presentation/shared/load_status.dart';
 
 import '../support/fakes.dart';
 import 'owner_test.dart' show housingJson;
@@ -159,15 +160,45 @@ void main() {
       expect(ListingFormController.depositMonths(rent: 0, deposit: 400000), 0);
     });
 
-    test('titre : celui du logement, sinon « Type · Quartier »', () async {
+    testWidgets('l\'annonce reprend le logement choisi : titre et type', (tester) async {
+      server.on('GET', '/housings', body: {'data': [housingJson(1), {...housingJson(2), 'type': 'ROOM'}]});
+      server.on('POST', '/uploads', status: 201, body: {'url': 'https://x.test/p.jpg'});
+      server.on('POST', '/announcements', status: 201, body: {'id': 'a1'});
+      server.on('POST', '/announcements/a1/publish', body: {'message': 'ok'});
+      await tester.pumpWidget(GetMaterialApp(
+        home: const SizedBox(),
+        defaultTransition: Transition.noTransition,
+        getPages: [GetPage(name: AppRoutes.ownerDashboard, page: () => const SizedBox())],
+      ));
       final c = build();
-      expect(c.titleFor(' Togoudo '), 'Maison · Togoudo');
-      c.selectType(AccommodationType.ROOM);
-      expect(c.titleFor('Akpakpa'), 'Chambre · Akpakpa');
+      await tester.runAsync(() async {
+        await c.loadHousings();
+        c.selectHousing(c.housings[1]);
+        await c.publish(city: 'X', district: 'Y', rent: 200000, deposit: 0);
+      });
+      for (var i = 0; i < 20; i++) {
+        await tester.pump(const Duration(milliseconds: 500));
+      }
+      await tester.pumpWidget(const SizedBox());
+      final body = server.seen.firstWhere((s) => s.path == '/api/announcements').json;
+      expect(body['housing_id'], 'h2');
+      expect(body['title'], 'Logement 2');
+      expect(body['type'], 'ROOM');
+    });
 
-      server.on('GET', '/housings', body: {'data': [housingJson(1)]});
-      await c.loadHousings();
-      expect(c.titleFor('x'), 'Logement 1');
+    testWidgets('sans logement choisi : refus, aucun appel réseau', (tester) async {
+      await tester.pumpWidget(GetMaterialApp(home: const SizedBox()));
+      final c = build();
+      late bool ok;
+      await tester.runAsync(() async {
+        ok = await c.publish(city: 'C', district: 'D', rent: 200000, deposit: 0);
+      });
+      for (var i = 0; i < 20; i++) {
+        await tester.pump(const Duration(milliseconds: 500));
+      }
+      expect(ok, false);
+      expect(server.seen, isEmpty);
+      await tester.pumpWidget(const SizedBox());
     });
 
     test('loadHousings : présélectionne le premier ; hors connexion le formulaire reste utilisable', () async {
@@ -184,6 +215,7 @@ void main() {
       await offline.loadHousings();
       expect(offline.housings, isEmpty);
       expect(offline.housing.value, isNull);
+      expect(offline.housingsStatus.value, LoadStatus.failure);
     });
 
     test('retrait de photo : hors limites ignoré', () {
@@ -284,13 +316,33 @@ void main() {
       await tester.pumpWidget(const SizedBox());
     });
 
-    testWidgets('étape 1 : ville vide -> message, on ne passe pas à l\'étape 2', (tester) async {
-      final c = await open(tester);
-      await tester.enterText(find.byType(TextFormField).first, '');
-      await tester.tap(find.text('Continuer'));
+    testWidgets('étape 1 : ville et quartier viennent du logement, non modifiables', (tester) async {
+      await open(tester);
+      final fields = tester.widgetList<TextField>(find.byType(TextField)).toList();
+      expect(fields.every((f) => f.enabled == false), true);
+      await tester.pumpWidget(const SizedBox());
+    });
+
+    testWidgets('aucun logement : pas de formulaire, un bouton pour en ajouter un', (tester) async {
+      server.on('GET', '/housings', body: {'data': []});
+      final c = ListingFormController(
+        repository: repo(),
+        properties: PropertyRepository(PropertyService(server.client), app),
+      );
+      Get.put(c);
+      await tester.binding.setSurfaceSize(const Size(420, 900));
+      await tester.pumpWidget(GetMaterialApp(
+        home: const ListingFormPage(),
+        defaultTransition: Transition.noTransition,
+        getPages: [GetPage(name: AppRoutes.ownerHousingCreate, page: () => const SizedBox())],
+      ));
+      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 50)));
       await tester.pump();
-      expect(find.text('Étape 1 sur 2'), findsOneWidget);
-      expect(c.step.value, 0);
+
+      expect(find.text('Aucun logement'), findsOneWidget);
+      expect(find.text('Ajouter un logement'), findsOneWidget);
+      expect(find.text('Continuer'), findsNothing);
+      expect(find.byType(TextFormField), findsNothing);
       await tester.pumpWidget(const SizedBox());
     });
 

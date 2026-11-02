@@ -61,4 +61,34 @@ class FakeOwnerDashboardService extends OwnerDashboardService {
     await Future<void>.delayed(_delay);
     return {'message': 'Rappel envoyé au locataire.'};
   }
+
+  final List<Map<String, dynamic>> _requests = [
+    {
+      'rental_id': 'req-1',
+      'tenant_name': 'Sènami Houngbo',
+      'tenant_phone': '0196123456',
+      'housing': 'Villa 4 pièces',
+      'requested_at': DateTime.now().subtract(const Duration(hours: 3)).toUtc().toIso8601String(),
+    },
+  ];
+
+  @override
+  Future<Map<String, dynamic>> requests() async {
+    await Future<void>.delayed(_delay);
+    return {'data': [..._requests]};
+  }
+
+  @override
+  Future<Map<String, dynamic>> accept(String rentalId) async {
+    await Future<void>.delayed(_delay);
+    _requests.removeWhere((r) => r['rental_id'] == rentalId);
+    return {'message': 'Locataire confirmé.'};
+  }
+
+  @override
+  Future<Map<String, dynamic>> reject(String rentalId) async {
+    await Future<void>.delayed(_delay);
+    _requests.removeWhere((r) => r['rental_id'] == rentalId);
+    return {'message': 'Demande refusée.'};
+  }
 }

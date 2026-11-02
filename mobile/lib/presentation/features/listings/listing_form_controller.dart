@@ -4,10 +4,10 @@ import 'package:image_picker/image_picker.dart';
 import '../../../core/errors/app_exception.dart';
 import '../../../data/repo/owner_announcement_repository.dart';
 import '../../../data/repo/property_repository.dart';
-import '../../../domain/models/enums.dart';
 import '../../../domain/models/property_model.dart';
 import '../../components/molecules/photo_picker.dart';
 import '../../routes/app_routes.dart';
+import '../../shared/load_status.dart';
 
 /// Logique de la création d'annonce en deux étapes (C3 : où ? ; C4 : prix et photos).
 /// Les champs de texte vivent dans la page, ici seulement l'état et les envois.
@@ -32,8 +32,8 @@ class ListingFormController extends GetxController {
   final RxList<HousingModel> housings = <HousingModel>[].obs;
   final Rxn<HousingModel> housing = Rxn<HousingModel>();
 
-  /// Type choisi quand le propriétaire n'a encore aucun logement enregistré.
-  final Rx<AccommodationType> type = AccommodationType.HOUSE.obs;
+  /// Chargement de la liste des logements (l'annonce part toujours d'un logement existant).
+  final Rx<LoadStatus> housingsStatus = LoadStatus.initial.obs;
 
   /// Nombre de pièces (5 = « 5+ »).
   final RxInt rooms = 1.obs;
@@ -49,19 +49,21 @@ class ListingFormController extends GetxController {
     loadHousings();
   }
 
-  /// Liste les logements du propriétaire. Hors connexion, la liste peut manquer : le formulaire reste utilisable.
+  /// Liste les logements du propriétaire : une annonce se publie pour l'un d'eux, jamais dans le vide.
   Future<void> loadHousings() async {
+    housingsStatus.value = LoadStatus.loading;
     try {
       housings.assignAll(await _properties.list());
-      if (housing.value == null && housings.isNotEmpty) housing.value = housings.first;
+      // Garde le choix en cours s'il existe encore, sinon prend le premier.
+      final keep = housings.firstWhereOrNull((h) => h.id == housing.value?.id);
+      housing.value = keep ?? (housings.isEmpty ? null : housings.first);
+      housingsStatus.value = LoadStatus.loaded;
     } on AppException {
-      // Formulaire utilisable sans logement lié.
+      housingsStatus.value = LoadStatus.failure;
     }
   }
 
   void selectHousing(HousingModel value) => housing.value = value;
-
-  void selectType(AccommodationType value) => type.value = value;
 
   void selectRooms(int value) => rooms.value = value;
 
@@ -98,18 +100,6 @@ class ListingFormController extends GetxController {
 
   // --------------------------------------------------------------- Envoi
 
-  /// Titre de l'annonce : celui du logement, sinon « Maison · Quartier ».
-  String titleFor(String district) {
-    final linked = housing.value;
-    if (linked != null && linked.title.trim().isNotEmpty) return linked.title.trim();
-    final label = switch (type.value) {
-      AccommodationType.ROOM => 'Chambre',
-      AccommodationType.OTHER => 'Logement',
-      AccommodationType.HOUSE => 'Maison',
-    };
-    return '$label · ${district.trim()}';
-  }
-
   /// Nombre de mois de caution pour un montant de caution donné (arrondi, jamais négatif).
   static int depositMonths({required int rent, required int deposit}) =>
       rent <= 0 || deposit <= 0 ? 0 : (deposit / rent).round();
@@ -123,14 +113,18 @@ class ListingFormController extends GetxController {
     String? description,
   }) async {
     if (isSubmitting.value) return false;
+    final linked = housing.value;
+    if (linked == null) {
+      _notify('Logement requis', 'Choisissez le logement à annoncer.');
+      return false;
+    }
     isSubmitting.value = true;
     try {
-      final linked = housing.value;
       await _repository.publish(
         NewAnnouncement(
-          housingId: linked?.id,
-          title: titleFor(district),
-          type: linked?.type ?? type.value,
+          housingId: linked.id,
+          title: linked.title.trim().isEmpty ? 'Logement' : linked.title.trim(),
+          type: linked.type,
           rent: rent,
           depositMonths: depositMonths(rent: rent, deposit: deposit),
           city: city.trim(),

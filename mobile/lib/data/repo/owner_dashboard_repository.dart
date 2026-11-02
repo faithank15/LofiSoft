@@ -23,4 +23,15 @@ class OwnerDashboardRepository {
     final json = await _service.remind(rentalId);
     return '${json['message'] ?? 'Rappel envoyé.'}';
   }
+
+  Future<List<RentalRequest>> requests() async {
+    final json = await _service.requests();
+    return asJsonList(json['data']).map((e) => RentalRequest.fromJson(asJsonMap(e))).toList();
+  }
+
+  Future<String> accept(String rentalId) async =>
+      '${(await _service.accept(rentalId))['message'] ?? 'Locataire confirmé.'}';
+
+  Future<String> reject(String rentalId) async =>
+      '${(await _service.reject(rentalId))['message'] ?? 'Demande refusée.'}';
 }
