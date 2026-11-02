@@ -51,7 +51,13 @@ class AppTextField extends StatelessWidget {
     this.autofillHints,
     this.inputFormatters,
     this.focusNode,
+    this.maxLines = 1,
+    this.minLines,
   });
+
+  /// Nombre de lignes maximum (1 par défaut ; `null` = illimité, pour une description).
+  final int? maxLines;
+  final int? minLines;
 
   /// Libellé affiché au-dessus du champ.
   final String? label;
@@ -134,6 +140,8 @@ class AppTextField extends StatelessWidget {
           focusNode: focusNode,
           enabled: enabled,
           obscureText: obscureText,
+          maxLines: obscureText ? 1 : maxLines,
+          minLines: obscureText ? null : minLines,
           keyboardType: keyboardType,
           textInputAction: textInputAction,
           validator: validator,

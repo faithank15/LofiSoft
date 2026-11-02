@@ -8,10 +8,11 @@
 /// TANT QUE L'API N'EXISTE PAS, lancer avec de fausses réponses :
 ///   flutter run --dart-define=USE_FAKE_API=true
 abstract final class AppConfig {
-  static const _uriPart = "10.140.106.79";
+  /// Par défaut : le back de ce PC, via `adb reverse tcp:8000 tcp:8000` (téléphone en USB ou émulateur).
+  /// Autre serveur : `--dart-define=API_BASE_URL=http://<adresse>:8000/api`.
   static const apiBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://$_uriPart:8000/api',
+    defaultValue: 'http://127.0.0.1:8000/api',
   );
 
   static const _timeoutSeconds = int.fromEnvironment(

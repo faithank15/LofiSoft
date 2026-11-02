@@ -124,4 +124,16 @@ class FakeAnnouncementService extends AnnouncementService {
     await Future<void>.delayed(const Duration(milliseconds: 200));
     _favorites.remove(id);
   }
+
+  @override
+  Future<Map<String, dynamic>> create(Map<String, dynamic> body) async {
+    await Future<void>.delayed(_delay);
+    return {'id': 'fake-${DateTime.now().millisecondsSinceEpoch}', ...body, 'status': 'DRAFT'};
+  }
+
+  @override
+  Future<Map<String, dynamic>> publish(String id) async {
+    await Future<void>.delayed(_delay);
+    return {'message': 'Annonce publiée avec succès.'};
+  }
 }

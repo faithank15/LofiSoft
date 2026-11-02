@@ -11,6 +11,8 @@ import '../features/dev/dev_menu_page.dart';
 import '../features/listings/favorites_page.dart';
 import '../features/listings/listing_binding.dart';
 import '../features/listings/listing_details_page.dart';
+import '../features/listings/listing_form_binding.dart';
+import '../features/listings/listing_form_page.dart';
 import '../features/listings/listings_feed_page.dart';
 import '../features/onboarding/budget_binding.dart';
 import '../features/onboarding/budget_page.dart';
@@ -168,6 +170,13 @@ abstract final class AppPages {
       name: AppRoutes.adminVerifications,
       page: () => const AdminVerificationsPage(),
       binding: AdminBinding(),
+    ),
+
+    // ---- C3 et C4 : nouvelle annonce ----
+    GetPage(
+      name: AppRoutes.ownerAnnouncementCreate,
+      page: () => const ListingFormPage(),
+      binding: ListingFormBinding(),
     ),
 
     // ---- Lot 8 : logements propriétaire ----

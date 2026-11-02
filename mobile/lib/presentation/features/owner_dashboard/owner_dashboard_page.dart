@@ -9,6 +9,7 @@ import '../../components/atoms/app_card.dart';
 import '../../components/molecules/app_bottom_nav.dart';
 import '../../components/molecules/rent_gauge.dart';
 import '../../components/molecules/tenant_tile.dart';
+import '../../routes/app_routes.dart';
 import '../../shared/error_view.dart';
 import '../../shared/load_status.dart';
 import '../../shared/loading_view.dart';
@@ -122,7 +123,7 @@ class OwnerDashboardPage extends GetView<OwnerDashboardController> {
                       child: AppButton(
                         label: 'Nouvelle annonce',
                         onPressed: () =>
-                            showSoon("L'écran de création d'annonce arrive."),
+                            Get.toNamed(AppRoutes.ownerAnnouncementCreate),
                       ),
                     ),
                     const SizedBox(width: AppSpacing.md),
@@ -131,7 +132,7 @@ class OwnerDashboardPage extends GetView<OwnerDashboardController> {
                         label: 'Ajouter un locataire',
                         variant: AppButtonVariant.outline,
                         onPressed: () =>
-                            showSoon("L'ajout de locataire arrive."),
+                            Get.toNamed(AppRoutes.ownerPropertyCreate),
                       ),
                     ),
                   ],

@@ -29,6 +29,12 @@ class AnnouncementService extends GetxService {
 
   Future<Map<String, dynamic>> detail(String id) => _api.get('/announcements/$id');
 
+  /// Crée une annonce en brouillon (`DRAFT`). La réponse contient son `id`.
+  Future<Map<String, dynamic>> create(Map<String, dynamic> body) => _api.post('/announcements', body: body);
+
+  /// Publie un brouillon.
+  Future<Map<String, dynamic>> publish(String id) => _api.post('/announcements/$id/publish');
+
   Future<Map<String, dynamic>> favorites() => _api.get('/me/favorites');
 
   Future<void> addFavorite(String id) => _api.put('/announcements/$id/favorite');

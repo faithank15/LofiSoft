@@ -35,6 +35,7 @@ abstract final class AppRoutes {
   static const ownerRents = '/owner/rents';
   static const ownerPropertyDetail = '/owner/properties/detail/:id';
   static const ownerPropertyCreate = '/owner/properties/create';
+  static const ownerAnnouncementCreate = '/owner/announcements/create';
 
   static const profile = '/profile';
 
