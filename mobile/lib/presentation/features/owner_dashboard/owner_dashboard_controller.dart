@@ -10,16 +10,16 @@ import '../../shared/load_status.dart';
 
 /// Contrôleur du tableau de bord propriétaire (C1) et des loyers du mois (C7).
 class OwnerDashboardController extends GetxController {
-  OwnerDashboardController({required OwnerDashboardRepository repository, AuthStorage? authStorage})
+  OwnerDashboardController({required OwnerDashboardRepository repository, required AuthStorage authStorage})
       : _repository = repository,
         _storage = authStorage;
 
   final OwnerDashboardRepository _repository;
-  final AuthStorage? _storage;
+  final AuthStorage _storage;
 
   /// Premier prénom du compte connecté (vide si inconnu).
   String get ownerFirstName {
-    final prenoms = _storage?.user?.prenoms.trim() ?? '';
+    final prenoms = _storage.user?.prenoms.trim() ?? '';
     return prenoms.isEmpty ? '' : prenoms.split(RegExp(r'\s+')).first;
   }
 

@@ -85,7 +85,7 @@ void main() {
 
   group('OwnerDashboardController : demandes', () {
     late OwnerDashboardController c;
-    setUp(() => c = OwnerDashboardController(repository: repo()));
+    setUp(() => c = OwnerDashboardController(repository: repo(), authStorage: MemoryAuthStorage()));
 
     testWidgets('load : les demandes sont chargées avec le tableau de bord', (tester) async {
       stubDashboard();
@@ -181,7 +181,7 @@ void main() {
       final auth = MemoryAuthStorage();
       await auth.saveSession(token: 't', user: UserModelX.owner(prenoms: 'Éric Junior'));
       expect(OwnerDashboardController(repository: repo(), authStorage: auth).ownerFirstName, 'Éric');
-      expect(OwnerDashboardController(repository: repo()).ownerFirstName, '');
+      expect(OwnerDashboardController(repository: repo(), authStorage: MemoryAuthStorage()).ownerFirstName, '');
     });
   });
 

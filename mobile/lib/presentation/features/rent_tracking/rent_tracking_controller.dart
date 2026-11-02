@@ -72,12 +72,12 @@ String monthName(DateTime d) => _months[d.month - 1];
 
 /// « Mon loyer » (B2, B6) et historique (B5), alimentés par l'API.
 class RentTrackingController extends GetxController {
-  RentTrackingController({required TenantRentRepository repository, AuthStorage? authStorage})
+  RentTrackingController({required TenantRentRepository repository, required AuthStorage authStorage})
       : _repository = repository,
         _storage = authStorage;
 
   final TenantRentRepository _repository;
-  final AuthStorage? _storage;
+  final AuthStorage _storage;
 
   final Rx<LoadStatus> loadStatus = LoadStatus.initial.obs;
   final RxnString errorMessage = RxnString();
@@ -130,7 +130,7 @@ class RentTrackingController extends GetxController {
 
   /// Premier prénom du compte connecté.
   String get tenantName {
-    final prenoms = _storage?.user?.prenoms.trim() ?? '';
+    final prenoms = _storage.user?.prenoms.trim() ?? '';
     return prenoms.isEmpty ? '' : prenoms.split(RegExp(r'\s+')).first;
   }
 

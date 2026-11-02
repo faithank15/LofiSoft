@@ -1,5 +1,7 @@
 import 'package:get/get.dart';
 
+import '../../../data/cache/auth_storage.dart';
+
 import '../../../core/constants/app_config.dart';
 import '../../../data/remote/fakes/fake_rental_service.dart';
 import '../../../data/remote/services/rental_service.dart';
@@ -16,7 +18,7 @@ class RentTrackingBinding extends Bindings {
     );
     Get.lazyPut<TenantRentRepository>(() => TenantRentRepository(Get.find(), Get.find()), fenix: true);
     Get.lazyPut<RentTrackingController>(
-      () => RentTrackingController(repository: Get.find(), authStorage: Get.find()),
+      () => RentTrackingController(repository: Get.find(), authStorage: Get.find<AuthStorage>()),
     );
   }
 }

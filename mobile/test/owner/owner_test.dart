@@ -341,6 +341,7 @@ void main() {
       boot();
       c = OwnerDashboardController(
         repository: OwnerDashboardRepository(OwnerDashboardService(server.client)),
+        authStorage: MemoryAuthStorage(),
       );
     });
 
@@ -406,6 +407,7 @@ void main() {
         boot();
         c = OwnerDashboardController(
           repository: OwnerDashboardRepository(OwnerDashboardService(server.client)),
+          authStorage: MemoryAuthStorage(),
         );
         await tester.pumpWidget(GetMaterialApp(
           home: const SizedBox(),

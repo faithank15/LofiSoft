@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 
 import '../../../core/constants/app_config.dart';
+import '../../../data/cache/auth_storage.dart';
 import '../../../data/remote/fakes/fake_owner_dashboard_service.dart';
 import '../../../data/remote/services/owner_dashboard_service.dart';
 import '../../../data/repo/owner_dashboard_repository.dart';
@@ -23,7 +24,7 @@ class OwnerDashboardBinding extends Bindings {
     );
 
     Get.lazyPut<OwnerDashboardController>(
-          () => OwnerDashboardController(repository: Get.find(), authStorage: Get.find()),
+          () => OwnerDashboardController(repository: Get.find(), authStorage: Get.find<AuthStorage>()),
     );
   }
 }
