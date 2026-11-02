@@ -30,4 +30,16 @@ abstract final class AppDateFormat {
 
   /// `08` (jour sur 2 chiffres)
   static String day(DateTime d) => d.day.toString().padLeft(2, '0');
+
+  /// Durée écoulée : `À l'instant`, `Il y a 5 min`, `Il y a 2 h`, `Hier`, `Il y a 3 jours`,
+  /// puis la date courte au-delà de 30 jours. Une date dans le futur donne `À l'instant`.
+  static String ago(DateTime date, {DateTime? now}) {
+    final diff = (now ?? DateTime.now()).difference(date);
+    if (diff.inMinutes < 1) return 'À l’instant';
+    if (diff.inMinutes < 60) return 'Il y a ${diff.inMinutes} min';
+    if (diff.inHours < 24) return 'Il y a ${diff.inHours} h';
+    if (diff.inDays == 1) return 'Hier';
+    if (diff.inDays <= 30) return 'Il y a ${diff.inDays} jours';
+    return short(date);
+  }
 }

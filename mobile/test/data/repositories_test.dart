@@ -68,11 +68,12 @@ void main() {
       );
     });
 
-    test('register : sépare prénoms/nom, envoie le rôle, ouvre la session', () async {
+    test('register : envoie nom et prénoms séparés, le rôle, ouvre la session', () async {
       server.on('POST', '/auth/register', status: 201, body: {'token': 't', 'user': {...userJson, 'role': 'OWNER'}});
 
       final user = await repo.register(
-        fullName: 'Jean Pierre Agossa',
+        nom: 'Agossa',
+        prenoms: 'Jean Pierre',
         email: 'j@lofi.bj',
         phone: '0197123456',
         password: 'Test1234',
@@ -87,18 +88,18 @@ void main() {
       expect(storage.hasSession, true);
     });
 
-    test('register : un seul mot -> nom seul', () async {
+    test('register : prénoms vide -> repris du nom', () async {
       server.on('POST', '/auth/register', status: 201, body: {'token': 't', 'user': userJson});
-      await repo.register(fullName: 'Agossa', email: 'j@lofi.bj', phone: '0197123456', password: 'Test1234', role: UserRole.TENANT);
+      await repo.register(nom: 'Agossa', prenoms: '', email: 'j@lofi.bj', phone: '0197123456', password: 'Test1234', role: UserRole.TENANT);
       expect(server.last.json['nom'], 'Agossa');
-      expect(server.last.json['prenoms'], '');
+      expect(server.last.json['prenoms'], 'Agossa');
     });
 
     test('register : sans jeton dans la réponse, enchaîne avec login', () async {
       server.on('POST', '/auth/register', status: 201, body: {'user': userJson});
       server.on('POST', '/auth/login', body: {'token': 'tok', 'user': userJson});
 
-      await repo.register(fullName: 'A B', email: 'a@b.co', phone: '0197123456', password: 'Test1234', role: UserRole.TENANT);
+      await repo.register(nom: 'B', prenoms: 'A', email: 'a@b.co', phone: '0197123456', password: 'Test1234', role: UserRole.TENANT);
 
       expect(server.seen.map((s) => s.path), ['/api/auth/register', '/api/auth/login']);
       expect(storage.token, 'tok');
@@ -110,7 +111,7 @@ void main() {
         'errors': {'email': ['Cette adresse e-mail est déjà prise.']},
       });
       await expectLater(
-        repo.register(fullName: 'A B', email: 'a@b.co', phone: '0197123456', password: 'Test1234', role: UserRole.TENANT),
+        repo.register(nom: 'B', prenoms: 'A', email: 'a@b.co', phone: '0197123456', password: 'Test1234', role: UserRole.TENANT),
         throwsA(isA<ValidationException>().having((e) => e.message, 'm', 'Cette adresse e-mail est déjà prise.')),
       );
       expect(storage.hasSession, false);

@@ -1,6 +1,9 @@
 import 'package:get/get.dart';
 
 import '../../core/constants/app_config.dart';
+import '../features/admin/admin_binding.dart';
+import '../features/admin/admin_reports_page.dart';
+import '../features/admin/admin_verifications_page.dart';
 import '../features/auth/auth_binding.dart';
 import '../features/auth/login_page.dart';
 import '../features/auth/register_page.dart';
@@ -26,6 +29,8 @@ import '../features/owner_properties/property_binding.dart';
 import '../features/owner_properties/property_detail_page.dart';
 import '../features/owner_properties/property_form_page.dart';
 import '../features/owner_properties/property_list_page.dart';
+import '../features/profile/profile_binding.dart';
+import '../features/profile/profile_page.dart';
 import '../features/rent_tracking/payment_history_page.dart';
 import '../features/rent_tracking/rent_tracking_binding.dart';
 import '../features/rent_tracking/rent_tracking_page.dart';
@@ -85,7 +90,8 @@ abstract final class AppPages {
     ),
     GetPage(
       name: AppRoutes.admin,
-      page: () => const PlaceholderPage(title: 'Administration'),
+      page: () => const AdminReportsPage(),
+      binding: AdminBinding(),
     ),
     GetPage(
       name: AppRoutes.forgotPassword,
@@ -143,6 +149,25 @@ abstract final class AppPages {
       name: AppRoutes.ownerRents,
       page: () => const OwnerRentsPage(),
       binding: OwnerDashboardBinding(),
+    ),
+
+    // ---- Profil (tous les rôles) ----
+    GetPage(
+      name: AppRoutes.profile,
+      page: () => const ProfilePage(),
+      binding: ProfileBinding(),
+    ),
+
+    // ---- Lot 9 : administration ----
+    GetPage(
+      name: AppRoutes.adminReports,
+      page: () => const AdminReportsPage(),
+      binding: AdminBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.adminVerifications,
+      page: () => const AdminVerificationsPage(),
+      binding: AdminBinding(),
     ),
 
     // ---- Lot 8 : logements propriétaire ----

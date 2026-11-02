@@ -198,6 +198,8 @@ class ListingsController extends GetxController {
         Get.offNamed(AppRoutes.favorites);
       case 2:
         Get.offNamed(AppRoutes.rentTracking);
+      case 3:
+        Get.toNamed(AppRoutes.profile);
     }
   }
 }

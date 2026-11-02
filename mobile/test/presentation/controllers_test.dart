@@ -523,7 +523,7 @@ void main() {
       server.failWith = const SocketException('unreachable');
       final c = authCtrl();
 
-      await c.register(fullName: 'A B', email: 'a@b.co', phone: '0197123456', password: 'Test1234');
+      await c.register(nom: 'B', prenoms: 'A', email: 'a@b.co', phone: '0197123456', password: 'Test1234');
 
       expect(c.status.value, LoadStatus.failure);
       expect(c.errorMessage.value, isNotEmpty);
@@ -534,7 +534,7 @@ void main() {
       server.on('POST', '/auth/register', status: 201, body: {'token': 't', 'user': {...userJson, 'role': 'OWNER'}});
       final c = authCtrl()..selectRole(UserRole.OWNER);
 
-      await c.register(fullName: ' Koffi Mensah ', email: ' k@lofi.bj ', phone: '01 97 00 00 01', password: 'Test1234');
+      await c.register(nom: ' Mensah ', prenoms: ' Koffi ', email: ' k@lofi.bj ', phone: '01 97 00 00 01', password: 'Test1234');
 
       expect(server.last.json['telephone'], '0197000001');
       expect(server.last.json['role'], 'OWNER');
@@ -548,7 +548,7 @@ void main() {
       });
       final c = authCtrl();
 
-      await c.register(fullName: 'A B', email: 'a@b.co', phone: '0197123456', password: 'Test1234');
+      await c.register(nom: 'B', prenoms: 'A', email: 'a@b.co', phone: '0197123456', password: 'Test1234');
 
       expect(c.errorMessage.value, 'Ce numéro de téléphone est déjà utilisé.');
     });

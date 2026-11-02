@@ -1,3 +1,4 @@
+export 'admin_model.dart';
 export 'announcement_model.dart';
 export 'enums.dart';
 export 'property_model.dart';

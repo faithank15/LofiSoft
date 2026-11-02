@@ -224,9 +224,10 @@ class PropertyController extends GetxController {
         Get.offNamed(AppRoutes.ownerProperties);
         break;
       case 2:
-        Get.offNamed(AppRoutes.ownerDashboard);
+        Get.offNamed(AppRoutes.ownerRents);
         break;
       case 3:
+        Get.toNamed(AppRoutes.profile);
         break;
     }
   }

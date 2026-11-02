@@ -100,6 +100,7 @@ class OwnerDashboardController extends GetxController {
         _open(AppRoutes.ownerRents);
         break;
       case 3:
+        Get.toNamed(AppRoutes.profile);
         break;
     }
   }
