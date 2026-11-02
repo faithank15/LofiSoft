@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>E1 · Bienvenue : profil</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+@property --k { syntax: '<integer>'; inherits: false; initial-value: 426; }
+@keyframes kup { from { --k: 0; } to { --k: 426; } }
+@keyframes fillw { from { width: 0; } to { width: 65.7%; } }
+.cnt::before { counter-reset: k var(--k); content: counter(k) ' 800'; animation: kup 2.2s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.fillbar { animation: fillw 2.2s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.sun { animation: sunx 2.2s cubic-bezier(0.16, 1, 0.3, 1) both; }
+@keyframes sunx { from { left: -12px; } to { left: 222px; } }
+</style>
+
+<style>
+body{margin:0;background:#0B1210;font-family:'Plus Jakarta Sans',system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;gap:14px;padding:24px 0 40px}
+.tag{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:700;color:#F2EFE6}
+.tag b{background:#1F8A72;color:#fff;border-radius:10px;padding:5px 12px;font-size:16px;font-weight:800}
+.tag a{font-weight:600;color:#9FB3AB;text-decoration:none;font-size:14px;margin-left:8px}
+.phone{border-radius:34px;overflow:hidden;box-shadow:0 0 0 1px rgba(255,255,255,.14);width:390px;height:844px}
+</style></head><body>
+<div class="tag"><b>E1</b>Bienvenue : profil<a href="index.html">← Tous les écrans</a></div>
+<div class="phone">
+<div style="width: 390px; height: 844px; box-sizing: border-box; position: relative; overflow: hidden; background: #F7F3EA; color: #10231E; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; display: flex; flex-direction: column">
+
+<div style="flex-shrink: 0; padding: 18px 24px 0; display: flex; flex-direction: column; gap: 14px">
+  <div style="display: flex; align-items: center; gap: 10px"><svg width="40" height="40" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="16" fill="#0F5C4D"/><path d="M14 31 L32 15 L50 31" fill="none" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path d="M25 34 V49 H41" fill="none" stroke="#F2B134" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg><span style="font-size: 22px; font-weight: 800; letter-spacing: -0.03em; color: #10231E">Lofi<span style="color: #0F5C4D">Soft</span></span></div>
+  <h1 style="margin: 0; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-size: 36px; line-height: 1.1; font-weight: 800; letter-spacing: -0.025em; color: #10231E; text-wrap: balance">Bienvenue. Vous êtes…</h1>
+</div>
+<div style="flex-grow: 1; padding: 18px 20px 0; display: flex; flex-direction: column; gap: 14px">
+  <button type="button" style="position: relative; overflow: hidden; flex: 1; border: 0; border-radius: 28px; background: #0A3D33; color: #FFFFFF; font-family: inherit; text-align: left; padding: 22px 22px 20px; box-shadow: 0 22px 36px -14px rgba(10, 61, 51, 0.65), 0 4px 10px rgba(10, 61, 51, 0.2); display: flex; flex-direction: column; justify-content: space-between"><span style="position: absolute; right: -6px; bottom: 0"><svg width="150" height="120" viewBox="0 0 150 120" aria-hidden="true"><rect x="10" y="48" width="96" height="64" rx="4" fill="#F7F3EA"/><polygon points="2,52 58,14 114,52" fill="#10231E"/><rect x="26" y="68" width="22" height="22" rx="3" fill="#0F5C4D"/><rect x="66" y="66" width="24" height="46" rx="3" fill="#C75B39"/><circle cx="118" cy="78" r="15" fill="#F2B134"/><circle cx="118" cy="78" r="6" fill="#0A3D33"/><rect x="127" y="75" width="22" height="7" rx="3" fill="#F2B134"/><rect x="138" y="82" width="6" height="10" rx="2" fill="#F2B134"/></svg></span><span style="display: flex; flex-direction: column; gap: 6px; position: relative"><span style="font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-size: 30px; font-weight: 800; letter-spacing: -0.02em">Locataire</span><span style="font-size: 16px; line-height: 1.4; max-width: 190px; color: #D6EBDD">Je cherche un logement ou je paie mon loyer.</span></span><span style="position: relative; align-self: flex-start; height: 46px; padding: 0 18px 0 20px; border-radius: 23px; background: #FFFFFF; color: #10231E; display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 800">Choisir<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10231E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></span></button>
+  <button type="button" style="position: relative; overflow: hidden; flex: 1; border: 0; border-radius: 28px; background: #B14A2B; color: #FFFFFF; font-family: inherit; text-align: left; padding: 22px 22px 20px; box-shadow: 0 22px 36px -14px rgba(177, 74, 43, 0.7), 0 4px 10px rgba(177, 74, 43, 0.22); display: flex; flex-direction: column; justify-content: space-between"><span style="position: absolute; right: -6px; bottom: 0"><svg width="150" height="69" viewBox="0 0 300 138" aria-hidden="true"><rect x="21.0" y="14" width="258" height="108" rx="6" fill="#F7F3EA"/><rect x="13.0" y="6" width="274" height="12" rx="4" fill="#10231E"/><rect x="43.0" y="30" width="62" height="52" rx="6" fill="#2F8F6B"/><rect x="119.0" y="30" width="62" height="52" rx="6" fill="#E0A526"/><rect x="195.0" y="30" width="62" height="52" rx="6" fill="#C75B39"/><rect x="132.0" y="96" width="36" height="26" rx="3" fill="#0A3D33"/><rect x="0" y="128" width="300" height="10" rx="5" fill="#2F8F6B"/></svg></span><span style="display: flex; flex-direction: column; gap: 6px; position: relative"><span style="font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-size: 30px; font-weight: 800; letter-spacing: -0.02em">Propriétaire</span><span style="font-size: 16px; line-height: 1.4; max-width: 190px; color: #FBE3D8">Je loue mes logements et je suis les loyers.</span></span><span style="position: relative; align-self: flex-start; height: 46px; padding: 0 18px 0 20px; border-radius: 23px; background: #FFFFFF; color: #10231E; display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 800">Choisir<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10231E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></span></button>
+</div>
+<div style="flex-shrink: 0; padding: 6px 24px 24px; display: flex; justify-content: center">
+  <button type="button" style="height: 48px; border: 0; background: transparent; font-family: inherit; font-size: 16px; font-weight: 700; color: #0F5C4D">J'ai déjà un compte</button>
+</div>
+</div>
+</div>
+</body></html>

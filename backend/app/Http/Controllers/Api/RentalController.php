@@ -41,6 +41,12 @@ class RentalController extends Controller
             ], Response::HTTP_NOT_FOUND);
         }
 
+        if ($housing->activeRental()->exists()) {
+            return response()->json([
+                'message' => 'Ce logement est déjà occupé.',
+            ], Response::HTTP_CONFLICT);
+        }
+
         $rental = Rental::create([
             'housing_id' => $housing->id,
             'tenant_id' => $user->id,

@@ -25,17 +25,9 @@ class UploadController extends Controller
         ]);
 
         try {
-            $uploaded = $cloudinary->upload($request->file('file'), $validated['kind']);
-        } catch (Throwable $e) {
-            Log::error("Échec de l'envoi vers Cloudinary", [
-                'kind' => $validated['kind'],
-                'error' => $e->getMessage(),
-            ]);
-
-            return response()->json(
-                ['message' => "Impossible d'envoyer l'image pour le moment. Réessaie dans un instant."],
-                Response::HTTP_BAD_GATEWAY
-            );
+            $url = $storage->store($request->file('file'), $validated['kind']);
+        } catch (RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], Response::HTTP_BAD_GATEWAY);
         }
 
         return response()->json(['url' => $uploaded['url']], Response::HTTP_CREATED);

@@ -5,19 +5,20 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use App\Models\Rental;
-use App\Models\RentPeriod;
+use App\Services\RentBalance;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 class PaymentController extends Controller
 {
-    public function store(Request $request): JsonResponse
+    public function store(Request $request, RentBalance $balance): JsonResponse
     {
         $validated = $request->validate([
             'rental_id' => ['required', 'uuid', 'exists:rentals,id'],
-            'period' => ['required', 'string', 'regex:/^[0-9]{4}-[0-9]{2}$/'],
+            'period' => ['required', 'string', 'regex:/^[0-9]{4}-(0[1-9]|1[0-2])$/'],
             'amount' => ['required', 'integer', 'min:1'],
             'operator' => ['required', 'string', 'in:MTN,MOOV'],
             'phone' => ['required', 'string', 'regex:/^01[0-9]{8}$/'],
@@ -29,15 +30,11 @@ class PaymentController extends Controller
             return response()->json(['message' => 'Cette location ne vous appartient pas.'], Response::HTTP_FORBIDDEN);
         }
 
-        $period = RentPeriod::where('rental_id', $rental->id)->where('period', $validated['period'])->first();
-        $totalDue = $period ? ($period->total + $period->carried_over) : $rental->housing->rent;
+        if ($rental->status->value !== 'ACTIVE') {
+            return response()->json(['message' => 'Cette location n\'est pas active.'], Response::HTTP_CONFLICT);
+        }
 
-        $alreadyPaid = (int) Payment::where('rental_id', $rental->id)
-            ->where('period', $validated['period'])
-            ->where('status', 'SUCCESS')
-            ->sum('amount');
-
-        $remaining = max(0, $totalDue - $alreadyPaid);
+        $remaining = $balance->remaining($rental, $validated['period']);
 
         if ($validated['amount'] > $remaining) {
             return response()->json([
@@ -66,8 +63,11 @@ class PaymentController extends Controller
         ], Response::HTTP_CREATED);
     }
 
-    public function show(Payment $payment): JsonResponse
+    public function show(Request $request, Payment $payment): JsonResponse
     {
+        $this->authorizeTenant($request, $payment);
+        $this->settleSimulated($payment);
+
         return response()->json([
             'id' => (string) $payment->id,
             'status' => $payment->status->value,
@@ -105,8 +105,10 @@ class PaymentController extends Controller
         ]);
     }
 
-    public function receipt(Payment $payment): JsonResponse
+    public function receipt(Request $request, Payment $payment): JsonResponse
     {
+        $this->authorizeTenant($request, $payment);
+
         if ($payment->status->value !== 'SUCCESS') {
             return response()->json(['message' => 'Aucun reçu disponible pour un paiement non abouti.'], Response::HTTP_BAD_REQUEST);
         }
@@ -125,12 +127,24 @@ class PaymentController extends Controller
 
     public function webhook(Request $request): JsonResponse
     {
+        $secret = config('services.kkiapay.secret');
+
+        if (filled($secret)) {
+            $sent = (string) $request->header('x-kkiapay-secret', '');
+            if (! hash_equals($secret, $sent)) {
+                return response()->json(['message' => 'Signature invalide.'], Response::HTTP_UNAUTHORIZED);
+            }
+        } elseif (app()->isProduction()) {
+            return response()->json(['message' => 'Webhook non configuré.'], Response::HTTP_SERVICE_UNAVAILABLE);
+        }
+
         $reference = $request->input('reference');
         $status = $request->input('status') === 'approved' ? 'SUCCESS' : 'FAILED';
 
         $payment = Payment::where('reference', $reference)->first();
 
-        if ($payment) {
+        // Idempotent : un paiement déjà conclu n'est plus modifié.
+        if ($payment && $payment->status->value === 'PENDING') {
             $payment->update([
                 'status' => $status,
                 'paid_at' => $status === 'SUCCESS' ? now() : null,
@@ -139,5 +153,39 @@ class PaymentController extends Controller
         }
 
         return response()->json(['received' => true]);
+    }
+
+    private function authorizeTenant(Request $request, Payment $payment): void
+    {
+        $owns = Rental::where('id', $payment->rental_id)
+            ->where('tenant_id', $request->user()->id)
+            ->exists();
+
+        if (! $owns) {
+            throw new AccessDeniedHttpException();
+        }
+    }
+
+    /**
+     * Mode simulé : après quelques secondes, l'opérateur « répond ».
+     * Un numéro finissant par 00 échoue, tout autre réussit.
+     */
+    private function settleSimulated(Payment $payment): void
+    {
+        if (config('services.payments.driver') !== 'fake' || $payment->status->value !== 'PENDING') {
+            return;
+        }
+
+        if ($payment->created_at->diffInSeconds(now()) < config('services.payments.fake_delay')) {
+            return;
+        }
+
+        $ok = ! str_ends_with($payment->phone, '00');
+
+        $payment->update([
+            'status' => $ok ? 'SUCCESS' : 'FAILED',
+            'paid_at' => $ok ? now() : null,
+            'provider_ref' => 'SIM-'.Str::upper(Str::random(8)),
+        ]);
     }
 }

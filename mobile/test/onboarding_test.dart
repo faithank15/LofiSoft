@@ -127,10 +127,10 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Votre budget par mois ?'), findsOneWidget);
 
-    // E4 -> catalogue des annonces
+    // E4 -> fil d'annonces
     await tester.tap(find.text('Voir mes logements'));
     await tester.pumpAndSettle();
-    expect(find.text('Annonces'), findsOneWidget);
+    expect(Get.currentRoute, AppRoutes.listings);
   });
 
   testWidgets('« Passer » quitte le parcours locataire', (tester) async {
@@ -141,6 +141,6 @@ void main() {
     await tester.tap(find.text('Passer'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Annonces'), findsOneWidget);
+    expect(Get.currentRoute, AppRoutes.listings);
   });
 }

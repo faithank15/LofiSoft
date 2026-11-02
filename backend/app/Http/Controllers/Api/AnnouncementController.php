@@ -8,6 +8,7 @@ use App\Models\Announcement;
 use App\Models\AnnouncementPhoto;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\Response;
 
 class AnnouncementController extends Controller
@@ -18,7 +19,7 @@ class AnnouncementController extends Controller
             ->where('status', 'PUBLISHED');
 
         if ($request->filled('city')) {
-            $query->where('city', 'ilike', '%' . $request->input('city') . '%');
+            $query->where('city', 'like', '%' . $this->escapeLike($request->input('city')) . '%');
         }
 
         if ($request->filled('type')) {
@@ -34,14 +35,14 @@ class AnnouncementController extends Controller
         }
 
         if ($request->filled('q')) {
-            $q = $request->input('q');
+            $q = $this->escapeLike($request->input('q'));
             $query->where(function ($sub) use ($q) {
-                $sub->where('title', 'ilike', "%{$q}%")
-                    ->orWhere('district', 'ilike', "%{$q}%");
+                $sub->where('title', 'like', "%{$q}%")
+                    ->orWhere('district', 'like', "%{$q}%");
             });
         }
 
-        $perPage = (int) $request->input('per_page', 20);
+        $perPage = max(1, min(50, (int) $request->input('per_page', 20)));
         $paginator = $query->latest('published_at')->paginate($perPage);
 
         return response()->json([
@@ -54,8 +55,14 @@ class AnnouncementController extends Controller
         ]);
     }
 
-    public function show(Announcement $announcement): JsonResponse
+    public function show(Request $request, Announcement $announcement): JsonResponse
     {
+        $isOwner = $request->user('sanctum')?->id === $announcement->owner_id;
+
+        if ($announcement->status->value !== 'PUBLISHED' && ! $isOwner) {
+            abort(404);
+        }
+
         $announcement->load(['photos', 'owner']);
 
         return response()->json(new AnnouncementResource($announcement));
@@ -63,12 +70,8 @@ class AnnouncementController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        if ($request->user()->role->value !== 'OWNER') {
-            return response()->json(['message' => 'Action réservée aux propriétaires.'], Response::HTTP_FORBIDDEN);
-        }
-
         $validated = $request->validate([
-            'housing_id' => ['nullable', 'uuid', 'exists:housings,id'],
+            'housing_id' => ['nullable', 'uuid', Rule::exists('housings', 'id')->where('owner_id', $request->user()->id)],
             'title' => ['required', 'string', 'max:200'],
             'type' => ['required', 'string', 'in:HOUSE,ROOM,OTHER'],
             'rent' => ['required', 'integer', 'min:1000'],
@@ -118,10 +121,10 @@ class AnnouncementController extends Controller
             'title' => ['sometimes', 'string', 'max:200'],
             'type' => ['sometimes', 'string', 'in:HOUSE,ROOM,OTHER'],
             'rent' => ['sometimes', 'integer', 'min:1000'],
-            'deposit_months' => ['sometimes', 'integer'],
-            'city' => ['sometimes', 'string'],
-            'district' => ['sometimes', 'string'],
-            'rooms' => ['sometimes', 'integer'],
+            'deposit_months' => ['sometimes', 'integer', 'min:0'],
+            'city' => ['sometimes', 'string', 'max:100'],
+            'district' => ['sometimes', 'string', 'max:100'],
+            'rooms' => ['sometimes', 'integer', 'min:1'],
             'description' => ['nullable', 'string'],
         ]);
 
@@ -134,6 +137,10 @@ class AnnouncementController extends Controller
     {
         if ($announcement->owner_id !== $request->user()->id) {
             return response()->json(['message' => 'Accès non autorisé.'], Response::HTTP_FORBIDDEN);
+        }
+
+        if ($announcement->status->value === 'CANCELED') {
+            return response()->json(['message' => 'Une annonce annulée ne peut pas être republiée.'], Response::HTTP_CONFLICT);
         }
 
         $announcement->update([
@@ -174,6 +181,8 @@ class AnnouncementController extends Controller
 
     public function addFavorite(Request $request, Announcement $announcement): JsonResponse
     {
+        abort_unless($announcement->status->value === 'PUBLISHED', 404);
+
         $request->user()->favorites()->syncWithoutDetaching([$announcement->id]);
 
         return response()->json(['message' => 'Ajouté aux favoris.']);
@@ -193,6 +202,12 @@ class AnnouncementController extends Controller
             'details' => ['nullable', 'string'],
         ]);
 
+        abort_unless($announcement->status->value === 'PUBLISHED', 404);
+
+        if ($announcement->reports()->where('reporter_id', $request->user()->id)->exists()) {
+            return response()->json(['message' => 'Vous avez déjà signalé cette annonce.'], Response::HTTP_CONFLICT);
+        }
+
         $announcement->reports()->create([
             'reporter_id' => $request->user()->id,
             'reason' => $validated['reason'],
@@ -201,5 +216,10 @@ class AnnouncementController extends Controller
         ]);
 
         return response()->json(['message' => 'Signalement envoyé.'], Response::HTTP_CREATED);
+    }
+
+    private function escapeLike(string $value): string
+    {
+        return addcslashes($value, '\\%_');
     }
 }

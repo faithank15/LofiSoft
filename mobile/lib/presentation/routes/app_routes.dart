@@ -23,12 +23,18 @@ abstract final class AppRoutes {
   // Accueil de chaque profil
   static const listings = '/listings';
   static const listingDetails = '/listings/details/:id';
+  static const favorites = '/listings/favorites';
 
   static const rentTracking = '/rent-tracking';
+  static const paymentHistory = '/rent-tracking/history';
   static const payment = '/payment';
 
+  // Espace Propriétaire (lots 7 et 8)
   static const ownerDashboard = '/owner/dashboard';
   static const ownerProperties = '/owner/properties';
+  static const ownerRents = '/owner/rents';
+  static const ownerPropertyDetail = '/owner/properties/detail/:id';
+  static const ownerPropertyCreate = '/owner/properties/create';
 
   static const admin = '/admin';
   static const adminReports = '/admin/reports';

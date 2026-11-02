@@ -7,9 +7,8 @@ import '../molecules/auth_header.dart';
 
 /// Page de base de la Connexion et de l'Inscription : bandeau vert profond en haut
 /// (logo, titre, toits) et panneau « papier » aux coins arrondis qui remonte par-dessus.
-/// Le contenu défile et se décale tout seul quand le clavier s'ouvre.
-///
-/// ```dart
+
+
 /// AuthScaffold(
 ///   title: 'Connexion',
 ///   subtitle: 'Ravi de vous revoir.',
@@ -18,9 +17,8 @@ import '../molecules/auth_header.dart';
 ///     ...
 ///   ]),
 /// )
-///
-/// AuthScaffold(title: 'Créer un compte', headerHeight: 190, child: ...)  // Inscription
-/// ```
+
+
 class AuthScaffold extends StatelessWidget {
   const AuthScaffold({
     super.key,

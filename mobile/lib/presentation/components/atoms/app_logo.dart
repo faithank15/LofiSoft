@@ -3,19 +3,15 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../core/theme/app_colors.dart';
 
-/// Logo « Maison L » : un toit blanc et un L ambre (qui forme aussi une clé/une porte).
-/// Dessiné en code : pas besoin de fichier image ni de paquet SVG.
-///
-/// ```dart
+
 /// AppLogo(size: 36)                 // sur fond clair : carré vert
 /// AppLogo(size: 104, onDark: true)  // sur fond vert profond : carré crème, toit vert
-/// ```
+
 ///
 /// Net à toutes les tailles : au repos, le logo est un vrai SVG (rendu vectoriel par flutter_svg).
 /// Le dessin par code (CustomPaint) n'est utilisé QUE pendant l'animation de tracé du lancement.
 ///
-/// `drawProgress` (0 à 1) sert à l'animation de lancement : le toit se trace d'abord
-/// (0 à 0,5), puis le L (0,5 à 1). Laisser à 1 partout ailleurs.
+
 class AppLogo extends StatelessWidget {
   const AppLogo({
     super.key,

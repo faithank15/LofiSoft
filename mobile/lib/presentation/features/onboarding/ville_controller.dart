@@ -1,7 +1,8 @@
 import 'package:get/get.dart';
+
+import '../../../data/cache/app_storage.dart';
 import '../../routes/app_routes.dart';
 import 'onboarding_completion.dart';
-import 'tenant_preferences.dart';
 
 /// Contrôleur de l'écran E2 (choix de ville et quartiers — locataire).
 class VilleController extends GetxController {
@@ -61,10 +62,12 @@ class VilleController extends GetxController {
 
   /// Navigue vers l'écran suivant (choix du type de logement — E3).
   Future<void> continuer() async {
-    await TenantPreferences.enregistrer(
-      city: selectedCity.value,
+    final storage = Get.find<AppStorage>();
+    await storage.savePreferences(storage.preferences.copyWith(
+      // « Autre ville » : pas de filtre de ville.
+      city: selectedCity.value == 'Autre ville' ? '' : selectedCity.value,
       neighborhoods: selectedNeighborhoods.toList(),
-    );
+    ));
     Get.toNamed(AppRoutes.onboardingType);
   }
 

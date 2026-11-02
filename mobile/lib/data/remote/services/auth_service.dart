@@ -33,4 +33,13 @@ class AuthService extends GetxService {
 
   Future<Map<String, dynamic>> forgotPassword(String email) =>
       _api.post('/auth/forgot-password', body: {'email': email});
+
+  Future<Map<String, dynamic>> logout() => _api.post('/auth/logout');
+
+  /// Envoie la pièce d'identité et le selfie (déjà téléversés) pour vérification.
+  Future<Map<String, dynamic>> submitIdentity({
+    required String idImageUrl,
+    required String selfieUrl,
+  }) =>
+      _api.post('/me/identity', body: {'id_image_url': idImageUrl, 'selfie_url': selfieUrl});
 }

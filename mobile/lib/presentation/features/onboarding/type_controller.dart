@@ -1,7 +1,8 @@
 import 'package:get/get.dart';
+
+import '../../../data/cache/app_storage.dart';
 import '../../routes/app_routes.dart';
 import 'onboarding_completion.dart';
-import 'tenant_preferences.dart';
 
 /// Contrôleur de l'écran E3 (choix du type de logement — locataire).
 class TypeController extends GetxController {
@@ -28,9 +29,10 @@ class TypeController extends GetxController {
     }
   }
 
-  /// Navigue vers l'écran suivant (choix du budget — E4).
+  /// Enregistre les types choisis puis passe au budget (E4).
   Future<void> continuer() async {
-    await TenantPreferences.enregistrer(types: selectedTypes.toList());
+    final storage = Get.find<AppStorage>();
+    await storage.savePreferences(storage.preferences.copyWith(types: selectedTypes.toList()));
     Get.toNamed(AppRoutes.onboardingBudget);
   }
 

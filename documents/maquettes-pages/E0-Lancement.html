@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>E0 · Lancement (splash)</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+@property --k { syntax: '<integer>'; inherits: false; initial-value: 426; }
+@keyframes kup { from { --k: 0; } to { --k: 426; } }
+@keyframes fillw { from { width: 0; } to { width: 65.7%; } }
+.cnt::before { counter-reset: k var(--k); content: counter(k) ' 800'; animation: kup 2.2s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.fillbar { animation: fillw 2.2s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.sun { animation: sunx 2.2s cubic-bezier(0.16, 1, 0.3, 1) both; }
+@keyframes sunx { from { left: -12px; } to { left: 222px; } }
+
+@keyframes sunrise { from { transform: translateY(120px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
+@keyframes cityup { from { transform: translateY(70px) } to { transform: translateY(0) } }
+@keyframes draw { from { stroke-dashoffset: 60 } to { stroke-dashoffset: 0 } }
+@keyframes pop { 0% { transform: scale(0.6); opacity: 0 } 60% { transform: scale(1.06); opacity: 1 } 100% { transform: scale(1) } }
+@keyframes rise { from { transform: translateY(14px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
+@keyframes sweep { from { transform: translateX(-100%) } to { transform: translateX(260%) } }
+@keyframes halo { from { transform: scale(0.4); opacity: 0 } to { transform: scale(1); opacity: 1 } }
+.sp-sun { animation: sunrise 1.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both }
+.sp-halo { animation: halo 2s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both }
+.sp-city { animation: cityup 1.4s cubic-bezier(0.16, 1, 0.3, 1) both }
+.sp-logo { animation: pop 0.9s cubic-bezier(0.34, 1.4, 0.64, 1) 0.5s both }
+.sp-roof { stroke-dasharray: 60; animation: draw 0.7s ease-out 0.9s both }
+.sp-l { stroke-dasharray: 60; animation: draw 0.6s ease-out 1.3s both }
+.sp-word { animation: rise 0.8s cubic-bezier(0.16, 1, 0.3, 1) 1.3s both }
+.sp-tag { animation: rise 0.8s cubic-bezier(0.16, 1, 0.3, 1) 1.6s both }
+.sp-bar { animation: sweep 1.5s ease-in-out 1.8s infinite }
+</style>
+
+<style>
+body{margin:0;background:#0B1210;font-family:'Plus Jakarta Sans',system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;gap:14px;padding:24px 0 40px}
+.tag{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:700;color:#F2EFE6}
+.tag b{background:#1F8A72;color:#fff;border-radius:10px;padding:5px 12px;font-size:16px;font-weight:800}
+.tag a{font-weight:600;color:#9FB3AB;text-decoration:none;font-size:14px;margin-left:8px}
+.phone{border-radius:34px;overflow:hidden;box-shadow:0 0 0 1px rgba(255,255,255,.14);width:390px;height:844px}
+</style></head><body>
+<div class="tag"><b>E0</b>Lancement (splash)<a href="index.html">← Tous les écrans</a></div>
+<div class="phone">
+<div style="width: 390px; height: 844px; box-sizing: border-box; position: relative; overflow: hidden; background: #F7F3EA; color: #10231E; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; display: flex; flex-direction: column">
+
+<div style="position: absolute; inset: 0; background: #0A3D33; overflow: hidden">
+  <div class="sp-halo" style="position: absolute; left: 15px; top: 470px; width: 360px; height: 360px; border-radius: 180px; background: radial-gradient(circle, rgba(242, 177, 52, 0.28), rgba(242, 177, 52, 0) 68%)"></div>
+  <div class="sp-sun" style="position: absolute; left: 160px; top: 640px; width: 70px; height: 70px; border-radius: 35px; background: #F2B134"></div>
+  <div class="sp-city" style="position: absolute; left: 0; bottom: 0"><svg width="390" height="210" viewBox="0 0 390 210" aria-hidden="true"><rect x="0.0" y="144.9" width="19.8" height="65.1" rx="2" fill="#072B24"/><polygon points="-1.0,144.9 9.9,137.9 20.8,144.9" fill="#072B24"/><rect x="21.8" y="105.8" width="15.8" height="104.2" rx="2" fill="#072B24"/><rect x="39.6" y="157.9" width="23.7" height="52.1" rx="2" fill="#072B24"/><polygon points="38.6,157.9 51.5,150.9 64.3,157.9" fill="#072B24"/><rect x="65.3" y="86.3" width="13.8" height="123.7" rx="2" fill="#072B24"/><rect x="81.2" y="131.9" width="21.8" height="78.1" rx="2" fill="#072B24"/><polygon points="80.2,131.9 92.0,124.9 103.9,131.9" fill="#072B24"/><rect x="104.9" y="112.3" width="17.8" height="97.7" rx="2" fill="#072B24"/><rect x="124.7" y="151.4" width="25.7" height="58.6" rx="2" fill="#072B24"/><polygon points="123.7,151.4 137.6,144.4 151.4,151.4" fill="#072B24"/><rect x="152.4" y="95.4" width="15.8" height="114.6" rx="2" fill="#072B24"/><rect x="170.3" y="125.4" width="19.8" height="84.6" rx="2" fill="#072B24"/><polygon points="169.3,125.4 180.1,118.4 191.0,125.4" fill="#072B24"/><rect x="192.0" y="79.8" width="13.8" height="130.2" rx="2" fill="#072B24"/><rect x="207.9" y="144.9" width="23.7" height="65.1" rx="2" fill="#072B24"/><polygon points="206.9,144.9 219.7,137.9 232.6,144.9" fill="#072B24"/><rect x="233.6" y="103.2" width="17.8" height="106.8" rx="2" fill="#072B24"/><rect x="253.4" y="131.9" width="21.8" height="78.1" rx="2" fill="#072B24"/><polygon points="252.4,131.9 264.3,124.9 276.2,131.9" fill="#072B24"/><rect x="277.2" y="116.3" width="15.8" height="93.7" rx="2" fill="#072B24"/><rect x="295.0" y="157.9" width="19.8" height="52.1" rx="2" fill="#072B24"/><polygon points="294.0,157.9 304.9,150.9 315.8,157.9" fill="#072B24"/><rect x="316.8" y="92.8" width="27.7" height="117.2" rx="2" fill="#072B24"/><rect x="346.4" y="138.4" width="17.8" height="71.6" rx="2" fill="#072B24"/><polygon points="345.4,138.4 355.3,131.4 365.2,138.4" fill="#072B24"/><rect x="366.2" y="118.9" width="21.8" height="91.1" rx="2" fill="#072B24"/></svg></div>
+  <div style="position: absolute; left: 0; right: 0; top: 232px; display: flex; flex-direction: column; align-items: center; gap: 22px">
+    <div class="sp-logo" style="box-shadow: 0 24px 40px -14px rgba(0, 0, 0, 0.5); border-radius: 26px; display: flex"><svg width="104" height="104" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="16" fill="#F7F3EA"/><path class="sp-roof" d="M14 31 L32 15 L50 31" fill="none" stroke="#0F5C4D" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path class="sp-l" d="M25 34 V49 H41" fill="none" stroke="#E0A526" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <div class="sp-word"><span style="font-size: 42px; font-weight: 800; letter-spacing: -0.03em; color: #FFFFFF">Lofi<span style="color: #8FD3B4">Soft</span></span></div>
+    <div class="sp-tag" style="font-size: 16px; font-weight: 600; color: #BFD9CE">Le loyer, simplement.</div>
+  </div>
+  <div style="position: absolute; left: 135px; bottom: 56px; width: 120px; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.12); overflow: hidden"><div class="sp-bar" style="width: 40%; height: 4px; border-radius: 2px; background: #F2B134"></div></div>
+</div>
+</div>
+</div>
+</body></html>

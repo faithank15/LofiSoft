@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use App\Models\Rental;
 use App\Models\RentPeriod;
+use App\Services\RentBalance;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -130,6 +131,14 @@ class OwnerDashboardController extends Controller
             return response()->json(['message' => 'Accès non autorisé.'], Response::HTTP_FORBIDDEN);
         }
 
+        if ($rental->status->value !== 'PENDING') {
+            return response()->json(['message' => 'Seule une demande en attente peut être acceptée.'], Response::HTTP_CONFLICT);
+        }
+
+        if ($rental->housing->activeRental()->exists()) {
+            return response()->json(['message' => 'Ce logement est déjà occupé.'], Response::HTTP_CONFLICT);
+        }
+
         $rental->update(['status' => 'ACTIVE']);
 
         return response()->json(['message' => 'Locataire confirmé.']);
@@ -141,6 +150,10 @@ class OwnerDashboardController extends Controller
             return response()->json(['message' => 'Accès non autorisé.'], Response::HTTP_FORBIDDEN);
         }
 
+        if ($rental->status->value !== 'PENDING') {
+            return response()->json(['message' => 'Seule une demande en attente peut être refusée.'], Response::HTTP_CONFLICT);
+        }
+
         $rental->delete();
 
         return response()->json(['message' => 'Demande refusée.']);
@@ -148,14 +161,18 @@ class OwnerDashboardController extends Controller
 
     public function remind(Request $request, Rental $rental): JsonResponse
     {
+        if ($rental->housing->owner_id !== $request->user()->id) {
+            return response()->json(['message' => 'Accès non autorisé.'], Response::HTTP_FORBIDDEN);
+        }
+
         return response()->json(['message' => 'Rappel envoyé au locataire.']);
     }
 
-    public function manualPayment(Request $request): JsonResponse
+    public function manualPayment(Request $request, RentBalance $balance): JsonResponse
     {
         $validated = $request->validate([
             'rental_id' => ['required', 'uuid', 'exists:rentals,id'],
-            'period' => ['required', 'string', 'regex:/^[0-9]{4}-[0-9]{2}$/'],
+            'period' => ['required', 'string', 'regex:/^[0-9]{4}-(0[1-9]|1[0-2])$/'],
             'amount' => ['required', 'integer', 'min:1'],
             'note' => ['nullable', 'string'],
         ]);
@@ -164,6 +181,15 @@ class OwnerDashboardController extends Controller
 
         if ($rental->housing->owner_id !== $request->user()->id) {
             return response()->json(['message' => 'Accès non autorisé.'], Response::HTTP_FORBIDDEN);
+        }
+
+        $remaining = $balance->remaining($rental, $validated['period']);
+
+        if ($validated['amount'] > $remaining) {
+            return response()->json([
+                'message' => 'Le montant dépasse le solde restant à payer.',
+                'errors' => ['amount' => ['Le montant ne peut pas dépasser ' . $remaining . ' FCFA.']],
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         $payment = Payment::create([

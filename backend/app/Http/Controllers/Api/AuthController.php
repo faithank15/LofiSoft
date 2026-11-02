@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\RegisterRequest;
+use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\IdentityRequest;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -162,10 +162,6 @@ class AuthController extends Controller
 
     public function submitIdentity(Request $request): JsonResponse
     {
-        if ($request->user()->role->value !== 'OWNER') {
-            return response()->json(['message' => 'Action réservée aux propriétaires.'], Response::HTTP_FORBIDDEN);
-        }
-
         $validated = $request->validate([
             'id_image_url' => ['required', 'url'],
             'selfie_url' => ['required', 'url'],

@@ -9,12 +9,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('favorites', function (Blueprint $table) {
-            $table->uuid('id')->primary();
             $table->foreignUuid('user_id')->constrained('users')->cascadeOnDelete();
             $table->foreignUuid('announcement_id')->constrained('announcements')->cascadeOnDelete();
             $table->timestamps();
 
-            $table->unique(['user_id', 'announcement_id']);
+            // Table pivot : pas d'id propre, la paire (utilisateur, annonce) est la clé.
+            $table->primary(['user_id', 'announcement_id']);
         });
     }
 

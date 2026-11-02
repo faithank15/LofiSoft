@@ -7,16 +7,13 @@ import '../../../data/repo/auth_repository.dart';
 import 'auth_controller.dart';
 
 /// Utilisé par les routes /login et /register.
-/// ApiClient et AuthStorage sont déjà enregistrés par `initializeDependencies()`.
+/// ApiClient et AuthStorage sont déjà enregistrés dans main.dart.
 class AuthBinding extends Bindings {
   @override
   void dependencies() {
     // Couche données : fenix pour pouvoir être recréée plus tard.
-    // Le service réel ou simulé est choisi selon le mode de compilation.
     Get.lazyPut<AuthService>(
-      () => AppConfig.useFakeApi
-          ? FakeAuthService(Get.find())
-          : AuthService(Get.find()),
+      () => AppConfig.useFakeApi ? FakeAuthService(Get.find()) : AuthService(Get.find()),
       fenix: true,
     );
     Get.lazyPut<AuthRepository>(

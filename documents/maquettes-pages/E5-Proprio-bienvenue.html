@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>E5 · Propriétaire 1 : bienvenue</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+@property --k { syntax: '<integer>'; inherits: false; initial-value: 426; }
+@keyframes kup { from { --k: 0; } to { --k: 426; } }
+@keyframes fillw { from { width: 0; } to { width: 65.7%; } }
+.cnt::before { counter-reset: k var(--k); content: counter(k) ' 800'; animation: kup 2.2s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.fillbar { animation: fillw 2.2s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.sun { animation: sunx 2.2s cubic-bezier(0.16, 1, 0.3, 1) both; }
+@keyframes sunx { from { left: -12px; } to { left: 222px; } }
+</style>
+
+<style>
+body{margin:0;background:#0B1210;font-family:'Plus Jakarta Sans',system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;gap:14px;padding:24px 0 40px}
+.tag{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:700;color:#F2EFE6}
+.tag b{background:#1F8A72;color:#fff;border-radius:10px;padding:5px 12px;font-size:16px;font-weight:800}
+.tag a{font-weight:600;color:#9FB3AB;text-decoration:none;font-size:14px;margin-left:8px}
+.phone{border-radius:34px;overflow:hidden;box-shadow:0 0 0 1px rgba(255,255,255,.14);width:390px;height:844px}
+</style></head><body>
+<div class="tag"><b>E5</b>Propriétaire 1 : bienvenue<a href="index.html">← Tous les écrans</a></div>
+<div class="phone">
+<div style="width: 390px; height: 844px; box-sizing: border-box; position: relative; overflow: hidden; background: #0A3D33; color: #10231E; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; display: flex; flex-direction: column">
+
+<div style="height: 56px; flex-shrink: 0; display: flex; align-items: center; padding: 0 8px"><button type="button" aria-label="Retour" style="width: 44px; height: 44px; border: 0; background: transparent; display: flex; align-items: center; justify-content: center; padding: 0"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><div style="flex-grow: 1; display: flex; gap: 6px; padding: 0 8px"><span style="flex: 1; height: 6px; border-radius: 3px; background: #FFFFFF"></span><span style="flex: 1; height: 6px; border-radius: 3px; background: rgba(255,255,255,0.25)"></span><span style="flex: 1; height: 6px; border-radius: 3px; background: rgba(255,255,255,0.25)"></span></div><button type="button" style="height: 44px; padding: 0 10px; border: 0; background: transparent; font-family: inherit; font-size: 16px; font-weight: 700; color: #D6EBDD">Passer</button></div>
+<div style="height: 330px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px">
+  <svg width="300" height="204" viewBox="0 0 300 204" aria-hidden="true"><rect x="21.0" y="14" width="258" height="174" rx="6" fill="#F7F3EA"/><rect x="13.0" y="6" width="274" height="12" rx="4" fill="#10231E"/><rect x="43.0" y="30" width="62" height="52" rx="6" fill="#2F8F6B"/><rect x="119.0" y="30" width="62" height="52" rx="6" fill="#E0A526"/><rect x="195.0" y="30" width="62" height="52" rx="6" fill="#C75B39"/><rect x="43.0" y="96" width="62" height="52" rx="6" fill="#2F8F6B"/><rect x="119.0" y="96" width="62" height="52" rx="6" fill="#2F8F6B"/><rect x="195.0" y="96" width="62" height="52" rx="6" fill="#D3CCBA"/><rect x="132.0" y="162" width="36" height="26" rx="3" fill="#0A3D33"/><rect x="0" y="194" width="300" height="10" rx="5" fill="#2F8F6B"/></svg>
+  <div style="display: flex; gap: 14px; flex-wrap: wrap; justify-content: center"><span style="display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; color: #55645E"><span style="width: 12px; height: 12px; border-radius: 4px; background: #2F8F6B"></span><span style="color:#D6EBDD">Payé</span></span><span style="display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; color: #55645E"><span style="width: 12px; height: 12px; border-radius: 4px; background: #E0A526"></span><span style="color:#D6EBDD">Partiel</span></span><span style="display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; color: #55645E"><span style="width: 12px; height: 12px; border-radius: 4px; background: #C75B39"></span><span style="color:#D6EBDD">En retard</span></span></div>
+</div>
+<div style="flex-grow: 1; padding: 10px 24px 0; display: flex; flex-direction: column; gap: 12px">
+  <h1 style="margin: 0; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-size: 34px; line-height: 1.1; font-weight: 800; letter-spacing: -0.025em; color: #FFFFFF; text-wrap: balance">Tous vos loyers, d’un coup d’œil.</h1>
+  <p style="margin: 0; font-size: 17px; line-height: 1.5; color: #D6EBDD; text-wrap: pretty">Voyez qui a payé et qui est en retard. L’argent arrive directement sur votre Mobile Money.</p>
+</div>
+<div style="flex-shrink: 0; padding: 10px 24px 26px; background: #0A3D33; display: flex; flex-direction: column; gap: 4px"><button type="button" style="height: 60px; border: 0; border-radius: 18px; background: #F7F3EA; color: #0A3D33; box-shadow: 0 10px 20px -8px rgba(0, 0, 0, 0.5); font-family: inherit; font-size: 17px; font-weight: 800">Continuer</button></div>
+</div>
+</div>
+</body></html>

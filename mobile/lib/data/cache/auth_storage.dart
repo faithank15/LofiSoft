@@ -7,7 +7,7 @@ import '../../domain/models/user_model.dart';
 /// Session active conservée sur le téléphone : jeton, rôle et profil.
 /// Enregistré par `initializeDependencies()` (lib/di/injector.dart).
 class AuthStorage {
-  final GetStorage _box = GetStorage();
+  late final GetStorage _box = GetStorage();
 
   static const _kToken = 'auth_token';
   static const _kRole = 'auth_role';

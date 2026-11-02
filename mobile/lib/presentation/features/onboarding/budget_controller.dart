@@ -1,13 +1,9 @@
 import 'package:get/get.dart';
-
+import '../../../data/cache/app_storage.dart';
 import 'onboarding_completion.dart';
-import 'tenant_preferences.dart';
 
 /// Contrôleur de l'écran E4 (choix du budget — locataire).
 class BudgetController extends GetxController {
-  /// Valeur enregistrée quand l'utilisateur choisit de voir tous les logements.
-  static const budgetSansFiltre = 'all';
-
   /// Liste des tranches de budget proposées.
   static const _budgets = [
     'Moins de 100 000 FCFA',
@@ -41,17 +37,17 @@ class BudgetController extends GetxController {
     selectedBudget.value = budget;
   }
 
-  /// Action principale « Voir mes logements » : termine le parcours locataire
-  /// en conservant la tranche de budget choisie.
+  /// Enregistre le budget, termine l'onboarding et ouvre le fil d'annonces filtré.
   Future<void> continuer() async {
-    await TenantPreferences.enregistrer(budget: selectedBudget.value);
+    final storage = Get.find<AppStorage>();
+    await storage.savePreferences(storage.preferences.copyWith(budgetLabel: selectedBudget.value));
     await OnboardingCompletion.terminerLocataire();
   }
 
-  /// Action secondaire « Voir tous les logements » : termine le parcours
-  /// locataire sans filtre de budget.
+  /// Action secondaire : voir tous les logements, sans critères.
   Future<void> voirTousLesLogements() async {
-    await TenantPreferences.enregistrer(budget: budgetSansFiltre);
+    final storage = Get.find<AppStorage>();
+    await storage.clearPreferences();
     await OnboardingCompletion.terminerLocataire();
   }
 

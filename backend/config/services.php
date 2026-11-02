@@ -35,4 +35,20 @@ return [
         ],
     ],
 
+    'cloudinary' => [
+        'cloud_name' => env('CLOUDINARY_CLOUD_NAME'),
+        'api_key' => env('CLOUDINARY_API_KEY'),
+        'api_secret' => env('CLOUDINARY_API_SECRET'),
+    ],
+
+    'payments' => [
+        // fake : l'opérateur est simulé ; kkiapay : le webhook conclut le paiement.
+        'driver' => env('PAYMENT_DRIVER', 'fake'),
+        'fake_delay' => (int) env('PAYMENT_FAKE_DELAY', 4),
+    ],
+
+    'kkiapay' => [
+        'secret' => env('KKIAPAY_SECRET'),
+    ],
+
 ];

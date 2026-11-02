@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import '../cache/auth_storage.dart';
@@ -36,6 +37,25 @@ class ApiClient {
 
   Future<Map<String, dynamic>> delete(String path) => _send('DELETE', path);
 
+  /// Envoi d'un fichier (multipart/form-data) avec des champs texte en plus.
+  Future<Map<String, dynamic>> upload(
+    String path, {
+    required String filePath,
+    String fileField = 'file',
+    Map<String, String> fields = const {},
+  }) async {
+    final token = _auth.token;
+    final hadToken = token != null && token.isNotEmpty;
+    final request = http.MultipartRequest('POST', Uri.parse('${AppConfig.apiBaseUrl}$path'))
+      ..headers.addAll(<String, String>{
+        'Accept': 'application/json',
+        if (hadToken) 'Authorization': 'Bearer $token',
+      })
+      ..fields.addAll(fields)
+      ..files.add(await http.MultipartFile.fromPath(fileField, filePath));
+    return _dispatch(request, hadToken: hadToken);
+  }
+
   Future<Map<String, dynamic>> _send(
     String method,
     String path, {
@@ -55,15 +75,23 @@ class ApiClient {
       });
     if (body != null) request.body = jsonEncode(body);
 
+    return _dispatch(request, hadToken: hadToken);
+  }
+
+  Future<Map<String, dynamic>> _dispatch(http.BaseRequest request, {required bool hadToken}) async {
     final http.Response response;
     try {
       final streamed = await _client.send(request).timeout(AppConfig.timeout);
       response = await http.Response.fromStream(streamed);
-    } on SocketException {
+      if (kDebugMode) debugPrint('[api] ${request.method} ${request.url} -> ${response.statusCode}');
+    } on SocketException catch (e) {
+      if (kDebugMode) debugPrint('[api] ${request.method} ${request.url} -> réseau : $e');
       throw const NetworkException();
     } on TimeoutException {
+      if (kDebugMode) debugPrint('[api] ${request.method} ${request.url} -> délai dépassé');
       throw const NetworkException('Le serveur met trop de temps à répondre.');
-    } on http.ClientException {
+    } on http.ClientException catch (e) {
+      if (kDebugMode) debugPrint('[api] ${request.method} ${request.url} -> client : $e');
       throw const NetworkException();
     }
 

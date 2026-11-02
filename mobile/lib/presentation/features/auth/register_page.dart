@@ -13,7 +13,8 @@ import '../../components/molecules/role_segment.dart';
 import '../../components/skeletons/auth_scaffold.dart';
 import 'auth_controller.dart';
 
-/// A6 · Inscription.
+/// A6 : Inscription.
+/// StatefulWidget pour libérer proprement les TextEditingController dans dispose().
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
 
@@ -23,7 +24,8 @@ class RegisterPage extends StatefulWidget {
 
 class _RegisterPageState extends State<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
-  final _name = TextEditingController();
+  final _nom = TextEditingController();
+  final _prenoms = TextEditingController();
   final _email = TextEditingController();
   final _phone = TextEditingController();
   final _password = TextEditingController();
@@ -31,7 +33,8 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   void dispose() {
-    _name.dispose();
+    _nom.dispose();
+    _prenoms.dispose();
     _email.dispose();
     _phone.dispose();
     _password.dispose();
@@ -41,7 +44,8 @@ class _RegisterPageState extends State<RegisterPage> {
   void _submit() {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     controller.register(
-      fullName: _name.text,
+      nom: _nom.text,
+      prenoms: _prenoms.text,
       email: _email.text,
       phone: _phone.text,
       password: _password.text,
@@ -78,13 +82,33 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
             ),
             gap,
-            AppTextField(
-              label: 'Nom complet',
-              hintText: 'Patrick Agossa',
-              controller: _name,
-              textInputAction: TextInputAction.next,
-              autofillHints: const [AutofillHints.name],
-              validator: Validators.fullName,
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  flex: 5,
+                  child: AppTextField(
+                    label: 'Nom',
+                    hintText: 'Agossa',
+                    controller: _nom,
+                    textInputAction: TextInputAction.next,
+                    autofillHints: const [AutofillHints.familyName],
+                    validator: (v) => Validators.personName(v, 'nom'),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  flex: 6,
+                  child: AppTextField(
+                    label: 'Prénoms',
+                    hintText: 'Patrick',
+                    controller: _prenoms,
+                    textInputAction: TextInputAction.next,
+                    autofillHints: const [AutofillHints.givenName],
+                    validator: (v) => Validators.personName(v, 'prénom'),
+                  ),
+                ),
+              ],
             ),
             gap,
             AppTextField(

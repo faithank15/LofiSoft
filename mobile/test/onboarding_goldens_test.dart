@@ -14,6 +14,13 @@ import 'support/app_fonts.dart';
 /// Captures d'écran des écrans d'onboarding (390 × 844), générées avec :
 ///   flutter test --update-goldens test/onboarding_goldens_test.dart
 /// puis lues à la main pour vérifier le rendu visuel.
+/// Les images de référence dépendent de la plateforme (rendu des polices) : elles ne
+/// concordent qu'avec la machine qui les a générées. Comparaison à la demande :
+///   RUN_GOLDENS=1 flutter test test/onboarding_goldens_test.dart
+final Object _skipUnlessRequested = Platform.environment['RUN_GOLDENS'] == null
+    ? 'Captures dépendantes de la plateforme : RUN_GOLDENS=1 pour les comparer'
+    : false;
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -76,7 +83,7 @@ void main() {
   };
 
   for (final entree in ecrans.entries) {
-    testWidgets('capture ${entree.key}', (tester) async {
+    testWidgets('capture ${entree.key}', skip: _skipUnlessRequested != false, (tester) async {
       await pumpRoute(tester, entree.value);
       expect(tester.takeException(), isNull);
       await expectLater(
@@ -87,7 +94,7 @@ void main() {
   }
 
   testWidgets('capture E6 et E7 (étapes suivantes du parcours proprio)',
-      (tester) async {
+      skip: _skipUnlessRequested != false, (tester) async {
     await pumpRoute(tester, AppRoutes.onboardingProprietaire);
 
     // E5 -> E6

@@ -1,10 +1,13 @@
 import 'package:get_storage/get_storage.dart';
 
+import '../../core/utils/json_utils.dart';
+import '../../domain/models/search_preferences.dart';
+
 /// Cache local de l'application : indicateurs de première ouverture et données
 /// conservées pour la consultation hors connexion (échéances, reçus, coordonnées).
 /// Enregistré par `initializeDependencies()` (lib/di/injector.dart).
 class AppStorage {
-  final GetStorage _box = GetStorage();
+  late final GetStorage _box = GetStorage();
 
   static const _kOnboardingDone = 'onboarding_done';
 
@@ -12,6 +15,18 @@ class AppStorage {
   bool get onboardingDone => _box.read<bool>(_kOnboardingDone) ?? false;
 
   Future<void> markOnboardingDone() => _box.write(_kOnboardingDone, true);
+
+  static const _kPreferences = 'search_preferences';
+
+  /// Critères de recherche choisis pendant l'onboarding locataire.
+  SearchPreferences get preferences {
+    final raw = _box.read<Object?>(_kPreferences);
+    return raw == null ? const SearchPreferences() : SearchPreferences.fromJson(asJsonMap(raw));
+  }
+
+  Future<void> savePreferences(SearchPreferences value) => _box.write(_kPreferences, value.toJson());
+
+  Future<void> clearPreferences() => _box.remove(_kPreferences);
 
   // ---- Cache générique pour le mode hors-ligne ---------------------------
   /// Sauvegarde une donnée JSON brute sous une clé (ex. 'rent_current').
