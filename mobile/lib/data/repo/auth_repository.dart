@@ -62,6 +62,11 @@ class AuthRepository {
     }
   }
 
+  /// Ferme la session restante, s'il y en a une (utilisé à l'ouverture de la page de connexion).
+  Future<void> endSessionIfAny() async {
+    if (_storage.hasSession) await logout();
+  }
+
   /// Ferme la session : révoque le jeton côté serveur, puis efface la session locale.
   Future<void> logout() async {
     try {

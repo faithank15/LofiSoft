@@ -117,6 +117,22 @@ void main() {
       expect(storage.hasSession, false);
     });
 
+    test('endSessionIfAny : session ouverte -> jeton révoqué et effacé', () async {
+      server.on('POST', '/auth/login', body: {'token': 'tok', 'user': userJson});
+      server.on('POST', '/auth/logout', status: 204, body: '');
+      await repo.login(email: 'a@b.co', password: 'Test1234');
+
+      await repo.endSessionIfAny();
+
+      expect(storage.hasSession, false);
+      expect(server.last.path, '/api/auth/logout');
+    });
+
+    test('endSessionIfAny : sans session, aucun appel réseau', () async {
+      await repo.endSessionIfAny();
+      expect(server.seen, isEmpty);
+    });
+
     group('refreshSession', () {
       test('sans session : null, aucun appel réseau', () async {
         expect(await repo.refreshSession(), isNull);

@@ -21,6 +21,13 @@ class AuthController extends GetxController {
   final Rx<LoadStatus> status = LoadStatus.initial.obs;
   final RxnString errorMessage = RxnString();
 
+  /// Ouvrir la connexion ferme toute session restante : on repart toujours de zéro.
+  @override
+  void onInit() {
+    super.onInit();
+    _repository.endSessionIfAny();
+  }
+
   bool get isLoading => status.value == LoadStatus.loading;
 
   void togglePassword() => hidePassword.toggle();
