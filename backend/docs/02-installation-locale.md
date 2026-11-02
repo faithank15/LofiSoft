@@ -81,7 +81,7 @@ Sans configuration, tout fonctionne en local. Les messages de validation sont en
 
 | Variable `.env` | Effet |
 |---|---|
-| `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | Si les trois sont renseignées, `POST /api/uploads` envoie les images vers Cloudinary (dossier `lofisoft/<kind>`). Sinon elles vont dans `storage/app/public` (penser à `php artisan storage:link`). |
+| `CLOUDINARY_URL` (`cloudinary://clé:secret@nom_du_cloud`) | Si elle est renseignée, `POST /api/uploads` envoie les images vers Cloudinary (dossier `lofisoft/<kind>`). Sinon elles vont dans `storage/app/public` (penser à `php artisan storage:link`). |
 | `PAYMENT_DRIVER` | `fake` (défaut) : paiement simulé. `POST /payments` crée un paiement `PENDING` ; `GET /payments/{id}` le passe à `SUCCESS` après `PAYMENT_FAKE_DELAY` secondes (4 par défaut), ou `FAILED` si le numéro finit par `00`. `kkiapay` : seul le webhook conclut le paiement. |
 | `KKIAPAY_SECRET` | Si renseignée, `POST /api/payments/webhook` exige l'en-tête `x-kkiapay-secret` identique, sinon 401. Vide en local : le webhook est accepté ; en production il est refusé (503). |
 

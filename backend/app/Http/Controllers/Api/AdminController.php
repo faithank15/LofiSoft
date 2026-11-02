@@ -17,13 +17,18 @@ class AdminController extends Controller
     {
         $status = $request->query('status', 'PENDING');
         $requests = IdentityRequest::with('owner')->where('status', $status)->latest()->get();
+        $housingsCounts = \App\Models\Housing::whereIn('owner_id', $requests->pluck('owner_id'))
+            ->selectRaw('owner_id, count(*) as total')
+            ->groupBy('owner_id')
+            ->pluck('total', 'owner_id');
 
-        $data = $requests->map(function ($req) {
+        $data = $requests->map(function ($req) use ($housingsCounts) {
             return [
                 'id' => (string) $req->id,
                 'owner' => [
                     'id' => (string) $req->owner_id,
                     'name' => trim(($req->owner?->prenoms ?? '') . ' ' . ($req->owner?->nom ?? '')),
+                    'housings_count' => (int) ($housingsCounts[$req->owner_id] ?? 0),
                 ],
                 'id_image_url' => $req->id_image_url,
                 'selfie_url' => $req->selfie_url,
@@ -73,7 +78,7 @@ class AdminController extends Controller
     public function reports(Request $request): JsonResponse
     {
         $status = $request->query('status', 'PENDING');
-        $reports = Report::with('announcement')->where('status', $status)->latest()->get();
+        $reports = Report::with('announcement.owner')->where('status', $status)->latest()->get();
 
         $data = $reports->map(function ($rep) {
             $reportsCount = Report::where('announcement_id', $rep->announcement_id)->count();
@@ -87,6 +92,10 @@ class AdminController extends Controller
                 'announcement' => [
                     'id' => (string) $rep->announcement_id,
                     'title' => $rep->announcement?->title ?? 'Annonce supprimée',
+                    'city' => $rep->announcement?->city,
+                    'owner_name' => $rep->announcement?->owner
+                        ? trim(($rep->announcement->owner->prenoms ?? '') . ' ' . ($rep->announcement->owner->nom ?? ''))
+                        : null,
                 ],
                 'reports_count' => $reportsCount,
             ];

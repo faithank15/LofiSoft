@@ -82,8 +82,6 @@ class AuthTest extends TestCase
     public static function invalidRegistrations(): array
     {
         return [
-            'nom manquant' => [['nom' => ''], 'nom'],
-            'prénoms manquants' => [['prenoms' => ''], 'prenoms'],
             'email invalide' => [['email' => 'pas-un-email'], 'email'],
             'téléphone trop court' => [['telephone' => '019712'], 'telephone'],
             'téléphone sans 01' => [['telephone' => '0297123456'], 'telephone'],
@@ -93,6 +91,32 @@ class AuthTest extends TestCase
             'rôle inconnu' => [['role' => 'PIRATE'], 'role'],
             'nom trop long' => [['nom' => str_repeat('a', 101)], 'nom'],
         ];
+    }
+
+    public function test_register_requires_at_least_a_name(): void
+    {
+        $this->postJson('/api/auth/register', $this->payload(['nom' => '', 'prenoms' => '']))
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['nom', 'prenoms']);
+    }
+
+    public function test_register_tolerates_one_missing_name_by_copying_the_other(): void
+    {
+        $this->postJson('/api/auth/register', $this->payload(['nom' => '', 'prenoms' => 'Patrick']))
+            ->assertCreated()
+            ->assertJsonPath('user.nom', 'Patrick')
+            ->assertJsonPath('user.prenoms', 'Patrick');
+    }
+
+    public function test_register_splits_a_full_name_sent_alone(): void
+    {
+        $payload = $this->payload();
+        unset($payload['nom'], $payload['prenoms']);
+
+        $this->postJson('/api/auth/register', $payload + ['fullName' => 'Jean Pierre Agossa'])
+            ->assertCreated()
+            ->assertJsonPath('user.prenoms', 'Jean Pierre')
+            ->assertJsonPath('user.nom', 'Agossa');
     }
 
     public function test_register_rejects_duplicate_email_and_phone(): void
@@ -110,8 +134,8 @@ class AuthTest extends TestCase
     {
         $this->postJson('/api/auth/register', [])
             ->assertStatus(422)
-            ->assertJsonPath('errors.nom.0', 'Le champ nom est obligatoire.')
-            ->assertJsonPath('errors.password.0', 'Le champ mot de passe est obligatoire.');
+            ->assertJsonPath('errors.nom.0', 'Le nom de famille est obligatoire.')
+            ->assertJsonPath('errors.password.0', 'Le mot de passe est obligatoire.');
     }
 
     public function test_login_success(): void

@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Http;
+use App\Services\CloudinaryService;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -17,7 +17,7 @@ class UploadTest extends TestCase
     public function test_local_upload_stores_file_and_returns_public_url(): void
     {
         Storage::fake('public');
-        config(['services.cloudinary.cloud_name' => null]);
+        config(['cloudinary.cloud_url' => null]);
         $this->actingAsRole('OWNER');
 
         $res = $this->post('/api/uploads', [
@@ -56,32 +56,37 @@ class UploadTest extends TestCase
         $this->postJson('/api/uploads', ['kind' => 'identity_id'])->assertStatus(422)->assertJsonValidationErrors('file');
     }
 
-    public function test_cloudinary_upload_is_signed_and_returns_secure_url(): void
+    public function test_cloudinary_upload_uses_the_service_and_returns_secure_url(): void
     {
-        config(['services.cloudinary' => ['cloud_name' => 'demo', 'api_key' => 'k', 'api_secret' => 's']]);
-        Http::fake(['api.cloudinary.com/*' => Http::response(['secure_url' => 'https://res.cloudinary.com/demo/x.jpg'], 200)]);
+        config(['cloudinary.cloud_url' => 'cloudinary://k:s@demo']);
+        $this->mock(CloudinaryService::class, function ($mock) {
+            $mock->shouldReceive('upload')->once()
+                ->withArgs(fn ($file, $sub) => $sub === 'identity_selfie')
+                ->andReturn(['url' => 'https://res.cloudinary.com/demo/x.jpg', 'public_id' => 'lofisoft/identity_selfie/x']);
+        });
         $this->actingAsRole('OWNER');
 
         $this->post('/api/uploads', ['file' => UploadedFile::fake()->image('a.jpg'), 'kind' => 'identity_selfie'])
             ->assertCreated()->assertJsonPath('url', 'https://res.cloudinary.com/demo/x.jpg');
-
-        Http::assertSent(function ($req) {
-            $data = collect($req->data())->mapWithKeys(fn ($p) => [$p['name'] => $p['contents']]);
-
-            return str_contains($req->url(), '/v1_1/demo/image/upload')
-                && $data['api_key'] === 'k'
-                && $data['folder'] === 'lofisoft/identity_selfie'
-                && $data['signature'] === sha1("folder=lofisoft/identity_selfie&timestamp={$data['timestamp']}s");
-        });
     }
 
     public function test_cloudinary_failure_gives_502_not_500(): void
     {
-        config(['services.cloudinary' => ['cloud_name' => 'demo', 'api_key' => 'k', 'api_secret' => 's']]);
-        Http::fake(['api.cloudinary.com/*' => Http::response(['error' => 'x'], 500)]);
+        config(['cloudinary.cloud_url' => 'cloudinary://k:s@demo']);
+        $this->mock(CloudinaryService::class, fn ($mock) => $mock->shouldReceive('upload')->andThrow(new \RuntimeException('boom')));
         $this->actingAsRole('OWNER');
 
         $this->post('/api/uploads', ['file' => UploadedFile::fake()->image('a.jpg'), 'kind' => 'identity_id'])
             ->assertStatus(502)->assertJsonPath('message', 'Échec du téléversement vers Cloudinary.');
+    }
+
+    public function test_without_cloudinary_url_nothing_is_sent_to_cloudinary(): void
+    {
+        Storage::fake('public');
+        config(['cloudinary.cloud_url' => '']);
+        $this->mock(CloudinaryService::class, fn ($mock) => $mock->shouldNotReceive('upload'));
+        $this->actingAsRole('OWNER');
+
+        $this->post('/api/uploads', ['file' => UploadedFile::fake()->image('a.jpg'), 'kind' => 'identity_id'])->assertCreated();
     }
 }

@@ -48,6 +48,28 @@ class AdminTest extends TestCase
         $this->getJson('/api/admin/identity-requests?status=APPROVED')->assertJsonCount(1);
     }
 
+    public function test_identity_requests_expose_the_owner_housings_count(): void
+    {
+        $req = $this->identity();
+        $this->housing($req->owner);
+        $this->housing($req->owner);
+        $this->actingAsRole('ADMIN');
+
+        $this->getJson('/api/admin/identity-requests')->assertJsonPath('0.owner.housings_count', 2);
+    }
+
+    public function test_reports_expose_owner_name_and_city_for_the_moderation_card(): void
+    {
+        $owner = $this->user('OWNER', ['nom' => 'Mensah', 'prenoms' => 'Koffi']);
+        $ann = $this->announcement($owner, ['city' => 'Calavi']);
+        Report::create(['announcement_id' => $ann->id, 'reporter_id' => $this->user()->id, 'reason' => 'Annonce frauduleuse', 'status' => 'PENDING']);
+        $this->actingAsRole('ADMIN');
+
+        $this->getJson('/api/admin/reports')->assertOk()
+            ->assertJsonPath('0.announcement.owner_name', 'Koffi Mensah')
+            ->assertJsonPath('0.announcement.city', 'Calavi');
+    }
+
     public function test_approve_verifies_the_owner(): void
     {
         $req = $this->identity();

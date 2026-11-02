@@ -3,12 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Services\CloudinaryService;
+use App\Services\ImageStorage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
+use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
-use Throwable;
 
 class UploadController extends Controller
 {
@@ -17,10 +16,10 @@ class UploadController extends Controller
      * Champs : file (image jpeg/png), kind (announcement_photo | identity_id | identity_selfie)
      * Réponse : { "url": "https://res.cloudinary.com/..." }
      */
-    public function store(Request $request, CloudinaryService $cloudinary): JsonResponse
+    public function store(Request $request, ImageStorage $storage): JsonResponse
     {
         $validated = $request->validate([
-            'file' => ['required', 'file', 'image', 'mimes:jpeg,png,jpg', 'max:' . config('cloudinary.max_size_kb')],
+            'file' => ['required', 'file', 'image', 'mimes:jpeg,png,jpg', 'max:'.config('cloudinary.max_size_kb')],
             'kind' => ['required', 'string', 'in:announcement_photo,identity_id,identity_selfie'],
         ]);
 
@@ -30,6 +29,6 @@ class UploadController extends Controller
             return response()->json(['message' => $e->getMessage()], Response::HTTP_BAD_GATEWAY);
         }
 
-        return response()->json(['url' => $uploaded['url']], Response::HTTP_CREATED);
+        return response()->json(['url' => $url], Response::HTTP_CREATED);
     }
 }

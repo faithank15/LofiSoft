@@ -11,7 +11,7 @@ php artisan test --filter=PaymentTest     # une classe
 php artisan test --filter=test_webhook    # un test
 ```
 
-Les tests tournent sur SQLite en mémoire (`phpunit.xml`), base recréée à chaque test (`RefreshDatabase`). Aucun appel réseau : Cloudinary est simulé avec `Http::fake`.
+Les tests tournent sur SQLite en mémoire (`phpunit.xml`), base recréée à chaque test (`RefreshDatabase`). Aucun appel réseau : Cloudinary est simulé (`CloudinaryService` remplacé par un mock).
 
 | Fichier | Couvre |
 |---|---|
@@ -24,7 +24,7 @@ Les tests tournent sur SQLite en mémoire (`phpunit.xml`), base recréée à cha
 | `Feature/PaymentTest` | Création, plafond au solde restant, simulation de l'opérateur, reçu, webhook (secret, idempotence) |
 | `Feature/OwnerTest` | Tableau de bord, locataires, accepter/refuser une demande, paiement en espèces |
 | `Feature/AdminTest` | Demandes d'identité, signalements, utilisateurs, suspension |
-| `Feature/UploadTest` | Upload local, validation, Cloudinary signé, échec Cloudinary (502) |
+| `Feature/UploadTest` | Upload local, validation, Cloudinary (simulé), échec Cloudinary (502) |
 | `Feature/RolloverCommandTest` | `rent:rollover` : report des impayés, idempotence, planification |
 | `Feature/RoleMiddlewareTest` | Matrice route × rôle, et toutes les routes protégées refusent un visiteur |
 | `Feature/SeederIntegrityTest` | Les comptes et codes de `02-installation-locale.md` existent et fonctionnent |
