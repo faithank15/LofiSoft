@@ -63,6 +63,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/rentals/join', [RentalController::class, 'join'])->middleware('role:TENANT');
     Route::get('/me/rental', [RentalController::class, 'currentRental']);
+    Route::get('/me/situation', [RentalController::class, 'situation'])->middleware('role:TENANT');
     Route::post('/rentals/{rental}/end', [RentalController::class, 'end']);
 });
 
@@ -83,6 +84,7 @@ Route::post('/payments/webhook', [PaymentController::class, 'webhook']);
 Route::middleware(['auth:sanctum', 'role:OWNER'])->prefix('owner')->group(function () {
     Route::get('/dashboard', [OwnerDashboardController::class, 'dashboard']);
     Route::get('/tenants', [OwnerDashboardController::class, 'tenants']);
+    Route::get('/requests', [OwnerDashboardController::class, 'requests']);
     Route::get('/tenants/{rentalId}', [OwnerDashboardController::class, 'tenantDetails']);
     Route::post('/rentals/{rental}/accept', [OwnerDashboardController::class, 'acceptRental']);
     Route::post('/rentals/{rental}/reject', [OwnerDashboardController::class, 'rejectRental']);

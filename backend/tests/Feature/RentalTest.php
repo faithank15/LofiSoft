@@ -92,6 +92,39 @@ class RentalTest extends TestCase
         $this->getJson('/api/me/rental')->assertOk()->assertJsonPath('data.status', 'ACTIVE');
     }
 
+    public function test_situation_is_none_pending_then_active(): void
+    {
+        $owner = $this->user('OWNER', ['nom' => 'Mensah', 'prenoms' => 'Koffi']);
+        $housing = $this->housing($owner, ['title' => 'Appartement 1A', 'rent' => 150000]);
+        $tenant = $this->actingAsRole('TENANT');
+
+        $this->getJson('/api/me/situation')->assertOk()->assertExactJson(['status' => 'NONE']);
+
+        $rental = $this->rental($housing, $tenant, 'PENDING');
+        $this->getJson('/api/me/situation')->assertOk()
+            ->assertJsonPath('status', 'PENDING')
+            ->assertJsonPath('housing.title', 'Appartement 1A')
+            ->assertJsonPath('owner.name', 'Koffi Mensah');
+
+        $rental->update(['status' => 'ACTIVE']);
+        $this->getJson('/api/me/situation')->assertJsonPath('status', 'ACTIVE')->assertJsonPath('housing.rent', 150000);
+    }
+
+    public function test_situation_forgets_a_finished_rental(): void
+    {
+        $housing = $this->housing($this->user('OWNER'));
+        $tenant = $this->actingAsRole('TENANT');
+        $this->rental($housing, $tenant, 'FINISHED');
+
+        $this->getJson('/api/me/situation')->assertJsonPath('status', 'NONE');
+    }
+
+    public function test_situation_is_for_tenants_only(): void
+    {
+        $this->actingAsRole('OWNER');
+        $this->getJson('/api/me/situation')->assertForbidden();
+    }
+
     public function test_end_rental_by_owner_only(): void
     {
         [$owner, , , $rental] = $this->activeSetup();

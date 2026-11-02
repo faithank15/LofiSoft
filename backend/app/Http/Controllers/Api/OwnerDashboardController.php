@@ -109,6 +109,27 @@ class OwnerDashboardController extends Controller
         return response()->json($data);
     }
 
+    /** Demandes de location en attente de réponse du propriétaire. */
+    public function requests(Request $request): JsonResponse
+    {
+        $housingIds = $request->user()->housings()->pluck('id');
+
+        $data = Rental::with(['housing', 'tenant'])
+            ->whereIn('housing_id', $housingIds)
+            ->where('status', 'PENDING')
+            ->latest()
+            ->get()
+            ->map(fn ($rental) => [
+                'rental_id' => (string) $rental->id,
+                'tenant_name' => trim(($rental->tenant?->prenoms ?? '') . ' ' . ($rental->tenant?->nom ?? '')),
+                'tenant_phone' => $rental->tenant?->telephone,
+                'housing' => $rental->housing->title,
+                'requested_at' => $rental->created_at?->toISOString(),
+            ]);
+
+        return response()->json($data);
+    }
+
     public function tenantDetails(Request $request, string $rentalId): JsonResponse
     {
         $rental = Rental::with(['housing', 'tenant'])->findOrFail($rentalId);

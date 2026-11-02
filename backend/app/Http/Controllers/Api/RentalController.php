@@ -74,6 +74,45 @@ class RentalController extends Controller
         return response()->json(['data' => $rental]);
     }
 
+    /**
+     * Où en est le locataire : NONE (aucune location), PENDING (demande envoyée, en attente
+     * du propriétaire) ou ACTIVE. Répond toujours 200 pour que l'app choisisse son écran.
+     */
+    public function situation(Request $request): JsonResponse
+    {
+        $rental = Rental::with('housing.owner')
+            ->where('tenant_id', $request->user()->id)
+            ->whereIn('status', ['ACTIVE', 'PENDING'])
+            ->get()
+            ->sortByDesc(fn ($r) => $r->status->value === 'ACTIVE')
+            ->first();
+
+        if (! $rental) {
+            return response()->json(['status' => 'NONE']);
+        }
+
+        $housing = $rental->housing;
+        $owner = $housing->owner;
+
+        return response()->json([
+            'status' => $rental->status->value,
+            'rental_id' => (string) $rental->id,
+            'started_at' => $rental->started_at?->toDateString(),
+            'housing' => [
+                'id' => (string) $housing->id,
+                'title' => $housing->title,
+                'city' => $housing->city,
+                'district' => $housing->district,
+                'rent' => (int) $housing->rent,
+                'due_day' => (int) $housing->due_day,
+            ],
+            'owner' => [
+                'name' => trim(($owner?->prenoms ?? '') . ' ' . ($owner?->nom ?? '')),
+                'telephone' => $owner?->telephone,
+            ],
+        ]);
+    }
+
     public function end(Request $request, Rental $rental): JsonResponse
     {
         if ($rental->housing->owner_id !== $request->user()->id) {

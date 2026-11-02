@@ -30,6 +30,43 @@ class OwnerTest extends TestCase
             ->assertJsonPath('month', now()->format('Y-m'));
     }
 
+    public function test_requests_lists_only_pending_rentals_of_my_housings(): void
+    {
+        $owner = $this->user('OWNER');
+        $housing = $this->housing($owner, ['title' => 'Studio']);
+        $tenant = $this->user('TENANT', ['nom' => 'Agossa', 'prenoms' => 'Patrick', 'telephone' => '0197123456']);
+        $pending = $this->rental($housing, $tenant, 'PENDING');
+
+        // Pas dans la liste : location active, et demande sur le logement d'un autre.
+        $this->rental($this->housing($owner), $this->user('TENANT'), 'ACTIVE');
+        $this->rental($this->housing($this->user('OWNER')), $this->user('TENANT'), 'PENDING');
+
+        Sanctum::actingAs($owner);
+        $this->getJson('/api/owner/requests')->assertOk()->assertJsonCount(1)
+            ->assertJsonPath('0.rental_id', (string) $pending->id)
+            ->assertJsonPath('0.tenant_name', 'Patrick Agossa')
+            ->assertJsonPath('0.tenant_phone', '0197123456')
+            ->assertJsonPath('0.housing', 'Studio');
+    }
+
+    public function test_requests_is_for_owners_only(): void
+    {
+        $this->actingAsRole('TENANT');
+        $this->getJson('/api/owner/requests')->assertForbidden();
+    }
+
+    public function test_accepting_a_request_makes_the_rental_active_and_empties_the_list(): void
+    {
+        $owner = $this->user('OWNER');
+        $rental = $this->rental($this->housing($owner), $this->user('TENANT'), 'PENDING');
+        Sanctum::actingAs($owner);
+
+        $this->postJson("/api/owner/rentals/{$rental->id}/accept")->assertOk();
+
+        $this->getJson('/api/owner/requests')->assertJsonCount(0);
+        $this->getJson('/api/owner/tenants')->assertJsonCount(1);
+    }
+
     public function test_dashboard_is_scoped_to_the_owner(): void
     {
         $this->activeSetup();
