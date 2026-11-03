@@ -16,6 +16,7 @@ Responsable : à renseigner.
 | Gravité | Constat | Où |
 |---|---|---|
 | Gênant | Pas de page de filtres dédiée (A2). Les filtres passent uniquement par les préférences d'onboarding. | `listings/` |
+| **Grave** | Aucun écran ne permet de signaler une annonce : `report_service.dart` et `report_repository.dart` sont vides, le détail d'annonce n'a pas de bouton « Signaler ». Le backend (`POST /announcements/{id}/reports`) est prêt. Sans cela, l'écran D1 des signalements ne reçoit jamais de données réelles. | `listing_details_page.dart`, `data/remote/services/report_service.dart` |
 | Gênant | Dans le détail d'une annonce, « Itinéraire », « Appeler » et « WhatsApp » affichent seulement une bulle « Bientôt ». | `listing_details_page.dart` lignes 213, 345, 365 |
 | Mineur | `app_network_image.dart` : sous-tirets inutiles (ligne 56). `rent_gauge.dart` : import `dart:ui` inutile. `receipt_summary.dart` : concaténation à remplacer par une interpolation. | `components/` |
 

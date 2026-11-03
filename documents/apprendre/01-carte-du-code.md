@@ -20,7 +20,7 @@ Un fichier, un rôle. Généré à partir des commentaires du code ; une ligne v
 
 ### `core/logging/`
 
-- `app_logger.dart`
+- `app_logger.dart` — **fichier vide** (prévu au squelette, jamais écrit)
 
 ### `core/theme/`
 
@@ -64,10 +64,10 @@ Un fichier, un rôle. Généré à partir des commentaires du code ; une ligne v
 - `announcement_service.dart` — Appels HTTP bruts des annonces et des favoris. Renvoie le JSON du serveur.
 - `auth_service.dart` — Appels HTTP bruts d'authentification. Ne décide de rien : renvoie le JSON du serveur.
 - `owner_dashboard_service.dart` — Appels HTTP bruts de l'espace propriétaire (tableau de bord et loyers).
-- `payment_service.dart`
+- `payment_service.dart` — **fichier vide** (prévu au squelette, jamais écrit)
 - `property_service.dart` — Appels HTTP bruts pour la gestion des logements par le propriétaire.
 - `rental_service.dart` — Appels HTTP bruts du code logement et de la location du locataire.
-- `report_service.dart`
+- `report_service.dart` — **fichier vide** (prévu au squelette, jamais écrit)
 - `upload_service.dart` — Envoi d'une image au serveur, qui renvoie son URL (`{ "url": "..." }`).
 
 ### `data/repo/`
@@ -78,10 +78,10 @@ Un fichier, un rôle. Généré à partir des commentaires du code ; une ligne v
 - `identity_repository.dart` — Vérification d'identité du propriétaire (badge « Vérifié »).
 - `owner_announcement_repository.dart` — Ce que le propriétaire saisit pour une nouvelle annonce (écrans C3 et C4).
 - `owner_dashboard_repository.dart` — Source de vérité du tableau de bord propriétaire.
-- `payment_repository.dart`
+- `payment_repository.dart` — **fichier vide** (prévu au squelette, jamais écrit)
 - `property_repository.dart` — Dépôt unique pour la gestion des logements du bailleur avec persistance hors-ligne.
 - `rental_repository.dart` — Source de vérité du code logement et de la location du locataire.
-- `report_repository.dart`
+- `report_repository.dart` — **fichier vide** (prévu au squelette, jamais écrit)
 - `tenant_rent_repository.dart` — Données de l'écran « Mon loyer », avec repli sur la dernière réponse reçue hors connexion.
 
 ### `di/`
@@ -93,15 +93,15 @@ Un fichier, un rôle. Généré à partir des commentaires du code ; une ligne v
 - `admin_model.dart` — Un signalement (une ligne de GET /admin/reports).
 - `announcement_model.dart` — Annonce telle que l'API la renvoie (fil, détail, favoris).
 - `enums.dart` — Énumérations métier (alignées sur le diagramme de classes et l'API).
-- `installment_model.dart`
+- `installment_model.dart` — **fichier vide** (prévu au squelette, jamais écrit)
 - `models.dart`
 - `owner_dashboard_model.dart` — « Novembre »
-- `owner_profile_model.dart`
+- `owner_profile_model.dart` — **fichier vide** (prévu au squelette, jamais écrit)
 - `property_model.dart` — Détails d'une location active liée à un logement.
-- `receipt_model.dart`
+- `receipt_model.dart` — **fichier vide** (prévu au squelette, jamais écrit)
 - `rental_model.dart` — Logement retrouvé grâce à son code, avant que le locataire confirme (écran B1).
-- `rental_unit_model.dart`
-- `report_model.dart`
+- `rental_unit_model.dart` — **fichier vide** (prévu au squelette, jamais écrit)
+- `report_model.dart` — **fichier vide** (prévu au squelette, jamais écrit)
 - `search_preferences.dart` — Critères choisis par le locataire pendant l'onboarding (E2, E3, E4).
 - `tenant_rent_model.dart` — Où en est le locataire (réponse de GET /me/situation).
 - `user_model.dart` — Utilisateur de la plateforme (locataire, propriétaire ou administrateur).
@@ -185,9 +185,9 @@ Un fichier, un rôle. Généré à partir des commentaires du code ; une ligne v
 - `auth_binding.dart` — Utilisé par les routes /login et /register.
 - `auth_controller.dart` — Logique des écrans Connexion (A5) et Inscription (A6).
 - `forgot_password_page.dart` — Mot de passe oublié : on saisit son e-mail, le serveur envoie un lien.
-- `login_controller.dart`
+- `login_controller.dart` — **fichier vide** (prévu au squelette, jamais écrit)
 - `login_page.dart` — A5  Connexion.
-- `register_controller.dart`
+- `register_controller.dart` — **fichier vide** (prévu au squelette, jamais écrit)
 - `register_page.dart` — A6 : Inscription.
 
 ### `presentation/features/dev/`
@@ -215,7 +215,7 @@ Un fichier, un rôle. Généré à partir des commentaires du code ; une ligne v
 - `onboarding_completion.dart` — Point de sortie commun aux deux parcours d'onboarding.
 - `onboarding_controller.dart` — Contrôleur GetX gérant l'état et les transitions de l'onboarding.
 - `owner_onboarding_page.dart` — Écran d'onboarding propriétaire assemblant les maquettes E5, E6 et E7.
-- `tenant_onboarding_page.dart`
+- `tenant_onboarding_page.dart` — **fichier vide** (prévu au squelette, jamais écrit)
 - `type_binding.dart` — Injection des dépendances de l'écran E3.
 - `type_controller.dart` — Contrôleur de l'écran E3 (choix du type de logement — locataire).
 - `type_page.dart` — Écran E3 · Locataire 2 : type (choix du type de logement).
@@ -245,10 +245,10 @@ Un fichier, un rôle. Généré à partir des commentaires du code ; une ligne v
 
 ### `presentation/features/payment/`
 
-- `payment_binding.dart`
-- `payment_checkout_page.dart`
-- `payment_controller.dart`
-- `receipt_details_page.dart`
+- `payment_binding.dart` — **fichier vide** (prévu au squelette, jamais écrit)
+- `payment_checkout_page.dart` — **fichier vide** (prévu au squelette, jamais écrit)
+- `payment_controller.dart` — **fichier vide** (prévu au squelette, jamais écrit)
+- `receipt_details_page.dart` — **fichier vide** (prévu au squelette, jamais écrit)
 
 ### `presentation/features/profile/`
 
