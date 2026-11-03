@@ -87,6 +87,35 @@ class FakeAdminService extends AdminService {
     return {'message': 'Demande rejetée.'};
   }
 
+  final List<Map<String, dynamic>> _users = [
+    {'id': 'u-1', 'nom': 'Agossa', 'prenoms': 'Patrick', 'email': 'locataire@lofi.bj', 'telephone': '0197123456', 'role': 'TENANT', 'actif': true, 'identity_verified': false},
+    {'id': 'u-2', 'nom': 'Hounkpatin', 'prenoms': 'Rose', 'email': 'locataire2@lofi.bj', 'telephone': '0197123457', 'role': 'TENANT', 'actif': true, 'identity_verified': false},
+    {'id': 'u-3', 'nom': 'Mensah', 'prenoms': 'Koffi', 'email': 'proprio@lofi.bj', 'telephone': '0197000001', 'role': 'OWNER', 'actif': true, 'identity_verified': true},
+    {'id': 'u-4', 'nom': 'Sanni', 'prenoms': 'Awa', 'email': 'admin@lofi.bj', 'telephone': '0197000003', 'role': 'ADMIN', 'actif': true, 'identity_verified': false},
+  ];
+
+  @override
+  Future<Map<String, dynamic>> users({String? role, String? query, int perPage = 50}) async {
+    await Future<void>.delayed(_delay);
+    final q = (query ?? '').trim().toLowerCase();
+    final rows = _users.where((u) {
+      if (role != null && u['role'] != role) return false;
+      return q.isEmpty || '${u['nom']} ${u['prenoms']} ${u['email']}'.toLowerCase().contains(q);
+    }).toList();
+    return {'data': rows, 'meta': {'current_page': 1, 'last_page': 1, 'total': rows.length}};
+  }
+
+  @override
+  Future<Map<String, dynamic>> setUserActive(String id, {required bool actif}) async {
+    await Future<void>.delayed(_delay);
+    final user = _find(_users, id, 'Utilisateur introuvable.');
+    if (user['role'] == 'ADMIN' && !actif) {
+      throw const ValidationException('Vous ne pouvez pas suspendre votre propre compte.');
+    }
+    user['actif'] = actif;
+    return {'message': 'Statut du compte mis à jour.'};
+  }
+
   Map<String, dynamic> _find(List<Map<String, dynamic>> list, String id, String notFound) {
     for (final item in list) {
       if (item['id'] == id) return item;

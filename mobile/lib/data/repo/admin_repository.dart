@@ -1,5 +1,6 @@
 import '../../core/utils/json_utils.dart';
 import '../../domain/models/admin_model.dart';
+import '../../domain/models/user_model.dart';
 import '../remote/services/admin_service.dart';
 
 /// Source de vérité de l'espace administrateur.
@@ -30,6 +31,18 @@ class AdminRepository {
 
   Future<String> rejectIdentity(String id, {required String reason}) async =>
       _message(await _service.rejectIdentity(id, reason: reason.trim()), 'Demande refusée.');
+
+  /// Comptes de la plateforme, du plus récent au plus ancien.
+  Future<List<UserModel>> users() async {
+    final json = await _service.users();
+    return asJsonList(json['data']).map((e) => UserModel.fromJson(asJsonMap(e))).toList();
+  }
+
+  /// Suspend ou réactive un compte. Un compte suspendu ne peut plus se connecter.
+  Future<String> setUserActive(String id, {required bool actif}) async => _message(
+        await _service.setUserActive(id, actif: actif),
+        actif ? 'Compte réactivé.' : 'Compte suspendu.',
+      );
 
   String _message(Map<String, dynamic> json, String fallback) => '${json['message'] ?? fallback}';
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../domain/models/enums.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../components/atoms/app_avatar.dart';
@@ -43,7 +44,17 @@ class ProfilePage extends GetView<ProfileController> {
                   child: Column(
                     children: [
                       InfoRow(label: 'E-mail', value: user.email),
-                      InfoRow(label: 'Téléphone', value: user.telephone, showDivider: false),
+                      InfoRow(
+                        label: 'Téléphone',
+                        value: user.telephone,
+                        showDivider: user.role == UserRole.OWNER,
+                      ),
+                      if (user.role == UserRole.OWNER)
+                        InfoRow(
+                          label: 'Identité',
+                          value: user.identityVerified ? 'Vérifiée' : 'Non vérifiée',
+                          showDivider: false,
+                        ),
                     ],
                   ),
                 ),

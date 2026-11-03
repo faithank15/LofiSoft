@@ -46,4 +46,5 @@ abstract final class AppRoutes {
   static const admin = '/admin';
   static const adminReports = '/admin/reports';
   static const adminVerifications = '/admin/verifications';
+  static const adminUsers = '/admin/users';
 }

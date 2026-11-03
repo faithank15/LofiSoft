@@ -3,8 +3,10 @@ import 'package:get/get.dart';
 import '../../core/constants/app_config.dart';
 import '../features/admin/admin_binding.dart';
 import '../features/admin/admin_reports_page.dart';
+import '../features/admin/admin_users_page.dart';
 import '../features/admin/admin_verifications_page.dart';
 import '../features/auth/auth_binding.dart';
+import '../features/auth/forgot_password_page.dart';
 import '../features/auth/login_page.dart';
 import '../features/auth/register_page.dart';
 import '../features/dev/dev_menu_page.dart';
@@ -41,14 +43,26 @@ import '../features/rental/join_housing_binding.dart';
 import '../features/rental/join_housing_page.dart';
 import '../features/splash/splash_binding.dart';
 import '../features/splash/splash_page.dart';
-import '../shared/placeholder_page.dart';
+import '../../domain/models/enums.dart';
 import 'app_routes.dart';
+import 'auth_middleware.dart';
+import 'role_middleware.dart';
 
 /// Table reliant chaque route à sa page et à son binding d'injection.
 abstract final class AppPages {
   static const initial = AppConfig.useFakeApi
       ? AppRoutes.dev
       : AppRoutes.splash;
+
+
+  // ---- Gardes de route (confort d'interface ; le serveur refuse de toute façon) ----
+  static List<GetMiddleware> get _signedIn => [AuthMiddleware()];
+  static List<GetMiddleware> get _tenant =>
+      [AuthMiddleware(), RoleMiddleware({UserRole.TENANT})];
+  static List<GetMiddleware> get _owner =>
+      [AuthMiddleware(), RoleMiddleware({UserRole.OWNER})];
+  static List<GetMiddleware> get _admin =>
+      [AuthMiddleware(), RoleMiddleware({UserRole.ADMIN})];
 
   static final pages = <GetPage<dynamic>>[
     // ---- Lot 2 : démarrage et authentification ----
@@ -71,6 +85,7 @@ abstract final class AppPages {
     ),
     GetPage(
       name: AppRoutes.joinHousing,
+      middlewares: _tenant,
       page: () => const JoinHousingPage(),
       binding: JoinHousingBinding(),
     ),
@@ -83,22 +98,26 @@ abstract final class AppPages {
     ),
     GetPage(
       name: AppRoutes.rentTracking,
+      middlewares: _tenant,
       page: () => const RentTrackingPage(),
       binding: RentTrackingBinding(),
     ),
     GetPage(
       name: AppRoutes.paymentHistory,
+      middlewares: _tenant,
       page: () => const PaymentHistoryPage(),
       binding: RentTrackingBinding(),
     ),
     GetPage(
       name: AppRoutes.admin,
+      middlewares: _admin,
       page: () => const AdminReportsPage(),
       binding: AdminBinding(),
     ),
     GetPage(
       name: AppRoutes.forgotPassword,
-      page: () => const PlaceholderPage(title: 'Mot de passe oublié'),
+      page: () => const ForgotPasswordPage(),
+      binding: AuthBinding(),
     ),
 
     // ---- Lots 3 et 4 : onboarding ----
@@ -144,12 +163,14 @@ abstract final class AppPages {
     // ---- Lot 7 : tableau de bord propriétaire ----
     GetPage(
       name: AppRoutes.ownerDashboard,
+      middlewares: _owner,
       page: () => const OwnerDashboardPage(),
       binding: OwnerDashboardBinding(),
       transition: Transition.fadeIn,
     ),
     GetPage(
       name: AppRoutes.ownerRents,
+      middlewares: _owner,
       page: () => const OwnerRentsPage(),
       binding: OwnerDashboardBinding(),
     ),
@@ -157,6 +178,7 @@ abstract final class AppPages {
     // ---- Profil (tous les rôles) ----
     GetPage(
       name: AppRoutes.profile,
+      middlewares: _signedIn,
       page: () => const ProfilePage(),
       binding: ProfileBinding(),
     ),
@@ -164,18 +186,27 @@ abstract final class AppPages {
     // ---- Lot 9 : administration ----
     GetPage(
       name: AppRoutes.adminReports,
+      middlewares: _admin,
       page: () => const AdminReportsPage(),
       binding: AdminBinding(),
     ),
     GetPage(
       name: AppRoutes.adminVerifications,
+      middlewares: _admin,
       page: () => const AdminVerificationsPage(),
+      binding: AdminBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.adminUsers,
+      middlewares: _admin,
+      page: () => const AdminUsersPage(),
       binding: AdminBinding(),
     ),
 
     // ---- C3 et C4 : nouvelle annonce ----
     GetPage(
       name: AppRoutes.ownerAnnouncementCreate,
+      middlewares: _owner,
       page: () => const ListingFormPage(),
       binding: ListingFormBinding(),
     ),
@@ -183,21 +214,25 @@ abstract final class AppPages {
     // ---- Lot 8 : logements propriétaire ----
     GetPage(
       name: AppRoutes.ownerProperties,
+      middlewares: _owner,
       page: () => const PropertyListPage(),
       binding: PropertyBinding(),
     ),
     GetPage(
       name: AppRoutes.ownerPropertyDetail,
+      middlewares: _owner,
       page: () => const PropertyDetailPage(),
       binding: PropertyBinding(),
     ),
     GetPage(
       name: AppRoutes.ownerHousingCreate,
+      middlewares: _owner,
       page: () => const HousingCreatePage(),
       binding: PropertyBinding(),
     ),
     GetPage(
       name: AppRoutes.ownerPropertyCreate,
+      middlewares: _owner,
       page: () => const PropertyFormPage(),
       binding: PropertyBinding(),
     ),

@@ -1,8 +1,8 @@
 # Constats de la phase de test, par lot
 
-Date : 3 novembre 2026. Tests faits : suite automatique (332 tests mobile, 248 tests backend),
+Date : 3 novembre 2026. Tests faits : suite automatique (347 tests mobile, 250 tests backend),
 20 testeurs robots sur l'app compilée en web (mode factice), et un scénario de bout en bout
-de 203 vérifications sur le vrai backend (Laravel + MySQL).
+de 203 vérifications sur le vrai backend (Laravel + MySQL), repassé à 203 sur 203 après corrections.
 
 Gravité : **Bloquant** (une action principale est impossible), **Grave** (erreur ou donnée fausse),
 **Gênant** (incohérence, validation manquante), **Mineur** (propreté).
@@ -64,14 +64,14 @@ Responsable : à renseigner.
 ## Lot 2 — Entrée et connexion (E0, A5, A6, B1) — Faith
 | Gravité | Constat | État |
 |---|---|---|
-| Gênant | « Mot de passe oublié » est une page provisoire. Le backend a `POST /auth/forgot-password` mais l'écran ne l'appelle pas. | à faire |
-| Gênant | Aucun middleware de route : `auth_middleware.dart` et `role_middleware.dart` sont vides. Une URL protégée (`/admin`, `/owner/...`) s'ouvre sans session ni contrôle de rôle côté app. Le backend, lui, refuse bien (401/403). | à faire |
+| Gênant | « Mot de passe oublié » était une page provisoire. | corrigé : écran réel `forgot_password_page.dart`, appelle `POST /auth/forgot-password` |
+| Gênant | Aucun middleware de route : `auth_middleware.dart` et `role_middleware.dart` sont vides. Une URL protégée (`/admin`, `/owner/...`) s'ouvre sans session ni contrôle de rôle côté app. Le backend, lui, refuse bien (401/403). | corrigé : `AuthMiddleware` et `RoleMiddleware` appliqués aux routes locataire, propriétaire, admin et profil. Un mauvais rôle est renvoyé vers sa propre accueil. |
 | Corrigé | Les robots ont trouvé une erreur « not found » en se déconnectant depuis le Profil si l'on quittait la page pendant la confirmation. | corrigé, commit `406aeca` |
 
 ## Lot 9 — Administration (D1, D2) et Profil — Faith
 | Gravité | Constat | État |
 |---|---|---|
-| Gênant | L'écran de gestion des utilisateurs (activer ou désactiver un compte) n'existe pas côté mobile, alors que `GET /admin/users` et `PUT /admin/users/{id}/active` sont testés et fonctionnent. | à faire |
+| Gênant | L'écran de gestion des utilisateurs (suspendre, réactiver) n'existait pas côté mobile. | corrigé : nouvel onglet « Utilisateurs » (`admin_users_page.dart`, route `/admin/users`) |
 | Gênant | Les écrans D1, D2 et Profil sont testés par les tests automatiques et par HTTP, mais pas encore vérifiés visuellement sur le téléphone. | à vérifier sur le TECNO |
 
 ## Backend (transversal)
@@ -79,8 +79,9 @@ Responsable : à renseigner.
 
 | Gravité | Constat | Où |
 |---|---|---|
-| **Grave** | `cloudinary/cloudinary_php` est déclaré dans `composer.json` mais absent de `vendor/` sur ce poste. Avec `CLOUDINARY_URL` rempli, tout upload renvoie 502 (« Échec du téléversement vers Cloudinary »). Chaque poste doit lancer `composer install`. | `ImageStorage`, `.env` |
-| Gênant | `GET /auth/me` ne renvoie pas `identity_verified`. L'approbation admin le passe pourtant à `1` en base. L'app ne peut donc pas montrer à un propriétaire que son identité est vérifiée. | `AuthController::me` |
+| **Grave** | `cloudinary/cloudinary_php` est déclaré dans `composer.json` mais absent de `vendor/` sur ce poste. Avec `CLOUDINARY_URL` rempli, tout upload renvoie 502. Corrigé sur ce poste par `composer install` ; **chaque coéquipier doit le lancer après un pull**. | `ImageStorage`, `.env` |
+| Gênant | `GET /auth/me` ne renvoyait pas `identity_verified`. | corrigé : `UserResource` (désormais utilisé par register, login, me, update profil et la liste admin). Le Profil affiche « Identité : Vérifiée / Non vérifiée » pour un propriétaire. |
+| Gênant | `GET /admin/users` enveloppait sa pagination dans `data` (la liste était dans `data.data`), contrairement aux autres listes. | corrigé : `{ data: [...], meta: {...} }`, paramètre `per_page` |
 | Gênant | `RegisterRequest` tolère un seul champ parmi `nom` et `prenoms` et recopie l'autre dans les deux. Une inscription avec seulement un prénom est acceptée avec un nom identique. | `RegisterRequest::prepareForValidation` |
 | Mineur | Un champ `nom` contenant du HTML (`<script>`) est enregistré tel quel. Sans danger tant que l'app Flutter n'interprète pas le HTML, mais à échapper si une interface web apparaît. | inscription |
 | Mineur | `POST /auth/logout` répond 204 sans corps. Correct, à connaître côté client. | `AuthController::logout` |

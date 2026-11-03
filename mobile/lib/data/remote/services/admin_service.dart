@@ -25,6 +25,18 @@ class AdminService extends GetxService {
   Future<Map<String, dynamic>> approveIdentity(String id) =>
       _api.post('/admin/identity-requests/$id/approve');
 
+  /// Comptes de la plateforme (20 par page par défaut). `role` : TENANT, OWNER ou ADMIN.
+  Future<Map<String, dynamic>> users({String? role, String? query, int perPage = 50}) =>
+      _api.get('/admin/users', query: {
+        'per_page': '$perPage',
+        'role': ?role,
+        if (query != null && query.trim().isNotEmpty) 'q': query.trim(),
+      });
+
+  /// Suspend (`false`) ou réactive (`true`) un compte.
+  Future<Map<String, dynamic>> setUserActive(String id, {required bool actif}) =>
+      _api.put('/admin/users/$id/active', body: {'actif': actif});
+
   Future<Map<String, dynamic>> rejectIdentity(String id, {required String reason}) =>
       _api.post('/admin/identity-requests/$id/reject', body: {'reason': reason});
 }
