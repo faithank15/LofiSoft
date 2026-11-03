@@ -14,10 +14,10 @@ import '../../../domain/models/tenant_rent_model.dart';
 import '../../routes/app_routes.dart';
 import '../../shared/load_status.dart';
 
-/// Écrans B3 « Payer mon loyer » et B4 « Paiement réussi » (lot 6).
+/// Écrans B3 "Payer mon loyer" et B4 "Paiement réussi" (lot 6).
 ///
 /// La situation du locataire (location, mois en cours, reste à payer) vient
-/// du lot 5 (`TenantRentRepository`) : aucune requête en double.
+/// du lot 5 (TenantRentRepository) : aucune requête en double.
 class PaymentController extends GetxController {
   PaymentController({
     required PaymentRepository repository,
@@ -89,7 +89,7 @@ class PaymentController extends GetxController {
 
   String get rentalId => situation.value?.rentalId ?? '';
 
-  /// Mois de loyer concerné : « 2026-11 ».
+  /// Mois de loyer concerné : "2026-11".
   String get period => summary.value?.period ?? _currentPeriod();
 
   int get remaining => summary.value?.remaining ?? 0;
@@ -103,24 +103,24 @@ class PaymentController extends GetxController {
     return DateTime(now.year, now.month);
   }
 
-  /// « novembre »
+  /// "novembre"
   String get monthLabel => AppDateFormat.monthName(periodDate.month);
 
   DateTime get dueDate =>
       summary.value?.dueDate ?? DateTime(periodDate.year, periodDate.month, situation.value?.dueDay ?? 5);
 
-  /// « avant le 5 novembre »
+  /// "avant le 5 novembre"
   String get dueLabel => 'avant le ${dueDate.day} ${AppDateFormat.monthName(dueDate.month)}';
 
-  /// « Loyer de novembre »
+  /// "Loyer de novembre"
   String get rentCardTitle => 'Loyer de $monthLabel';
 
-  /// « Reste 60 000 FCFA »
+  /// "Reste 60 000 FCFA"
   String get rentCardRemaining => 'Reste ${CurrencyFormatter.format(remaining)}';
 
-  /// « 90 000 déjà payés sur 150 000 · avant le 5 novembre »
+  /// "90 000 déjà payés sur 150 000 . avant le 5 novembre"
   String get progressLegend =>
-      '${CurrencyFormatter.number(paidSoFar)} déjà payés sur ${CurrencyFormatter.number(total)} · $dueLabel';
+      '${CurrencyFormatter.number(paidSoFar)} déjà payés sur ${CurrencyFormatter.number(total)} . $dueLabel';
 
   double get progressValue => total <= 0 ? 0 : paidSoFar / total;
 
@@ -152,7 +152,7 @@ class PaymentController extends GetxController {
   /// Numéro nettoyé, tel qu'envoyé au serveur (10 chiffres, sans +229).
   String get phone => _phone;
 
-  /// « +229 01 97 •• •• 56 »
+  /// "+229 01 97 •• •• 56"
   String get maskedPhone {
     final p = _phone;
     if (p.length < 10) return '${AppConstants.phoneCode} $p';
@@ -196,9 +196,9 @@ class PaymentController extends GetxController {
         }
         Get.offNamed(AppRoutes.paymentSuccess);
       } else if (current.status == PaymentStatus.FAILED) {
-        _notify('Paiement échoué', 'L’opérateur a refusé le paiement. Vérifiez le numéro et réessayez.');
+        _notify('Paiement échoué', "L'opérateur a refusé le paiement. Vérifiez le numéro et réessayez.");
       } else {
-        _notify('Paiement en attente', 'La confirmation n’a pas abouti à temps. Consultez votre solde.');
+        _notify('Paiement en attente', "La confirmation n'a pas abouti à temps. Consultez votre solde.");
       }
     } on AppException catch (e) {
       _notify('Paiement refusé', e.message);
@@ -235,7 +235,7 @@ class PaymentController extends GetxController {
     receipt.value = await _repository.receipt(p.id);
   }
 
-  /// « Retour à mon loyer » (B4).
+  /// "Retour à mon loyer" (B4).
   void backToRent() => Get.offNamed(AppRoutes.rentTracking);
 
   void _notify(String title, String message) {

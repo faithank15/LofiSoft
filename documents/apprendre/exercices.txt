@@ -1,0 +1,12 @@
+# id | dossier | commande de test | fichiers à réécrire (séparés par des espaces) | résumé
+mobile-garde | mobile | flutter test test/presentation/route_guards_test.dart | lib/presentation/routes/auth_middleware.dart lib/presentation/routes/role_middleware.dart | Gardes de route : session puis rôle
+mobile-api-client | mobile | flutter test test/core/api_client_test.dart | lib/data/remote/api_client.dart lib/core/errors/app_exception.dart lib/core/utils/json_utils.dart | Client HTTP, erreurs typées, JSON sûr
+mobile-user-model | mobile | flutter test test/domain/models_test.dart | lib/domain/models/user_model.dart | Modèle utilisateur tolérant (fromJson / toJson)
+mobile-auth | mobile | flutter test test/data/repositories_test.dart test/presentation/controllers_test.dart | lib/data/repo/auth_repository.dart lib/presentation/features/auth/auth_controller.dart | Connexion : repository + contrôleur
+mobile-loyer | mobile | flutter test test/tenant/tenant_rent_test.dart | lib/data/repo/tenant_rent_repository.dart lib/presentation/features/rent_tracking/rent_tracking_controller.dart | Mon loyer : cache hors connexion + contrôleur
+mobile-demandes | mobile | flutter test test/owner/requests_test.dart | lib/data/repo/owner_dashboard_repository.dart lib/presentation/features/owner_dashboard/owner_dashboard_controller.dart | Demandes de location du propriétaire
+mobile-admin | mobile | flutter test test/admin/admin_test.dart | lib/data/repo/admin_repository.dart lib/presentation/features/admin/admin_controller.dart | Administration : signalements, identités, comptes
+backend-solde | backend | php artisan test tests/Feature/PaymentTest.php | app/Services/RentBalance.php | Solde d'une période de loyer
+backend-roles | backend | php artisan test tests/Feature/RoleMiddlewareTest.php | app/Http/Middleware/EnsureRole.php app/Http/Middleware/EnsureActiveAccount.php | Rôles et comptes suspendus
+backend-location | backend | php artisan test tests/Feature/RentalTest.php | app/Http/Controllers/Api/RentalController.php | Demande, situation, fin de location
+backend-admin | backend | php artisan test tests/Feature/AdminTest.php | app/Http/Controllers/Api/AdminController.php | Signalements, identités, comptes

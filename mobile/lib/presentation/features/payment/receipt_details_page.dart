@@ -135,9 +135,9 @@ class _ReceiptDetailsPageState extends State<ReceiptDetailsPage> {
                 ), // Transform.translate
               ), // SingleChildScrollView
             ), // Expanded
-              _bottomBar(),
-            ],
-          );
+            _bottomBar(),
+          ],
+        );
         }),
       ),
     );

@@ -11,6 +11,7 @@ class UserModel {
     required this.telephone,
     required this.role,
     this.actif = true,
+    this.identityVerified = false,
   });
 
   final String id;
@@ -20,6 +21,9 @@ class UserModel {
   final String telephone;
   final UserRole role;
   final bool actif;
+
+  /// Propriétaire dont l'identité a été validée par un administrateur (badge « Vérifié »).
+  final bool identityVerified;
 
   /// « Prénoms Nom », pour l'affichage.
   String get fullName => '$prenoms $nom'.trim();
@@ -40,6 +44,7 @@ class UserModel {
       telephone: '${json['telephone'] ?? ''}',
       role: _parseRole(json['role']),
       actif: json['actif'] is bool ? json['actif'] as bool : true,
+      identityVerified: json['identity_verified'] == true,
     );
   }
 
@@ -51,6 +56,7 @@ class UserModel {
         'telephone': telephone,
         'role': role.name,
         'actif': actif,
+        'identity_verified': identityVerified,
       };
 
   /// Accepte « TENANT », « tenant », et quelques équivalents français.

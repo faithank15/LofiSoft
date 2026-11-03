@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../../core/errors/app_exception.dart';
 import '../../../data/repo/admin_repository.dart';
 import '../../../domain/models/admin_model.dart';
+import '../../../domain/models/user_model.dart';
 import '../../routes/app_routes.dart';
 import '../../shared/load_status.dart';
 
@@ -17,6 +18,7 @@ class AdminController extends GetxController {
 
   final RxList<ReportItem> reports = <ReportItem>[].obs;
   final RxList<IdentityRequestItem> requests = <IdentityRequestItem>[].obs;
+  final RxList<UserModel> users = <UserModel>[].obs;
 
   /// Identifiants (annonce ou demande) dont une action est en cours : leurs boutons sont bloqués.
   final RxSet<String> busy = <String>{}.obs;
@@ -34,8 +36,10 @@ class AdminController extends GetxController {
     try {
       final r = await _repository.reports();
       final i = await _repository.identityRequests();
+      final u = await _repository.users();
       reports.assignAll(r);
       requests.assignAll(i);
+      users.assignAll(u);
       status.value = LoadStatus.loaded;
     } on AppException catch (e) {
       errorMessage.value = e.message;
@@ -126,9 +130,40 @@ class AdminController extends GetxController {
     }
   }
 
+  // ------------------------------------------------------------ Utilisateurs
+
+  /// Suspend ou réactive un compte ; la ligne est mise à jour dès que le serveur confirme.
+  Future<void> setUserActive(UserModel user, {required bool actif}) async {
+    if (busy.contains(user.id)) return;
+    busy.add(user.id);
+    try {
+      await _repository.setUserActive(user.id, actif: actif);
+      final index = users.indexWhere((u) => u.id == user.id);
+      if (index >= 0) {
+        users[index] = UserModel(
+          id: user.id,
+          nom: user.nom,
+          prenoms: user.prenoms,
+          email: user.email,
+          telephone: user.telephone,
+          role: user.role,
+          actif: actif,
+          identityVerified: user.identityVerified,
+        );
+      }
+      _notify(actif ? 'Compte réactivé' : 'Compte suspendu', user.fullName);
+    } on AppException catch (e) {
+      _notify('Erreur', e.message);
+    } catch (_) {
+      _notify('Erreur', "L'action a échoué.");
+    } finally {
+      busy.remove(user.id);
+    }
+  }
+
   // ------------------------------------------------------------ Navigation
 
-  /// Onglets du bas : 0 Signalements, 1 Vérifications, 2 Profil.
+  /// Onglets du bas : 0 Signalements, 1 Vérifications, 2 Utilisateurs, 3 Profil.
   void goToTab(int index) {
     switch (index) {
       case 0:
@@ -136,6 +171,8 @@ class AdminController extends GetxController {
       case 1:
         _open(AppRoutes.adminVerifications);
       case 2:
+        _open(AppRoutes.adminUsers);
+      case 3:
         Get.toNamed(AppRoutes.profile);
     }
   }

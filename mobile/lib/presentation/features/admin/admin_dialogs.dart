@@ -34,6 +34,15 @@ Future<bool> confirmRemoval(BuildContext context, String headline) => _confirm(
       danger: true,
     );
 
+/// Demande confirmation avant de suspendre un compte. `true` si confirmé.
+Future<bool> confirmSuspension(BuildContext context, String name) => _confirm(
+      context,
+      title: 'Suspendre ce compte ?',
+      message: '$name ne pourra plus se connecter tant que le compte n\u2019est pas réactivé.',
+      confirmLabel: 'Suspendre',
+      danger: true,
+    );
+
 Future<bool> _confirm(
   BuildContext context, {
   required String title,

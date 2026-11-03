@@ -18,8 +18,6 @@ import '../../components/molecules/housing_code_box.dart';
 import '../../components/molecules/selection_chip.dart';
 import 'property_controller.dart';
 
-/// Écran C6 : Ajouter un locataire (maquette C6-Ajouter-locataire.html).
-/// Réécriture modulaire et responsive sans aucune altération des composants partagés.
 class PropertyFormPage extends StatefulWidget {
   const PropertyFormPage({super.key});
 
@@ -35,7 +33,6 @@ class _PropertyFormPageState extends State<PropertyFormPage> {
   final _cautionController = TextEditingController();
   final _startDateController = TextEditingController();
 
-  /// Rythme de paiement sélectionné (0: Chaque mois, 1: Autre rythme)
   int _paymentRhythm = 0;
 
   final PropertyController controller = Get.find<PropertyController>();
@@ -76,7 +73,6 @@ class _PropertyFormPageState extends State<PropertyFormPage> {
     });
   }
 
-  /// Ouvre la modale de sélection de logement, bornée et scrollable pour éviter tout overflow.
   void _openHousingModalPicker() {
     if (controller.housings.isEmpty) return;
 
@@ -132,7 +128,7 @@ class _PropertyFormPageState extends State<PropertyFormPage> {
                     child: ListView.separated(
                       shrinkWrap: true,
                       itemCount: controller.housings.length,
-                      separatorBuilder: (_, __) =>
+                      separatorBuilder: (context, index) =>
                           const SizedBox(height: AppSpacing.xs),
                       itemBuilder: (context, index) {
                         final h = controller.housings[index];
@@ -180,9 +176,12 @@ class _PropertyFormPageState extends State<PropertyFormPage> {
   }
 
   void _shareCode(String code) {
-    Share.share(
-      'Votre propriétaire vous a attribué votre logement sur LofiSoft. Entrez ce code pour le rejoindre : $code',
-      subject: 'Code logement LofiSoft',
+    SharePlus.instance.share(
+      ShareParams(
+        text:
+            'Votre propriétaire vous a attribué votre logement sur LofiSoft. Entrez ce code pour le rejoindre : $code',
+        subject: 'Code logement LofiSoft',
+      ),
     );
   }
 
@@ -218,7 +217,6 @@ class _PropertyFormPageState extends State<PropertyFormPage> {
         bottom: false,
         child: Column(
           children: [
-            // Barre d'en-tête (60 px : AppSizes.appBar)
             SizedBox(
               height: AppSizes.appBar,
               child: Padding(
@@ -239,8 +237,6 @@ class _PropertyFormPageState extends State<PropertyFormPage> {
                 ),
               ),
             ),
-
-            // Formulaire défilant responsive
             Expanded(
               child: SingleChildScrollView(
                 keyboardDismissBehavior:
@@ -256,7 +252,6 @@ class _PropertyFormPageState extends State<PropertyFormPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // 1. Champ sélecteur modulaire Logement avec chevron bas
                       Obx(() {
                         final housing =
                             controller.selectedHousingForTenant.value;
@@ -271,8 +266,6 @@ class _PropertyFormPageState extends State<PropertyFormPage> {
                         );
                       }),
                       const SizedBox(height: AppSpacing.lg),
-
-                      // 2. Loyer par mois et Date d'échéance (LayoutBuilder responsive)
                       LayoutBuilder(
                         builder: (context, constraints) {
                           final isNarrow = constraints.maxWidth < 340;
@@ -315,8 +308,6 @@ class _PropertyFormPageState extends State<PropertyFormPage> {
                         },
                       ),
                       const SizedBox(height: AppSpacing.lg),
-
-                      // 3. Paiement : pastilles Wrap anti-overflow
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -341,8 +332,6 @@ class _PropertyFormPageState extends State<PropertyFormPage> {
                         ],
                       ),
                       const SizedBox(height: AppSpacing.lg),
-
-                      // 4. Caution versée et Début du bail (LayoutBuilder responsive)
                       LayoutBuilder(
                         builder: (context, constraints) {
                           final isNarrow = constraints.maxWidth < 340;
@@ -382,8 +371,6 @@ class _PropertyFormPageState extends State<PropertyFormPage> {
                         },
                       ),
                       const SizedBox(height: AppSpacing.lg),
-
-                      // 5. Boîte : Code à donner au locataire (HousingCodeBox existant non altéré)
                       Obx(() {
                         final currentHousing =
                             controller.selectedHousingForTenant.value;
@@ -402,8 +389,6 @@ class _PropertyFormPageState extends State<PropertyFormPage> {
                 ),
               ),
             ),
-
-            // 6. Pied d'action fixe avec AppButton
             Container(
               padding: const EdgeInsets.fromLTRB(
                 AppSpacing.screen,
@@ -434,8 +419,6 @@ class _PropertyFormPageState extends State<PropertyFormPage> {
   }
 }
 
-/// Sélecteur modulaire du logement respectant la hauteur AppSizes.field (54 px)
-/// et les tokens du thème sans modifier les composants partagés.
 class _HousingSelectorField extends StatelessWidget {
   const _HousingSelectorField({
     required this.label,

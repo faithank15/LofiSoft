@@ -20,7 +20,7 @@ import '../../shared/load_status.dart';
 import '../../shared/loading_view.dart';
 import 'payment_controller.dart';
 
-/// B3 « Payer mon loyer » (lot 6) : montant, opérateur, numéro à débiter, bouton « Payer ».
+/// B3 "Payer mon loyer" (lot 6) : montant, opérateur, numéro à débiter, bouton "Payer".
 class PaymentCheckoutPage extends StatefulWidget {
   const PaymentCheckoutPage({super.key});
 
@@ -29,7 +29,7 @@ class PaymentCheckoutPage extends StatefulWidget {
 }
 
 class _PaymentCheckoutPageState extends State<PaymentCheckoutPage> {
-  // RÈGLE : les TextEditingController vivent dans la page, jamais dans le contrôleur.
+  // REGLE : les TextEditingController vivent dans la page, jamais dans le controleur.
   late final TextEditingController _amountCtrl;
   late final TextEditingController _phoneCtrl;
 
@@ -57,7 +57,7 @@ class _PaymentCheckoutPageState extends State<PaymentCheckoutPage> {
           final loaded = controller.loadStatus.value == LoadStatus.loaded;
           return Column(
             children: [
-              // En-tête 60 px : retour + titre.
+              // En-tete 60 px : retour + titre.
               SizedBox(
                 height: AppSizes.appBar,
                 child: Padding(
@@ -113,7 +113,7 @@ class _Form extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Carte « loyer du mois » : reste à payer et progression.
+          // Carte "loyer du mois" : reste a payer et progression.
           AppCard(
             padding: const EdgeInsets.fromLTRB(AppSpacing.lg, 14, AppSpacing.lg, 14),
             child: Column(
@@ -149,11 +149,11 @@ class _Form extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           Text(
-            'Vous pouvez payer en plusieurs fois. Minimum : ${CurrencyFormatter.format(PaymentController.minAmount)} par paiement.',
+            'Vous pouvez payer en plusieurs fois. Minimum: ${CurrencyFormatter.format(PaymentController.minAmount)} par paiement.',
             style: AppTextStyles.caption,
           ),
           const SizedBox(height: 18),
-          // Opérateur.
+          // Operateur.
           Text('Payer avec', style: AppTextStyles.label.copyWith(fontSize: 17)),
           const SizedBox(height: 10),
           Row(

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\UserResource;
 use App\Models\Announcement;
 use App\Models\IdentityRequest;
 use App\Models\Report;
@@ -143,7 +144,18 @@ class AdminController extends Controller
             });
         }
 
-        return response()->json(['data' => $query->latest()->paginate(20)]);
+        $perPage = max(1, min(50, (int) $request->query('per_page', 20)));
+        $paginator = $query->latest()->paginate($perPage);
+
+        // Même enveloppe que les autres listes : { data: [...], meta: {...} }.
+        return response()->json([
+            'data' => UserResource::collection($paginator->items()),
+            'meta' => [
+                'current_page' => $paginator->currentPage(),
+                'last_page' => $paginator->lastPage(),
+                'total' => $paginator->total(),
+            ],
+        ]);
     }
 
     public function toggleUserActive(Request $request, User $user): JsonResponse

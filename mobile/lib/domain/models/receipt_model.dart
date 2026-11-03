@@ -46,4 +46,13 @@ class Receipt {
         housing: '${json['housing'] ?? ''}',
         period: '${json['period'] ?? ''}',
       );
+
+  Map<String, dynamic> toJson() => {
+        'reference': reference,
+        'amount': amount,
+        'paid_at': paidAt?.toIso8601String(),
+        'operator': operator,
+        'housing': housing,
+        'period': period,
+      };
 }

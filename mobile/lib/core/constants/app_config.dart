@@ -10,9 +10,10 @@
 abstract final class AppConfig {
   /// Par défaut : le back de ce PC, via `adb reverse tcp:8000 tcp:8000` (téléphone en USB ou émulateur).
   /// Autre serveur : `--dart-define=API_BASE_URL=http://<adresse>:8000/api`.
+  static const _uriPart = "10.140.106.79";
   static const apiBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://127.0.0.1:8000/api',
+    defaultValue: 'http://$_uriPart:8000/api',
   );
 
   static const _timeoutSeconds = int.fromEnvironment(

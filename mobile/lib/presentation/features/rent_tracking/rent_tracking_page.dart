@@ -7,6 +7,7 @@ import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_shadows.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../domain/models/tenant_rent_model.dart';
 import '../../components/atoms/app_avatar.dart';
 import '../../components/atoms/app_button.dart';
 import '../../components/atoms/status_text.dart';
@@ -14,16 +15,64 @@ import '../../components/molecules/app_bottom_nav.dart';
 import '../../components/molecules/offline_banner.dart';
 import '../../components/molecules/payment_row.dart';
 import '../../components/molecules/rent_card.dart';
-import '../../../domain/models/tenant_rent_model.dart';
 import '../../routes/app_routes.dart';
 import '../../shared/error_view.dart';
 import '../../shared/load_status.dart';
 import '../../shared/loading_view.dart';
 import 'rent_tracking_controller.dart';
 
-/// Mon loyer · B2 (en ligne) et B6 (hors ligne) : même page, deux états.
 class RentTrackingPage extends StatelessWidget {
   const RentTrackingPage({super.key});
+
+  Future<void> _openWhatsApp(String? phone, String housing) async {
+    final clean = (phone ?? '').replaceAll(RegExp(r'\D'), '');
+    if (clean.isEmpty) {
+      Get.snackbar(
+        'WhatsApp indisponible',
+        'Le numéro du bailleur n’est pas renseigné.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+    final formatted = clean.startsWith('229') ? clean : '229$clean';
+    final message =
+        'Bonjour, je vous contacte concernant mon loyer pour $housing sur LofiSoft.';
+    final uri = Uri.parse(
+      'https://wa.me/$formatted?text=${Uri.encodeComponent(message)}',
+    );
+
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      Get.snackbar(
+        'WhatsApp indisponible',
+        'Impossible d’ouvrir l’application WhatsApp.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
+  }
+
+  Future<void> _call(String? phone) async {
+    final clean = (phone ?? '').replaceAll(RegExp(r'\s+'), '');
+    if (clean.isEmpty) {
+      Get.snackbar(
+        'Appel indisponible',
+        'Le numéro du propriétaire n’est pas connu.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+    final uri = Uri.parse('tel:$clean');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    } else {
+      Get.snackbar(
+        'Appel indisponible',
+        'Impossible de composer le $phone.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +88,8 @@ class RentTrackingPage extends StatelessWidget {
               return const LoadingView();
             case LoadStatus.failure:
               return ErrorView(
-                message: controller.errorMessage.value ?? 'Chargement impossible.',
+                message:
+                    controller.errorMessage.value ?? 'Chargement impossible.',
                 onRetry: controller.load,
               );
             case LoadStatus.loaded:
@@ -68,124 +118,127 @@ class RentTrackingPage extends StatelessWidget {
                   color: AppColors.green,
                   onRefresh: controller.load,
                   child: ListView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.all(AppSpacing.screen),
-                  children: [
-                    // Bandeau vert : mois, reste à payer, barre, échéance
-                    RentCard(
-                      monthLabel: controller.monthLabel,
-                      remaining: controller.remaining,
-                      paid: controller.paidThisPeriod,
-                      total: controller.monthlyRent,
-                      dueLabel: controller.dueLabel,
-                      statusLabel: _statusLabel(controller.status),
-                      statusKind: _statusKind(controller.status),
-                      header: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            controller.tenantName.isEmpty ? 'Bonjour' : 'Bonjour ${controller.tenantName}',
-                            style: AppTextStyles.title
-                                .copyWith(color: AppColors.surface),
-                          ),
-                          Text(
-                            controller.housing,
-                            style: AppTextStyles.subtitle
-                                .copyWith(color: AppColors.mint),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-
-                    // Bouton de paiement : inactif hors ligne
-                    AppButton(
-                      label: offline
-                          ? 'Payer : connexion nécessaire'
-                          : 'Payer mon loyer',
-                      onPressed: offline
-                          ? null
-                          : () => Get.toNamed(AppRoutes.payment),
-                    ),
-                    const SizedBox(height: AppSpacing.xl),
-
-                    // Derniers paiements
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text('Derniers paiements',
-                              style: AppTextStyles.section),
-                        ),
-                        if (!offline)
-                          TextButton(
-                            onPressed: () =>
-                                Get.toNamed(AppRoutes.paymentHistory),
-                            child: Text(
-                              'Tout voir',
-                              style: AppTextStyles.bodyStrong
-                                  .copyWith(color: AppColors.green),
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.all(AppSpacing.screen),
+                    children: [
+                      RentCard(
+                        monthLabel: controller.monthLabel,
+                        remaining: controller.remaining,
+                        paid: controller.paidThisPeriod,
+                        total: controller.monthlyRent,
+                        dueLabel: controller.dueLabel,
+                        statusLabel: _statusLabel(controller.status),
+                        statusKind: _statusKind(controller.status),
+                        header: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              controller.tenantName.isEmpty
+                                  ? 'Bonjour'
+                                  : 'Bonjour ${controller.tenantName}',
+                              style: AppTextStyles.title.copyWith(
+                                color: AppColors.surface,
+                              ),
                             ),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    Container(
-                      decoration: _cardDecoration(),
-                      child: Column(
-                        children: [
-                          for (var i = 0; i < lastPayments.length; i++)
-                            PaymentRow(
-                              date: lastPayments[i].date,
-                              amount: lastPayments[i].amount,
-                              operator: lastPayments[i].operator,
-                              isLast: i == lastPayments.length - 1,
-                            ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.lg),
-
-                    // Propriétaire : appeler, et WhatsApp seulement en ligne
-                    Container(
-                      padding: const EdgeInsets.all(AppSpacing.md),
-                      decoration: _cardDecoration(),
-                      child: Row(
-                        children: [
-                          AppAvatar(name: controller.ownerName),
-                          const SizedBox(width: AppSpacing.md),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('Votre propriétaire',
-                                    style: AppTextStyles.caption),
-                                Text(controller.ownerName,
-                                    style: AppTextStyles.bodyStrong),
-                              ],
-                            ),
-                          ),
-                          _SquareIconButton(
-                            icon: Icons.call_outlined,
-                            label: 'Appeler',
-                            onTap: () => _call(controller.ownerPhone),
-                          ),
-                          if (!offline) ...[
-                            const SizedBox(width: AppSpacing.sm),
-                            _SquareIconButton(
-                              icon: Icons.chat_bubble_outline,
-                              label: 'WhatsApp',
-                              onTap: () => Get.snackbar(
-                                'Bientôt',
-                                'WhatsApp arrive bientôt.',
-                                snackPosition: SnackPosition.BOTTOM,
+                            Text(
+                              controller.housing,
+                              style: AppTextStyles.subtitle.copyWith(
+                                color: AppColors.mint,
                               ),
                             ),
                           ],
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      AppButton(
+                        label: offline
+                            ? 'Payer : connexion nécessaire'
+                            : 'Payer mon loyer',
+                        onPressed: offline
+                            ? null
+                            : () => Get.toNamed(AppRoutes.payment),
+                      ),
+                      const SizedBox(height: AppSpacing.xl),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              'Derniers paiements',
+                              style: AppTextStyles.section,
+                            ),
+                          ),
+                          if (!offline)
+                            TextButton(
+                              onPressed: () =>
+                                  Get.toNamed(AppRoutes.paymentHistory),
+                              child: Text(
+                                'Tout voir',
+                                style: AppTextStyles.bodyStrong.copyWith(
+                                  color: AppColors.green,
+                                ),
+                              ),
+                            ),
                         ],
                       ),
-                    ),
-                  ],
-                ),
+                      const SizedBox(height: AppSpacing.sm),
+                      Container(
+                        decoration: _cardDecoration(),
+                        child: Column(
+                          children: [
+                            for (var i = 0; i < lastPayments.length; i++)
+                              PaymentRow(
+                                date: lastPayments[i].date,
+                                amount: lastPayments[i].amount,
+                                operator: lastPayments[i].operator,
+                                isLast: i == lastPayments.length - 1,
+                              ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+                      Container(
+                        padding: const EdgeInsets.all(AppSpacing.md),
+                        decoration: _cardDecoration(),
+                        child: Row(
+                          children: [
+                            AppAvatar(name: controller.ownerName),
+                            const SizedBox(width: AppSpacing.md),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Votre propriétaire',
+                                    style: AppTextStyles.caption,
+                                  ),
+                                  Text(
+                                    controller.ownerName,
+                                    style: AppTextStyles.bodyStrong,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            _SquareIconButton(
+                              icon: Icons.call_outlined,
+                              label: 'Appeler',
+                              onTap: () => _call(controller.ownerPhone),
+                            ),
+                            if (!offline) ...[
+                              const SizedBox(width: AppSpacing.sm),
+                              _SquareIconButton(
+                                icon: Icons.chat_bubble_outline,
+                                label: 'WhatsApp',
+                                onTap: () => _openWhatsApp(
+                                  controller.ownerPhone,
+                                  controller.housing,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -213,7 +266,6 @@ StatusKind _statusKind(RentStatus status) => switch (status) {
   RentStatus.unpaid => StatusKind.bad,
 };
 
-/// Fond blanc, bordure fine et ombre douce, comme les cartes d'annonce.
 BoxDecoration _cardDecoration() => BoxDecoration(
   color: AppColors.surface,
   borderRadius: BorderRadius.circular(AppRadius.card),
@@ -221,7 +273,6 @@ BoxDecoration _cardDecoration() => BoxDecoration(
   boxShadow: AppShadows.soft,
 );
 
-/// Petit bouton carré à icône (appeler, WhatsApp).
 class _SquareIconButton extends StatelessWidget {
   const _SquareIconButton({
     required this.icon,
@@ -254,22 +305,7 @@ class _SquareIconButton extends StatelessWidget {
     );
   }
 }
-/// Appelle le propriétaire (ouvre le composeur du téléphone).
-Future<void> _call(String? phone) async {
-  final clean = (phone ?? '').replaceAll(RegExp(r'\s+'), '');
-  if (clean.isEmpty) {
-    Get.snackbar('Appel indisponible', "Le numéro du propriétaire n'est pas connu.", snackPosition: SnackPosition.BOTTOM);
-    return;
-  }
-  final uri = Uri.parse('tel:$clean');
-  if (await canLaunchUrl(uri)) {
-    await launchUrl(uri);
-  } else {
-    Get.snackbar('Appel indisponible', 'Impossible de composer le $phone.', snackPosition: SnackPosition.BOTTOM);
-  }
-}
 
-/// Aucune location : le locataire saisit le code que lui a donné son propriétaire.
 class _NoRental extends StatelessWidget {
   const _NoRental({required this.onJoin});
 
@@ -284,7 +320,11 @@ class _NoRental extends StatelessWidget {
         children: [
           const Icon(Icons.vpn_key_outlined, size: 48, color: AppColors.muted),
           const SizedBox(height: AppSpacing.lg),
-          Text('Vous n’avez pas encore de logement', textAlign: TextAlign.center, style: AppTextStyles.title),
+          Text(
+            'Vous n’avez pas encore de logement',
+            textAlign: TextAlign.center,
+            style: AppTextStyles.title,
+          ),
           const SizedBox(height: AppSpacing.sm),
           Text(
             'Demandez à votre propriétaire le code de votre logement, puis saisissez-le ici.',
@@ -299,9 +339,12 @@ class _NoRental extends StatelessWidget {
   }
 }
 
-/// Demande envoyée : on attend la réponse du propriétaire.
 class _PendingRental extends StatelessWidget {
-  const _PendingRental({required this.housing, required this.ownerName, required this.onRefresh});
+  const _PendingRental({
+    required this.housing,
+    required this.ownerName,
+    required this.onRefresh,
+  });
 
   final String housing;
   final String ownerName;
@@ -314,20 +357,35 @@ class _PendingRental extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.hourglass_top_rounded, size: 48, color: AppColors.muted),
+          const Icon(
+            Icons.hourglass_top_rounded,
+            size: 48,
+            color: AppColors.muted,
+          ),
           const SizedBox(height: AppSpacing.lg),
-          Text('Demande envoyée', textAlign: TextAlign.center, style: AppTextStyles.title),
+          Text(
+            'Demande envoyée',
+            textAlign: TextAlign.center,
+            style: AppTextStyles.title,
+          ),
           const SizedBox(height: AppSpacing.sm),
           Text(
             [
               if (housing.isNotEmpty) housing,
-              if (ownerName.isNotEmpty) '$ownerName doit confirmer votre arrivée.' else 'Votre propriétaire doit confirmer votre arrivée.',
+              if (ownerName.isNotEmpty)
+                '$ownerName doit confirmer votre arrivée.'
+              else
+                'Votre propriétaire doit confirmer votre arrivée.',
             ].join('\n'),
             textAlign: TextAlign.center,
             style: AppTextStyles.subtitle,
           ),
           const SizedBox(height: AppSpacing.xl),
-          AppButton(label: 'Actualiser', variant: AppButtonVariant.outline, onPressed: onRefresh),
+          AppButton(
+            label: 'Actualiser',
+            variant: AppButtonVariant.outline,
+            onPressed: onRefresh,
+          ),
         ],
       ),
     );

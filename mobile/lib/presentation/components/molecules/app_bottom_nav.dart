@@ -33,6 +33,7 @@ abstract final class AppNavItems {
   static const admin = [
     NavItem(icon: Icons.flag_outlined, label: 'Signalements'),
     NavItem(icon: Icons.verified_user_outlined, label: 'Vérifications'),
+    NavItem(icon: Icons.group_outlined, label: 'Utilisateurs'),
     NavItem(icon: Icons.person_outline_rounded, label: 'Profil'),
   ];
 }

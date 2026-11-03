@@ -180,12 +180,34 @@ class AdminTest extends TestCase
         $this->user('OWNER', ['nom' => 'Mensah']);
         $this->actingAsRole('ADMIN');
 
-        $this->getJson('/api/admin/users?role=OWNER')->assertJsonCount(1, 'data.data');
-        $this->getJson('/api/admin/users?q=Zinsou')->assertJsonCount(1, 'data.data');
+        $this->getJson('/api/admin/users?role=OWNER')->assertJsonCount(1, 'data');
+        $this->getJson('/api/admin/users?q=Zinsou')->assertJsonCount(1, 'data');
 
         $body = $this->getJson('/api/admin/users')->getContent();
         $this->assertStringNotContainsString('"password"', $body);
         $this->assertStringNotContainsString('remember_token', $body);
+    }
+
+    public function test_users_list_uses_the_same_envelope_as_other_lists(): void
+    {
+        $this->user('TENANT');
+        $this->actingAsRole('ADMIN');
+
+        $this->getJson('/api/admin/users?per_page=1')->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonStructure([
+                'data' => [['id', 'nom', 'prenoms', 'email', 'telephone', 'role', 'actif', 'identity_verified']],
+                'meta' => ['current_page', 'last_page', 'total'],
+            ]);
+    }
+
+    public function test_me_exposes_identity_verified_for_owner_badge(): void
+    {
+        $owner = $this->actingAsRole('OWNER', ['identity_verified' => false]);
+        $this->getJson('/api/auth/me')->assertOk()->assertJsonPath('user.identity_verified', false);
+
+        $owner->update(['identity_verified' => true]);
+        $this->getJson('/api/auth/me')->assertOk()->assertJsonPath('user.identity_verified', true);
     }
 
     public function test_toggle_user_active_blocks_login_and_existing_token(): void

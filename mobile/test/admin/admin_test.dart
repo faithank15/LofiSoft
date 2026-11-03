@@ -52,7 +52,11 @@ void main() {
   tearDown(Get.reset);
 
   late FakeServer server;
-  void boot() => server = FakeServer();
+  void boot() {
+    server = FakeServer();
+    // load() lit aussi la liste des comptes : vide par défaut, sauf test dédié.
+    server.on('GET', '/admin/users', body: {'data': []});
+  }
 
   group('ProfileController : déconnexion', () {
     testWidgets('efface la session, révoque le jeton, retourne à la connexion', (tester) async {
@@ -95,6 +99,91 @@ void main() {
       await tester.runAsync(c.logout);
       await tester.pump(const Duration(seconds: 1));
       expect(srv.auth.hasSession, false);
+    });
+  });
+
+  // ------------------------------------------------------------ Utilisateurs
+
+  Map<String, dynamic> accountJson(String id, {String role = 'TENANT', bool actif = true, bool verified = false}) => {
+        'id': id,
+        'nom': 'Nom$id',
+        'prenoms': 'Pre$id',
+        'email': '$id@lofi.bj',
+        'telephone': '0197000000',
+        'role': role,
+        'actif': actif,
+        'identity_verified': verified,
+      };
+
+  group('AdminController : utilisateurs', () {
+    late AdminController c;
+
+    void withApp(String name, Future<void> Function() body) {
+      testWidgets(name, (tester) async {
+        boot();
+        c = AdminController(repository: AdminRepository(AdminService(server.client)));
+        await tester.pumpWidget(GetMaterialApp(home: const SizedBox()));
+        await tester.runAsync(body);
+        for (var i = 0; i < 20; i++) {
+          await tester.pump(const Duration(milliseconds: 500));
+        }
+        await tester.pumpWidget(const SizedBox());
+      });
+    }
+
+    void serve() {
+      server.on('GET', '/admin/reports', body: []);
+      server.on('GET', '/admin/identity-requests', body: []);
+      server.on('GET', '/admin/users', body: {
+        'data': [accountJson('u1'), accountJson('u2', role: 'OWNER', verified: true)],
+        'meta': {'current_page': 1, 'last_page': 1, 'total': 2},
+      });
+    }
+
+    withApp('load : la liste vient de data (même enveloppe que les autres listes)', () async {
+      serve();
+      await c.load();
+      expect(c.users.map((u) => u.id), ['u1', 'u2']);
+      expect(c.users[1].identityVerified, true);
+      expect(c.users[0].identityVerified, false);
+    });
+
+    withApp('suspendre : PUT actif=false, la ligne passe à suspendu', () async {
+      serve();
+      server.on('PUT', '/admin/users/u1/active', body: {'message': 'ok'});
+      await c.load();
+      await c.setUserActive(c.users.first, actif: false);
+      expect(server.last.method, 'PUT');
+      expect(server.last.path, '/api/admin/users/u1/active');
+      expect(server.last.json, {'actif': false});
+      expect(c.users.first.actif, false);
+      expect(c.isBusy('u1'), false);
+    });
+
+    withApp('réactiver : la ligne repasse à actif', () async {
+      serve();
+      server.on('GET', '/admin/users', body: {'data': [accountJson('u1', actif: false)]});
+      server.on('PUT', '/admin/users/u1/active', body: {'message': 'ok'});
+      await c.load();
+      await c.setUserActive(c.users.first, actif: true);
+      expect(server.last.json, {'actif': true});
+      expect(c.users.first.actif, true);
+    });
+
+    withApp('refus du serveur (422) : la ligne ne change pas, le verrou est libéré', () async {
+      serve();
+      server.on('PUT', '/admin/users/u1/active', status: 422, body: {'message': 'Action impossible sur votre propre compte.'});
+      await c.load();
+      await c.setUserActive(c.users.first, actif: false);
+      expect(c.users.first.actif, true);
+      expect(c.isBusy('u1'), false);
+    });
+
+    test('UserModel lit identity_verified et le recopie dans toJson', () {
+      final u = UserModel.fromJson(accountJson('u9', role: 'OWNER', verified: true));
+      expect(u.identityVerified, true);
+      expect(u.toJson()['identity_verified'], true);
+      expect(UserModel.fromJson({'id': 'x'}).identityVerified, false);
     });
   });
 
