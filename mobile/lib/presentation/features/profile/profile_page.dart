@@ -62,6 +62,9 @@ class ProfilePage extends GetView<ProfileController> {
   }
 
   Future<void> _confirmLogout(BuildContext context) async {
+    // Pris avant l'attente : si la page est quittée pendant la boîte de dialogue,
+    // GetX supprime le contrôleur et un Get.find tardif lèverait « not found ».
+    final profile = controller;
     final yes = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -80,6 +83,6 @@ class ProfilePage extends GetView<ProfileController> {
         ],
       ),
     );
-    if (yes == true) await controller.logout();
+    if (yes == true) await profile.logout();
   }
 }
