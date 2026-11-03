@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\Payment;
 use App\Models\Rental;
+use App\Notifications\RentReminderNotification;
+use Illuminate\Support\Facades\Notification;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -196,15 +198,57 @@ class OwnerTest extends TestCase
 
     public function test_remind_by_owner(): void
     {
-        [$owner, , , $rental] = $this->activeSetup();
+        Notification::fake();
+
+        [$owner, $tenant, , $rental] = $this->activeSetup();
         Sanctum::actingAs($owner);
 
         $this->postJson("/api/owner/rentals/{$rental->id}/remind")->assertOk();
+
+        // Le rappel part réellement au locataire, et non vers un puits sans fond.
+        Notification::assertSentTo(
+            $tenant,
+            RentReminderNotification::class,
+            function (RentReminderNotification $notification, array $channels, object $notifiable): bool {
+                $mail = $notification->toMail($notifiable);
+                $lines = implode(' ', $mail->introLines);
+
+                $this->assertStringContainsString('Appartement test', $lines);
+                $this->assertStringContainsString('100000', $lines);
+
+                return true;
+            }
+        );
+    }
+
+    public function test_remind_refuses_when_the_tenant_has_no_email(): void
+    {
+        Notification::fake();
+
+        [$owner, $tenant, , $rental] = $this->activeSetup();
+        $tenant->update(['email' => '']);
+        Sanctum::actingAs($owner);
+
+        $this->postJson("/api/owner/rentals/{$rental->id}/remind")->assertStatus(422);
+
+        Notification::assertNothingSent();
+    }
+
+    public function test_tenants_list_exposes_the_paid_amount(): void
+    {
+        [$owner, , , $rental] = $this->activeSetup(['rent' => 100000]);
+        $this->payment($rental, 40000);
+        Sanctum::actingAs($owner);
+
+        $this->getJson('/api/owner/tenants')->assertOk()
+            ->assertJsonPath('0.due', 100000)
+            ->assertJsonPath('0.paid', 40000)
+            ->assertJsonPath('0.status', 'PARTIAL');
     }
 
     public function test_manual_payment_records_cash_success(): void
     {
-        [$owner, , , $rental] = $this->activeSetup(['rent' => 100000]);
+        [$owner, $tenant, , $rental] = $this->activeSetup(['rent' => 100000]);
         Sanctum::actingAs($owner);
 
         $this->postJson('/api/owner/payments/manual', ['rental_id' => $rental->id, 'period' => now()->format('Y-m'), 'amount' => 40000, 'note' => 'Main à main'])
@@ -215,8 +259,26 @@ class OwnerTest extends TestCase
         $this->assertSame('SUCCESS', $p->status->value);
         $this->assertStringStartsWith('CASH-', $p->reference);
 
+        // Le numéro enregistré est celui du locataire, pas un numéro inventé.
+        $this->assertSame($tenant->telephone, $p->phone);
+        $this->assertNotSame('0100000000', $p->phone);
+
         Sanctum::actingAs($rental->tenant);
         $this->getJson('/api/me/rent')->assertJsonPath('paid', 40000)->assertJsonPath('status', 'PARTIAL');
+    }
+
+    public function test_manual_payment_refuses_when_the_tenant_has_no_phone(): void
+    {
+        [$owner, $tenant, , $rental] = $this->activeSetup(['rent' => 100000]);
+        $tenant->update(['telephone' => '']);
+        Sanctum::actingAs($owner);
+
+        $this->postJson('/api/owner/payments/manual', ['rental_id' => $rental->id, 'period' => now()->format('Y-m'), 'amount' => 40000])
+            ->assertStatus(422)
+            ->assertJsonPath('message', 'Le locataire n\'a pas de numéro de téléphone enregistré.');
+
+        // Aucun paiement ne doit être inventé.
+        $this->assertSame(0, Payment::count());
     }
 
     public function test_manual_payment_cannot_exceed_balance(): void

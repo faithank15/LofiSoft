@@ -3,6 +3,10 @@
 namespace Tests\Feature\Auth;
 
 use App\Models\User;
+use App\Notifications\ResetPasswordNotification;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Password;
 use Tests\TestCase;
 
 class AuthTest extends TestCase
@@ -225,5 +229,122 @@ class AuthTest extends TestCase
         $known->assertOk();
         $this->assertSame($known->json(), $unknown->json());
         $this->postJson('/api/auth/forgot-password', ['email' => 'nope'])->assertStatus(422);
+    }
+
+    public function test_forgot_password_sends_a_real_email_with_a_working_link(): void
+    {
+        Notification::fake();
+
+        $this->user('TENANT', ['email' => 'a@lofi.bj']);
+
+        $this->postJson('/api/auth/forgot-password', ['email' => 'a@lofi.bj'])->assertOk();
+
+        Notification::assertSentTo(
+            User::where('email', 'a@lofi.bj')->first(),
+            ResetPasswordNotification::class,
+            function (ResetPasswordNotification $notification, array $channels, object $notifiable): bool {
+                $mail = $notification->toMail($notifiable);
+
+                // Le lien doit viser la page web de réinitialisation.
+                $this->assertStringContainsString('/reset-password?token=', $mail->actionUrl);
+                $this->assertStringContainsString('email=a%40lofi.bj', $mail->actionUrl);
+                $this->assertStringContainsString('Réinitialisez votre mot de passe', $mail->subject);
+                $this->assertSame('Choisir un nouveau mot de passe', $mail->actionText);
+
+                return true;
+            }
+        );
+    }
+
+    public function test_forgot_password_stores_a_token_that_can_reset_the_password(): void
+    {
+        $user = $this->user('TENANT', ['email' => 'a@lofi.bj']);
+
+        $this->postJson('/api/auth/forgot-password', ['email' => 'a@lofi.bj'])->assertOk();
+
+        // Un jeton doit exister en base, et la page web doit réinitialiser le mot de passe.
+        $this->assertDatabaseHas('password_reset_tokens', ['email' => 'a@lofi.bj']);
+
+        $token = Password::broker()->createToken($user);
+
+        $this->post('/reset-password', [
+            'token' => $token,
+            'email' => 'a@lofi.bj',
+            'password' => 'Nouveau1234',
+            'password_confirmation' => 'Nouveau1234',
+        ])->assertOk()->assertSee('Mot de passe modifié', false);
+
+        $this->assertTrue(Hash::check('Nouveau1234', $user->fresh()->password));
+    }
+
+    public function test_reset_password_rejects_an_invalid_token(): void
+    {
+        $user = $this->user('TENANT', ['email' => 'a@lofi.bj']);
+
+        $this->post('/reset-password', [
+            'token' => 'jeton-bidon',
+            'email' => 'a@lofi.bj',
+            'password' => 'Nouveau1234',
+            'password_confirmation' => 'Nouveau1234',
+        ])->assertOk()->assertSee('invalide ou a expiré', false);
+
+        // Le mot de passe n'a pas bougé.
+        $this->assertTrue(Hash::check('Test1234', $user->fresh()->password));
+    }
+
+    public function test_reset_password_page_is_reachable_and_renders_the_form(): void
+    {
+        $this->get('/reset-password?token=abc&email=a%40lofi.bj')
+            ->assertOk()
+            ->assertSee('Choisir un nouveau mot de passe')
+            ->assertSee('name="token"', false)
+            ->assertSee('value="abc"', false);
+    }
+
+    public function test_reset_password_requires_a_matching_confirmation(): void
+    {
+        $user = $this->user('TENANT', ['email' => 'a@lofi.bj']);
+
+        // Un navigateur, pas un client JSON : la page doit se réafficher avec l'erreur.
+        $this->withHeader('Accept', 'text/html')->post('/reset-password', [
+            'token' => 'jeton-bidon',
+            'email' => 'a@lofi.bj',
+            'password' => 'Nouveau1234',
+            'password_confirmation' => 'Autre1234',
+        ])->assertSessionHasErrors('password');
+
+        $this->assertTrue(Hash::check('Test1234', $user->fresh()->password));
+    }
+
+    public function test_the_reset_email_renders_as_html_with_its_link(): void
+    {
+        $user = $this->user('TENANT', ['email' => 'a@lofi.bj']);
+
+        $mail = (new ResetPasswordNotification('jeton-de-test'))->toMail($user);
+        $rendered = $mail->render();
+
+        // Le mail doit être affichable : lien cliquable et texte en français.
+        $this->assertStringContainsString('/reset-password?token=jeton-de-test', $rendered);
+        $this->assertStringContainsString('Choisir un nouveau mot de passe', $rendered);
+        $this->assertStringContainsString('ignorez simplement ce message', $rendered);
+    }
+
+    public function test_resetting_the_password_revokes_the_open_sessions(): void
+    {
+        $user = $this->user('TENANT', ['email' => 'a@lofi.bj']);
+        $user->createToken('auth_token');
+        $this->assertSame(1, $user->tokens()->count());
+
+        $token = Password::broker()->createToken($user);
+
+        $this->post('/reset-password', [
+            'token' => $token,
+            'email' => 'a@lofi.bj',
+            'password' => 'Nouveau1234',
+            'password_confirmation' => 'Nouveau1234',
+        ])->assertOk();
+
+        // Un mot de passe réinitialisé doit fermer les sessions ouvertes.
+        $this->assertSame(0, $user->fresh()->tokens()->count());
     }
 }
