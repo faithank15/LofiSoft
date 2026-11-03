@@ -8,7 +8,6 @@ import '../../../core/utils/currency_formatter.dart';
 import '../atoms/app_card.dart';
 import 'info_row.dart';
 
-/// Ligne de détail d'un reçu.
 class ReceiptLine {
   const ReceiptLine(this.label, this.value);
 
@@ -16,17 +15,13 @@ class ReceiptLine {
   final String value;
 }
 
-/// Carte récapitulative d'un paiement : montant, puis détails (date, opérateur, référence...).
-///
-/// ```dart
-/// ReceiptSummary(amount: 30000, lines: [
-///   ReceiptLine('Date', '22 octobre 2026'),
-///   ReceiptLine('Payé avec', 'MTN Mobile Money'),
-///   ReceiptLine('Référence', 'RC-2026-1022-01'),
-/// ])
-/// ```
 class ReceiptSummary extends StatelessWidget {
-  const ReceiptSummary({super.key, required this.amount, required this.lines, this.title = 'Paiement réussi'});
+  const ReceiptSummary({
+    super.key,
+    required this.amount,
+    required this.lines,
+    this.title = 'Paiement réussi',
+  });
 
   final num amount;
   final List<ReceiptLine> lines;
@@ -44,14 +39,21 @@ class ReceiptSummary extends StatelessWidget {
                 Container(
                   width: 56,
                   height: 56,
-                  decoration: const BoxDecoration(color: AppColors.mint, shape: BoxShape.circle),
-                  child: const Icon(Icons.check_rounded, size: 32, color: AppColors.green),
+                  decoration: const BoxDecoration(
+                    color: AppColors.mint,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.check_rounded,
+                    size: 32,
+                    color: AppColors.green,
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.md),
                 Text(title, style: AppTextStyles.section),
                 const SizedBox(height: AppSpacing.xs),
                 Text(
-                  CurrencyFormatter.number(amount) + ' ${AppConstants.currency}',
+                  '${CurrencyFormatter.number(amount)} ${AppConstants.currency}',
                   style: AppTextStyles.amount.copyWith(fontSize: 34),
                 ),
               ],

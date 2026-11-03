@@ -12,7 +12,10 @@ class HousingController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $housings = Housing::where('owner_id', $request->user()->id)->latest()->get();
+        $housings = Housing::with('activeRental.tenant')
+            ->where('owner_id', $request->user()->id)
+            ->latest()
+            ->get();
 
         return response()->json(['data' => $housings]);
     }

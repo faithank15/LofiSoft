@@ -1,5 +1,3 @@
-import 'dart:ui' show FontFeature;
-
 import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_constants.dart';
@@ -9,13 +7,6 @@ import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/currency_formatter.dart';
 import '../atoms/skyline_band.dart';
 
-/// Jauge des loyers du mois, à placer sur fond vert profond.
-/// Une ville se remplit de gauche à droite, un soleil marque l'avancement
-/// et le montant reçu défile jusqu'à sa valeur.
-///
-/// ```dart
-/// RentGauge(label: 'Loyers de novembre', received: 426800, expected: 649900)
-/// ```
 class RentGauge extends StatelessWidget {
   const RentGauge({
     super.key,
@@ -34,7 +25,6 @@ class RentGauge extends StatelessWidget {
   static const _ink = Color(0xFF0A3D33);
   static const _sun = Color(0xFFF2B134);
 
-  /// Part reçue, entre 0 et 1.
   double get _value =>
       expected <= 0 ? 0 : (received / expected).clamp(0.0, 1.0).toDouble();
 
@@ -46,7 +36,6 @@ class RentGauge extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Libellé et pourcentage
         Row(
           children: [
             Expanded(
@@ -61,13 +50,13 @@ class RentGauge extends StatelessWidget {
             ),
             Text(
               '${(target * 100).round()} %',
-              style: AppTextStyles.bodyStrong.copyWith(color: AppColors.surface),
+              style: AppTextStyles.bodyStrong.copyWith(
+                color: AppColors.surface,
+              ),
             ),
           ],
         ),
         const SizedBox(height: AppSpacing.md),
-
-        // La jauge elle-même
         LayoutBuilder(
           builder: (context, box) {
             final width = box.maxWidth;
@@ -78,7 +67,6 @@ class RentGauge extends StatelessWidget {
               curve: const Cubic(0.16, 1, 0.3, 1),
               builder: (context, v, _) {
                 final fillWidth = width * v;
-                // Montant affiché pendant l'animation.
                 final shown = target == 0 ? 0 : received * (v / target);
 
                 return SizedBox(
@@ -86,7 +74,6 @@ class RentGauge extends StatelessWidget {
                   child: Stack(
                     clipBehavior: Clip.none,
                     children: [
-                      // Couche 1 : fond sombre, ville claire, texte clair
                       ClipRRect(
                         borderRadius: BorderRadius.circular(16),
                         child: Stack(
@@ -102,10 +89,11 @@ class RentGauge extends StatelessWidget {
                               ),
                             ),
                             Positioned.fill(
-                              child: _amountText(shown, const Color(0xFFCFE6DB)),
+                              child: _amountText(
+                                shown,
+                                const Color(0xFFCFE6DB),
+                              ),
                             ),
-
-                            // Couche 2 : partie remplie, coupée à la progression
                             Positioned(
                               left: 0,
                               top: 0,
@@ -114,7 +102,10 @@ class RentGauge extends StatelessWidget {
                               child: DecoratedBox(
                                 decoration: const BoxDecoration(
                                   gradient: LinearGradient(
-                                    colors: [Color(0xFFF7F3EA), Color(0xFFF6DFA6)],
+                                    colors: [
+                                      Color(0xFFF7F3EA),
+                                      Color(0xFFF6DFA6),
+                                    ],
                                     stops: [0.55, 1],
                                   ),
                                 ),
@@ -147,8 +138,6 @@ class RentGauge extends StatelessWidget {
                           ],
                         ),
                       ),
-
-                      // Le soleil, à l'extrémité de la partie remplie
                       Positioned(
                         left: fillWidth - 10,
                         top: -8,
@@ -173,7 +162,6 @@ class RentGauge extends StatelessWidget {
     );
   }
 
-  /// « 426 800 / 649 900 FCFA » dans la couleur demandée.
   Widget _amountText(num amount, Color color) {
     final big = AppTextStyles.section.copyWith(
       color: color,

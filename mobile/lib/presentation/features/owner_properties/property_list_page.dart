@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_radius.dart';
-import '../../../core/theme/app_shadows.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/currency_formatter.dart';
@@ -19,7 +17,6 @@ import '../../shared/load_status.dart';
 import '../../shared/loading_view.dart';
 import 'property_controller.dart';
 
-/// Écran C2 : Mes logements (catalogue des biens du propriétaire).
 class PropertyListPage extends GetView<PropertyController> {
   const PropertyListPage({super.key});
 

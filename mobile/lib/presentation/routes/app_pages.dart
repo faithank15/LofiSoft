@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 
 import '../../core/constants/app_config.dart';
+import '../../domain/models/enums.dart';
 import '../features/admin/admin_binding.dart';
 import '../features/admin/admin_reports_page.dart';
 import '../features/admin/admin_users_page.dart';
@@ -34,6 +35,9 @@ import '../features/owner_properties/property_binding.dart';
 import '../features/owner_properties/property_detail_page.dart';
 import '../features/owner_properties/property_form_page.dart';
 import '../features/owner_properties/property_list_page.dart';
+import '../features/payment/payment_binding.dart';
+import '../features/payment/payment_checkout_page.dart';
+import '../features/payment/receipt_details_page.dart';
 import '../features/profile/profile_binding.dart';
 import '../features/profile/profile_page.dart';
 import '../features/rent_tracking/payment_history_page.dart';
@@ -43,26 +47,28 @@ import '../features/rental/join_housing_binding.dart';
 import '../features/rental/join_housing_page.dart';
 import '../features/splash/splash_binding.dart';
 import '../features/splash/splash_page.dart';
-import '../../domain/models/enums.dart';
 import 'app_routes.dart';
 import 'auth_middleware.dart';
 import 'role_middleware.dart';
 
-/// Table reliant chaque route à sa page et à son binding d'injection.
 abstract final class AppPages {
   static const initial = AppConfig.useFakeApi
       ? AppRoutes.dev
       : AppRoutes.splash;
 
-
-  // ---- Gardes de route (confort d'interface ; le serveur refuse de toute façon) ----
   static List<GetMiddleware> get _signedIn => [AuthMiddleware()];
-  static List<GetMiddleware> get _tenant =>
-      [AuthMiddleware(), RoleMiddleware({UserRole.TENANT})];
-  static List<GetMiddleware> get _owner =>
-      [AuthMiddleware(), RoleMiddleware({UserRole.OWNER})];
-  static List<GetMiddleware> get _admin =>
-      [AuthMiddleware(), RoleMiddleware({UserRole.ADMIN})];
+  static List<GetMiddleware> get _tenant => [
+    AuthMiddleware(),
+    RoleMiddleware({UserRole.TENANT}),
+  ];
+  static List<GetMiddleware> get _owner => [
+    AuthMiddleware(),
+    RoleMiddleware({UserRole.OWNER}),
+  ];
+  static List<GetMiddleware> get _admin => [
+    AuthMiddleware(),
+    RoleMiddleware({UserRole.ADMIN}),
+  ];
 
   static final pages = <GetPage<dynamic>>[
     // ---- Lot 2 : démarrage et authentification ----
@@ -89,8 +95,6 @@ abstract final class AppPages {
       page: () => const JoinHousingPage(),
       binding: JoinHousingBinding(),
     ),
-
-    // Point d'entrée de l'onboarding
     GetPage(
       name: AppRoutes.onboarding,
       page: () => const WelcomePage(),
@@ -107,6 +111,18 @@ abstract final class AppPages {
       middlewares: _tenant,
       page: () => const PaymentHistoryPage(),
       binding: RentTrackingBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.payment,
+      middlewares: _tenant,
+      page: () => const PaymentCheckoutPage(),
+      binding: PaymentBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.paymentReceipt,
+      middlewares: _tenant,
+      page: () => const ReceiptDetailsPage(),
+      binding: PaymentBinding(),
     ),
     GetPage(
       name: AppRoutes.admin,
@@ -175,7 +191,7 @@ abstract final class AppPages {
       binding: OwnerDashboardBinding(),
     ),
 
-    // ---- Profil (tous les rôles) ----
+    // ---- Profil ----
     GetPage(
       name: AppRoutes.profile,
       middlewares: _signedIn,

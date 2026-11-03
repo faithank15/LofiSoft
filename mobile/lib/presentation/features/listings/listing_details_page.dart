@@ -1,15 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_radius.dart';
+import '../../../core/theme/app_spacing.dart';
+import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/currency_formatter.dart';
 import '../../../domain/models/announcement_model.dart';
+import '../../../domain/models/report_model.dart';
+import '../../components/atoms/app_button.dart';
 import '../../components/atoms/app_network_image.dart';
+import '../../components/atoms/app_text_field.dart';
 import '../../shared/error_view.dart';
 import '../../shared/load_status.dart';
 import '../../shared/loading_view.dart';
 import 'listing_details_controller.dart';
 
-/// Couleurs de la maquette A3.
 class _C {
   static const ink = Color(0xFF10231E);
   static const green = Color(0xFF0F5C4D);
@@ -21,7 +28,6 @@ class _C {
   static const verified = Color(0xFF0B6B3A);
 }
 
-/// Détail d'une annonce (route /listings/details/:id).
 class ListingDetailsPage extends StatelessWidget {
   const ListingDetailsPage({super.key});
 
@@ -32,8 +38,131 @@ class ListingDetailsPage extends StatelessWidget {
     return (parts.first[0] + parts.last[0]).toUpperCase();
   }
 
-  void _soon(String message) {
-    Get.snackbar('Bientôt', message, snackPosition: SnackPosition.BOTTOM);
+  Future<void> _openMaps(String query) async {
+    final url = Uri.parse(
+      'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(query)}',
+    );
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    } else {
+      Get.snackbar(
+        'Itinéraire',
+        'Impossible d’ouvrir l’application de cartes.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
+  }
+
+  void _showReportDialog(
+    BuildContext context,
+    ListingDetailsController controller,
+  ) {
+    String selectedReason = ReportRequest.commonReasons.first;
+    final detailsController = TextEditingController();
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.paper,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppRadius.panel),
+        ),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (modalCtx, setModalState) {
+            return Padding(
+              padding: EdgeInsets.fromLTRB(
+                AppSpacing.screen,
+                AppSpacing.lg,
+                AppSpacing.screen,
+                MediaQuery.of(modalCtx).viewInsets.bottom + AppSpacing.xl,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Signaler cette annonce',
+                        style: AppTextStyles.title,
+                      ),
+                      IconButton(
+                        icon: const Icon(
+                          Icons.close_rounded,
+                          color: AppColors.muted,
+                        ),
+                        onPressed: () => Navigator.of(modalCtx).pop(),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    'Sélectionnez le motif principal correspondant à votre signalement.',
+                    style: AppTextStyles.subtitle,
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  Wrap(
+                    spacing: AppSpacing.sm,
+                    runSpacing: AppSpacing.sm,
+                    children: ReportRequest.commonReasons.map((reason) {
+                      final isSelected = selectedReason == reason;
+                      return ChoiceChip(
+                        label: Text(reason),
+                        selected: isSelected,
+                        selectedColor: AppColors.green,
+                        labelStyle: TextStyle(
+                          color: isSelected ? AppColors.surface : AppColors.ink,
+                          fontWeight: isSelected
+                              ? FontWeight.w700
+                              : FontWeight.w600,
+                        ),
+                        backgroundColor: AppColors.surface,
+                        side: BorderSide(
+                          color: isSelected ? AppColors.green : AppColors.line,
+                        ),
+                        onSelected: (val) {
+                          if (val) {
+                            setModalState(() => selectedReason = reason);
+                          }
+                        },
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  AppTextField(
+                    label: 'Précisions supplémentaires (facultatif)',
+                    controller: detailsController,
+                    maxLines: 3,
+                    minLines: 2,
+                    hintText: 'Expliquez en quelques mots ce qui ne va pas...',
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  Obx(
+                    () => AppButton(
+                      label: 'Envoyer le signalement',
+                      isLoading: controller.isReporting.value,
+                      onPressed: () async {
+                        final ok = await controller.report(
+                          reason: selectedReason,
+                          details: detailsController.text,
+                        );
+                        if (ok && modalCtx.mounted) {
+                          Navigator.of(modalCtx).pop();
+                        }
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -44,7 +173,11 @@ class ListingDetailsPage extends StatelessWidget {
       if (controller.status.value == LoadStatus.failure) {
         return Scaffold(
           backgroundColor: _C.cream,
-          appBar: AppBar(backgroundColor: _C.cream, elevation: 0, foregroundColor: _C.ink),
+          appBar: AppBar(
+            backgroundColor: _C.cream,
+            elevation: 0,
+            foregroundColor: _C.ink,
+          ),
           body: ErrorView(
             message: controller.errorMessage.value ?? 'Annonce introuvable.',
             onRetry: controller.load,
@@ -54,7 +187,11 @@ class ListingDetailsPage extends StatelessWidget {
       if (item == null) {
         return Scaffold(
           backgroundColor: _C.cream,
-          appBar: AppBar(backgroundColor: _C.cream, elevation: 0, foregroundColor: _C.ink),
+          appBar: AppBar(
+            backgroundColor: _C.cream,
+            elevation: 0,
+            foregroundColor: _C.ink,
+          ),
           body: const LoadingView(),
         );
       }
@@ -62,7 +199,11 @@ class ListingDetailsPage extends StatelessWidget {
     });
   }
 
-  Widget _content(BuildContext context, ListingDetailsController controller, AnnouncementModel item) {
+  Widget _content(
+    BuildContext context,
+    ListingDetailsController controller,
+    AnnouncementModel item,
+  ) {
     final topInset = MediaQuery.of(context).padding.top;
 
     return Scaffold(
@@ -73,7 +214,6 @@ class ListingDetailsPage extends StatelessWidget {
             child: SingleChildScrollView(
               child: Stack(
                 children: [
-                  // Image
                   SizedBox(
                     height: 290,
                     width: double.infinity,
@@ -81,20 +221,24 @@ class ListingDetailsPage extends StatelessWidget {
                         ? Container(
                             color: _C.imageBg,
                             child: const Center(
-                              child: Icon(Icons.apartment, size: 120, color: _C.green),
+                              child: Icon(
+                                Icons.apartment,
+                                size: 120,
+                                color: _C.green,
+                              ),
                             ),
                           )
                         : PageView.builder(
                             itemCount: item.photos.length,
-                            onPageChanged: (i) => controller.photoIndex.value = i,
-                            itemBuilder: (_, i) => AppNetworkImage(
+                            onPageChanged: (i) =>
+                                controller.photoIndex.value = i,
+                            itemBuilder: (ctx, i) => AppNetworkImage(
                               url: item.photos[i],
                               width: MediaQuery.of(context).size.width,
                               height: 290,
                             ),
                           ),
                   ),
-                  // Panneau d'infos
                   Padding(
                     padding: const EdgeInsets.only(top: 264),
                     child: Container(
@@ -102,18 +246,19 @@ class ListingDetailsPage extends StatelessWidget {
                       padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
                       decoration: const BoxDecoration(
                         color: _C.cream,
-                        borderRadius:
-                        BorderRadius.vertical(top: Radius.circular(28)),
+                        borderRadius: BorderRadius.vertical(
+                          top: Radius.circular(28),
+                        ),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Prix + titre
                           Text.rich(
                             TextSpan(
                               children: [
                                 TextSpan(
-                                  text: '${CurrencyFormatter.number(item.rent)} ',
+                                  text:
+                                      '${CurrencyFormatter.number(item.rent)} ',
                                   style: const TextStyle(
                                     fontSize: 32,
                                     fontWeight: FontWeight.w800,
@@ -144,10 +289,11 @@ class ListingDetailsPage extends StatelessWidget {
                           Text(
                             '${item.rooms} pièce${item.rooms > 1 ? 's' : ''}'
                             '${item.depositMonths > 0 ? ' · Caution : ${item.depositMonths} mois' : ''}',
-                            style: const TextStyle(fontSize: 15, color: _C.grey),
+                            style: const TextStyle(
+                              fontSize: 15,
+                              color: _C.grey,
+                            ),
                           ),
-
-                          // Description
                           if (item.description.isNotEmpty) ...[
                             const SizedBox(height: 16),
                             Text(
@@ -159,12 +305,12 @@ class ListingDetailsPage extends StatelessWidget {
                               ),
                             ),
                           ],
-
-                          // Lieu
                           const SizedBox(height: 16),
                           Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 14),
+                              horizontal: 16,
+                              vertical: 14,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(20),
@@ -195,7 +341,7 @@ class ListingDetailsPage extends StatelessWidget {
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment:
-                                    CrossAxisAlignment.start,
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         item.location,
@@ -209,8 +355,7 @@ class ListingDetailsPage extends StatelessWidget {
                                   ),
                                 ),
                                 TextButton(
-                                  onPressed: () =>
-                                      _soon("L'itinéraire arrive bientôt."),
+                                  onPressed: () => _openMaps(item.location),
                                   child: const Text(
                                     'Itinéraire',
                                     style: TextStyle(
@@ -223,8 +368,6 @@ class ListingDetailsPage extends StatelessWidget {
                               ],
                             ),
                           ),
-
-                          // Propriétaire
                           if (item.ownerName.isNotEmpty) ...[
                             const SizedBox(height: 16),
                             Row(
@@ -245,7 +388,7 @@ class ListingDetailsPage extends StatelessWidget {
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment:
-                                    CrossAxisAlignment.start,
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         item.ownerName,
@@ -255,32 +398,45 @@ class ListingDetailsPage extends StatelessWidget {
                                           color: _C.ink,
                                         ),
                                       ),
-                                      Row(
-                                        children: [
-                                          if (item.verified) ...[
-                                            const Text(
-                                              'Vérifié',
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.w800,
-                                                color: _C.verified,
-                                              ),
-                                            ),
-                                            const SizedBox(width: 8),
-                                          ],
-                                        ],
-                                      ),
+                                      if (item.verified) ...[
+                                        const Text(
+                                          'Vérifié',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w800,
+                                            color: _C.verified,
+                                          ),
+                                        ),
+                                      ],
                                     ],
                                   ),
                                 ),
                               ],
                             ),
                           ],
+                          const SizedBox(height: 24),
+                          Center(
+                            child: TextButton.icon(
+                              onPressed: () =>
+                                  _showReportDialog(context, controller),
+                              icon: const Icon(
+                                Icons.flag_outlined,
+                                size: 18,
+                                color: AppColors.statusBad,
+                              ),
+                              label: Text(
+                                'Signaler cette annonce',
+                                style: AppTextStyles.caption.copyWith(
+                                  color: AppColors.statusBad,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ),
                   ),
-                  // Bouton retour
                   Positioned(
                     top: topInset + 14,
                     left: 14,
@@ -289,47 +445,49 @@ class ListingDetailsPage extends StatelessWidget {
                       onTap: () => Get.back(),
                     ),
                   ),
-                  // Bouton favori
                   Positioned(
                     top: topInset + 14,
                     right: 14,
                     child: Obx(
                       () => _RoundButton(
-                        icon: controller.isFavorite.value ? Icons.favorite : Icons.favorite_border,
-                        color: controller.isFavorite.value ? const Color(0xFFC8553D) : _C.ink,
+                        icon: controller.isFavorite.value
+                            ? Icons.favorite
+                            : Icons.favorite_border,
+                        color: controller.isFavorite.value
+                            ? const Color(0xFFC8553D)
+                            : _C.ink,
                         onTap: controller.toggleFavorite,
                       ),
                     ),
                   ),
-                  // Compteur de photos
                   if (item.photos.length > 1)
-                  Positioned(
-                    top: 216,
-                    right: 14,
-                    child: Container(
-                      height: 30,
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: _C.ink,
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      child: Obx(() => Text(
-                        '${controller.photoIndex.value + 1} / ${item.photos.length}',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
+                    Positioned(
+                      top: 216,
+                      right: 14,
+                      child: Container(
+                        height: 30,
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: _C.ink,
+                          borderRadius: BorderRadius.circular(15),
                         ),
-                      )),
+                        child: Obx(
+                          () => Text(
+                            '${controller.photoIndex.value + 1} / ${item.photos.length}',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),
           ),
-
-          // Barre d'actions fixe
           Container(
             padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
             decoration: const BoxDecoration(
@@ -342,12 +500,20 @@ class ListingDetailsPage extends StatelessWidget {
                 children: [
                   Expanded(
                     child: ElevatedButton.icon(
-                      onPressed: () => _soon("L'appel arrive bientôt."),
+                      onPressed: () {
+                        Get.snackbar(
+                          'Contact propriétaire',
+                          'Entrez en contact avec ${item.ownerName.isNotEmpty ? item.ownerName : 'le propriétaire'} après visite.',
+                          snackPosition: SnackPosition.BOTTOM,
+                        );
+                      },
                       icon: const Icon(Icons.call_outlined),
                       label: const Text(
                         'Appeler',
                         style: TextStyle(
-                            fontSize: 17, fontWeight: FontWeight.w800),
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: _C.green,
@@ -362,12 +528,20 @@ class ListingDetailsPage extends StatelessWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: OutlinedButton.icon(
-                      onPressed: () => _soon('WhatsApp arrive bientôt.'),
+                      onPressed: () {
+                        Get.snackbar(
+                          'WhatsApp',
+                          'Le canal WhatsApp propriétaire est en cours de déploiement.',
+                          snackPosition: SnackPosition.BOTTOM,
+                        );
+                      },
                       icon: const Icon(Icons.chat_bubble_outline),
                       label: const Text(
                         'WhatsApp',
                         style: TextStyle(
-                            fontSize: 17, fontWeight: FontWeight.w800),
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: _C.green,
@@ -389,7 +563,6 @@ class ListingDetailsPage extends StatelessWidget {
   }
 }
 
-/// Bouton rond blanc (retour, favori).
 class _RoundButton extends StatelessWidget {
   const _RoundButton({
     required this.icon,
