@@ -193,10 +193,14 @@ class _ReceiptDetailsPageState extends State<ReceiptDetailsPage> {
             bottom: 0,
             child: SkylineBand(height: 90),
           ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(AppSpacing.screen, 70, AppSpacing.screen, 0),
-            child: Column(
-              children: [
+          // `Positioned.fill` : sans lui, le Padding est dimensionné par son
+          // contenu et le bloc se cale à gauche du bandeau.
+          Positioned.fill(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(AppSpacing.screen, 70, AppSpacing.screen, 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
                 Container(
                   width: 96,
                   height: 96,
@@ -248,7 +252,8 @@ class _ReceiptDetailsPageState extends State<ReceiptDetailsPage> {
                     maxLines: 1,
                   ),
                 ),
-              ],
+                ],
+              ),
             ),
           ),
         ],

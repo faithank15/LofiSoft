@@ -135,8 +135,12 @@ void main() {
   });
 
   group('ReceiptDetailsPage (B4)', () {
-    Future<void> pumpPage(WidgetTester tester, {PaymentController? controller}) async {
-      await tester.binding.setSurfaceSize(const Size(390, 844));
+    Future<void> pumpPage(
+      WidgetTester tester, {
+      PaymentController? controller,
+      Size size = const Size(390, 844),
+    }) async {
+      await tester.binding.setSurfaceSize(size);
       final c = controller ?? PaymentController(
         repository: PaymentRepository(PaymentService(server.client)),
         rentRepository: repo(),
@@ -199,6 +203,13 @@ void main() {
       final card = tester.getRect(find.byType(AppCard).first);
       final viewport = tester.getRect(find.byType(SingleChildScrollView).first);
       expect(card.top, greaterThanOrEqualTo(viewport.top));
+
+      // Le bandeau est centré. On teste sur un écran large : la police de
+      // substitution des tests rend le titre moins large que l'écran, donc
+      // un bandeau non étiré se calerait à gauche.
+      await pumpPage(tester, size: const Size(1000, 800));
+      final coche = tester.getRect(find.byIcon(Icons.check_rounded));
+      expect(coche.center.dx, closeTo(500, 2));
     });
 
     testWidgets('sans paiement : état vide', (tester) async {      stubActive();
