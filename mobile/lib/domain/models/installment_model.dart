@@ -11,6 +11,7 @@ class Installment {
     required this.status,
     required this.amount,
     required this.operator,
+    this.phone = '',
   });
 
   final String id;
@@ -19,6 +20,9 @@ class Installment {
 
   /// `MTN` ou `MOOV` (tel qu'envoyé au serveur).
   final String operator;
+
+  /// Numéro débité (10 chiffres, sans indicatif) — renvoyé par le serveur.
+  final String phone;
 
   /// « MTN Mobile Money », « Moov Money »…
   String get operatorLabel => switch (operator.toUpperCase()) {
@@ -37,6 +41,7 @@ class Installment {
       status: _status(src['status']),
       amount: _int(src['amount']),
       operator: '${src['operator'] ?? ''}',
+      phone: '${src['phone'] ?? ''}',
     );
   }
 

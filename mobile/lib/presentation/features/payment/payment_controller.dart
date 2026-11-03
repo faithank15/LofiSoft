@@ -153,8 +153,19 @@ class PaymentController extends GetxController {
   String get phone => _phone;
 
   /// "+229 01 97 •• •• 56"
-  String get maskedPhone {
-    final p = _phone;
+  String get maskedPhone => maskPhone(_phone);
+
+  /// Numéro débité par le paiement réussi (B4), masqué comme le formulaire.
+  /// Repli sur le numéro saisi si le serveur ne le renvoie pas.
+  String get paidPhoneLabel {
+    final p = paid.value?.phone ?? '';
+    return maskPhone(p.isEmpty ? _phone : p);
+  }
+
+  /// Masque un numéro local : "0197123456" -> "+229 01 97 •• •• 56".
+  String maskPhone(String raw) {
+    final p = raw.replaceAll(RegExp(r'[\s.\-]'), '');
+    if (p.isEmpty) return '';
     if (p.length < 10) return '${AppConstants.phoneCode} $p';
     return '${AppConstants.phoneCode} ${p.substring(0, 2)} ${p.substring(2, 4)} •• •• ${p.substring(8)}';
   }

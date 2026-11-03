@@ -1,42 +1,48 @@
 import 'package:get/get.dart';
 
+import '../../../core/errors/app_exception.dart';
 import '../../../data/cache/app_storage.dart';
+import '../../../data/repo/geolocation_repository.dart';
+import '../../../domain/constants/benin_locations.dart';
+import '../../../domain/models/user_location.dart';
 import '../../routes/app_routes.dart';
 import 'onboarding_completion.dart';
 
 /// Contrôleur de l'écran E2 (choix de ville et quartiers — locataire).
 class VilleController extends GetxController {
+  VilleController({required GeolocationRepository geolocationRepository})
+      : _geolocation = geolocationRepository;
+
+  final GeolocationRepository _geolocation;
+
   /// Liste des villes proposées.
-  static const _cities = [
-    'Cotonou',
-    'Abomey-Calavi',
-    'Porto-Novo',
-    'Parakou',
-    'Autre ville',
-  ];
+  List<String> get cities => BeninLocations.cities;
 
   /// Quartiers disponibles par ville.
-  static const Map<String, List<String>> _neighborhoodsByCity = {
-    'Cotonou': ['Fidjrossè', 'Haie Vive', 'Akpakpa', 'Cadjèhoun', 'Agla', 'Godomey'],
-    'Abomey-Calavi': ['Godomey', 'Akassato', 'Zinvié', 'Ouèdo', 'Gbazaké'],
-    'Porto-Novo': ['Hogbonou', 'Missérété', 'Agoungbo', 'Djrin'],
-    'Parakou': ['Centre', 'Peulh', 'Zongo', 'Banikanni', 'Koupéla'],
-    'Autre ville': [],
-  };
+  List<String> get neighborhoods =>
+      BeninLocations.neighborhoodsByCity[selectedCity.value] ?? const <String>[];
 
   /// Ville actuellement sélectionnée.
-  final selectedCity = 'Cotonou'.obs;
+  final RxString selectedCity = 'Cotonou'.obs;
 
   /// Quartiers sélectionnés pour la ville courante.
   ///
   /// Sélection initiale alignée sur la maquette E2 (Fidjrossè, Haie Vive).
-  final selectedNeighborhoods = <String>{'Fidjrossè', 'Haie Vive'}.obs;
+  final RxSet<String> selectedNeighborhoods = <String>{'Fidjrossè', 'Haie Vive'}.obs;
 
-  /// Retourne la liste des villes.
-  List<String> get cities => _cities;
+  /// Quartiers sélectionnés, en lecture simple (copie).
+  Set<String> get chosenNeighborhoods => Set<String>.from(selectedNeighborhoods);
 
-  /// Retourne la liste des quartiers de la ville sélectionnée.
-  List<String> get neighborhoods => _neighborhoodsByCity[selectedCity.value] ?? [];
+  // ---- Position de l'utilisateur ----
+
+  /// Recherche de position en cours.
+  final RxBool locating = false.obs;
+
+  /// Message d'erreur ou d'information sur la position (affiché sous le bouton).
+  final RxnString locationMessage = RxnString();
+
+  /// Position obtenue (coordonnées + ville + quartier).
+  final Rxn<UserLocation> location = Rxn<UserLocation>();
 
   /// Indique si une ville est sélectionnée.
   bool isCitySelected(String city) => selectedCity.value == city;
@@ -57,6 +63,42 @@ class VilleController extends GetxController {
       selectedNeighborhoods.remove(neighborhood);
     } else {
       selectedNeighborhoods.add(neighborhood);
+    }
+  }
+
+  /// « Utiliser ma position » : GPS + géocodage inverse, puis pré-sélection
+  /// de la ville et du quartier reconnus.
+  Future<void> useMyLocation() async {
+    if (locating.value) return;
+    locating.value = true;
+    locationMessage.value = null;
+    try {
+      final found = await _geolocation.locate();
+      location.value = found;
+
+      final city = BeninLocations.matchCity(found.city);
+      if (city == null) {
+        locationMessage.value = found.label.isEmpty
+            ? 'Position obtenue, mais ville non reconnue. Choisissez votre ville.'
+            : 'Position obtenue : ${found.label}. Choisissez votre ville.';
+        return;
+      }
+
+      selectedCity.value = city;
+      final district = BeninLocations.matchNeighborhood(city, found.district);
+      selectedNeighborhoods.clear();
+      if (district != null) {
+        selectedNeighborhoods.add(district);
+        locationMessage.value = null;
+      } else {
+        locationMessage.value = 'Quartier non reconnu : choisissez-le ci-dessus.';
+      }
+    } on AppException catch (e) {
+      locationMessage.value = e.message;
+    } catch (_) {
+      locationMessage.value = 'Impossible d\'obtenir votre position.';
+    } finally {
+      locating.value = false;
     }
   }
 

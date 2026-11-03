@@ -26,6 +26,9 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<!-- Géolocalisation : « Utiliser ma position » pendant l'inscription. -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>LofiSoft utilise votre position pour proposer les logements de votre quartier.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

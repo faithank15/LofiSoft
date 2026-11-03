@@ -16,6 +16,19 @@ class FakePaymentService extends PaymentService {
   /// Paiement de démonstration pour ouvrir B4 depuis le menu de dev.
   static const demoId = 'demo';
 
+  /// Montant déjà réglé par les paiements réussis d'une période (mode fake).
+  /// Le loyer simulé en tient compte pour rester cohérent après un paiement.
+  static int successfulAmount(String period) {
+    var sum = 0;
+    for (final payment in _payments.values) {
+      if (payment['status'] == 'SUCCESS' && payment['period'] == period) {
+        final amount = payment['amount'];
+        if (amount is num) sum += amount.round();
+      }
+    }
+    return sum;
+  }
+
   @override
   Future<Map<String, dynamic>> create({
     required String rentalId,
@@ -42,7 +55,13 @@ class FakePaymentService extends PaymentService {
       'reference': 'RC-${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}-${id.substring(4).padLeft(4, '0')}',
     };
     return {
-      'payment': {'id': id, 'status': 'PENDING', 'amount': amount, 'operator': operator},
+      'payment': {
+        'id': id,
+        'status': 'PENDING',
+        'amount': amount,
+        'operator': operator,
+        'phone': phone,
+      },
     };
   }
 
@@ -57,7 +76,13 @@ class FakePaymentService extends PaymentService {
       p['status'] = ok ? 'SUCCESS' : 'FAILED';
       if (ok) p['paid_at'] = DateTime.now().toUtc().toIso8601String();
     }
-    return {'id': p['id'], 'status': p['status'], 'amount': p['amount'], 'operator': p['operator']};
+    return {
+      'id': p['id'],
+      'status': p['status'],
+      'amount': p['amount'],
+      'operator': p['operator'],
+      'phone': p['phone'],
+    };
   }
 
   @override

@@ -60,6 +60,7 @@ class _ReceiptDetailsPageState extends State<ReceiptDetailsPage> {
             );
           }
           return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               _hero(paid),
               Expanded(
@@ -71,32 +72,59 @@ class _ReceiptDetailsPageState extends State<ReceiptDetailsPage> {
                       child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        // Carte loyer à jour (même structure que B3, valeurs rafraîchies).
-                        AppCard(
-                          padding: const EdgeInsets.all(AppSpacing.lg),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.baseline,
-                                textBaseline: TextBaseline.alphabetic,
-                                children: [
-                                  Flexible(
-                                    child: Text(controller.rentCardTitle, style: AppTextStyles.subtitle),
-                                  ),
-                                  const SizedBox(width: AppSpacing.sm),
-                                  Text(controller.rentCardRemaining, style: AppTextStyles.bodyStrong),
-                                ],
-                              ),
-                              const SizedBox(height: 10),
-                              ProgressBar(value: controller.progressValue),
-                              const SizedBox(height: 10),
-                              Text(controller.progressLegend, style: AppTextStyles.caption),
-                            ],
+                        // Carte loyer à jour : seulement si un résumé est disponible
+                        // (sinon la location n'est pas active, rien à afficher).
+                        if (controller.summary.value != null) ...[
+                          AppCard(
+                            padding: const EdgeInsets.all(AppSpacing.lg),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                                  textBaseline: TextBaseline.alphabetic,
+                                  children: [
+                                    Flexible(
+                                      child: Text(controller.rentCardTitle, style: AppTextStyles.subtitle),
+                                    ),
+                                    const SizedBox(width: AppSpacing.sm),
+                                    Flexible(
+                                      child: Text(
+                                        controller.rentCardRemaining,
+                                        style: AppTextStyles.bodyStrong,
+                                        textAlign: TextAlign.end,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 10),
+                                ProgressBar(value: controller.progressValue),
+                                const SizedBox(height: 10),
+                                Text(controller.progressLegend, style: AppTextStyles.caption),
+                              ],
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 14),
+                          const SizedBox(height: 14),
+                        ] else ...[
+                          AppCard(
+                            padding: const EdgeInsets.all(AppSpacing.lg),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Aucune location active', style: AppTextStyles.subtitle),
+                                const SizedBox(height: 6),
+                                Text(
+                                  'Votre paiement est enregistré, le reçu reste disponible.',
+                                  style: AppTextStyles.caption,
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+                        ],
                         // Détails du paiement (4 lignes sans dividers).
                         Padding(
                           padding: const EdgeInsets.fromLTRB(6, 4, 6, 4),
@@ -116,7 +144,7 @@ class _ReceiptDetailsPageState extends State<ReceiptDetailsPage> {
                               ),
                               InfoRow(
                                 label: 'Numéro',
-                                value: controller.maskedPhone,
+                                value: controller.paidPhoneLabel.isEmpty ? '—' : controller.paidPhoneLabel,
                                 showDivider: false,
                                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
                               ),
@@ -156,7 +184,7 @@ class _ReceiptDetailsPageState extends State<ReceiptDetailsPage> {
             child: SkylineBand(height: 90),
           ),
           Padding(
-            padding: const EdgeInsets.only(top: 70),
+            padding: const EdgeInsets.fromLTRB(AppSpacing.screen, 70, AppSpacing.screen, 0),
             child: Column(
               children: [
                 Container(
@@ -177,28 +205,37 @@ class _ReceiptDetailsPageState extends State<ReceiptDetailsPage> {
                   child: const Icon(Icons.check_rounded, size: 54, color: AppColors.green),
                 ),
                 const SizedBox(height: 16),
-                Text(
-                  'Paiement réussi',
-                  style: AppTextStyles.display.copyWith(fontSize: 30, color: AppColors.surface),
-                  textAlign: TextAlign.center,
+                // Le titre et le montant s'adaptent à la largeur de l'écran.
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    'Paiement réussi',
+                    style: AppTextStyles.display.copyWith(fontSize: 30, color: AppColors.surface),
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                  ),
                 ),
                 const SizedBox(height: 6),
-                Text.rich(
-                  TextSpan(
-                    children: [
-                      TextSpan(
-                        text: CurrencyFormatter.number(paid.amount),
-                        style: AppTextStyles.amount.copyWith(color: AppColors.surface),
-                      ),
-                      TextSpan(
-                        text: ' ${AppConstants.currency}',
-                        style: AppTextStyles.bodyStrong.copyWith(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.surface,
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text.rich(
+                    TextSpan(
+                      children: [
+                        TextSpan(
+                          text: CurrencyFormatter.number(paid.amount),
+                          style: AppTextStyles.amount.copyWith(color: AppColors.surface),
                         ),
-                      ),
-                    ],
+                        TextSpan(
+                          text: ' ${AppConstants.currency}',
+                          style: AppTextStyles.bodyStrong.copyWith(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.surface,
+                          ),
+                        ),
+                      ],
+                    ),
+                    maxLines: 1,
                   ),
                 ),
               ],
@@ -237,20 +274,26 @@ class _ReceiptDetailsPageState extends State<ReceiptDetailsPage> {
     final paid = controller.paid.value;
     if (paid == null) return;
     final receipt = controller.receipt.value;
+    final height = MediaQuery.sizeOf(context).height;
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: AppColors.paper,
+      isScrollControlled: true,
       builder: (_) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.screen),
-          child: ReceiptSummary(
-            amount: paid.amount,
-            lines: [
-              ReceiptLine('Date', _dateLabel(receipt)),
-              ReceiptLine('Payé avec', paid.operatorLabel),
-              ReceiptLine('Numéro', controller.maskedPhone),
-              ReceiptLine('Référence', receipt?.reference ?? ''),
-            ],
+        child: ConstrainedBox(
+          // Le reçu ne doit jamais déborder de l'écran.
+          constraints: BoxConstraints(maxHeight: height * 0.85),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(AppSpacing.screen),
+            child: ReceiptSummary(
+              amount: paid.amount,
+              lines: [
+                ReceiptLine('Date', _dateLabel(receipt)),
+                ReceiptLine('Payé avec', paid.operatorLabel),
+                ReceiptLine('Numéro', controller.paidPhoneLabel.isEmpty ? '—' : controller.paidPhoneLabel),
+                ReceiptLine('Référence', receipt?.reference ?? ''),
+              ],
+            ),
           ),
         ),
       ),
