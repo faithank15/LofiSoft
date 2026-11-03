@@ -9,9 +9,11 @@ import 'package:get/get.dart';
 import 'package:mobile/presentation/routes/app_routes.dart';
 import 'package:mobile/data/remote/services/announcement_service.dart';
 import 'package:mobile/data/remote/services/auth_service.dart';
+import 'package:mobile/data/remote/services/report_service.dart';
 import 'package:mobile/data/remote/services/rental_service.dart';
 import 'package:mobile/data/repo/announcement_repository.dart';
 import 'package:mobile/data/repo/auth_repository.dart';
+import 'package:mobile/data/repo/report_repository.dart';
 import 'package:mobile/data/repo/rental_repository.dart';
 import 'package:mobile/domain/models/enums.dart';
 import 'package:mobile/domain/models/search_preferences.dart';
@@ -287,6 +289,7 @@ void main() {
       Get.parameters = {'id': id};
       return ListingDetailsController(
         repository: AnnouncementRepository(AnnouncementService(server.client)),
+        reportRepository: ReportRepository(ReportService(server.client)),
         authStorage: auth,
       );
     }

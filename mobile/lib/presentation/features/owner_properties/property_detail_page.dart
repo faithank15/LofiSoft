@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:mobile/domain/models/enums.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -9,6 +8,7 @@ import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/currency_formatter.dart';
+import '../../../domain/models/enums.dart';
 import '../../../domain/models/property_model.dart';
 import '../../components/atoms/app_avatar.dart';
 import '../../components/atoms/app_back_button.dart';
@@ -21,7 +21,6 @@ import '../../shared/load_status.dart';
 import '../../shared/loading_view.dart';
 import 'property_controller.dart';
 
-/// Écran C5 : Détail d’un logement.
 class PropertyDetailPage extends StatefulWidget {
   const PropertyDetailPage({super.key});
 
@@ -41,9 +40,12 @@ class _PropertyDetailPageState extends State<PropertyDetailPage> {
   }
 
   void _shareCode(String code, String title) {
-    Share.share(
-      'Rejoignez le logement "$title" sur LofiSoft en entrant ce code : $code',
-      subject: 'Code logement LofiSoft',
+    SharePlus.instance.share(
+      ShareParams(
+        text:
+            'Rejoignez le logement "$title" sur LofiSoft en entrant ce code : $code',
+        subject: 'Code logement LofiSoft',
+      ),
     );
   }
 
@@ -93,7 +95,7 @@ class _PropertyDetailPageState extends State<PropertyDetailPage> {
               expanded: false,
               isLoading: controller.isSubmitting.value,
               onPressed: () async {
-                final success = await controller.endRental(
+                await controller.endRental(
                   rentalId: rentalId,
                   housingId: housingId,
                 );
@@ -158,7 +160,6 @@ class _PropertyDetailPageState extends State<PropertyDetailPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Bandeau haut vert profond
           Container(
             padding: EdgeInsets.fromLTRB(
               AppSpacing.sm,
@@ -250,13 +251,11 @@ class _PropertyDetailPageState extends State<PropertyDetailPage> {
               ],
             ),
           ),
-
           Padding(
             padding: const EdgeInsets.all(AppSpacing.screen),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Fiche Locataire si le logement est occupé
                 if (isRented && activeRental != null) ...[
                   AppCard(
                     padding: const EdgeInsets.all(AppSpacing.lg),
@@ -309,8 +308,6 @@ class _PropertyDetailPageState extends State<PropertyDetailPage> {
                   ),
                   const SizedBox(height: AppSpacing.lg),
                 ],
-
-                // Conditions du logement
                 AppCard(
                   padding: EdgeInsets.zero,
                   child: Column(
@@ -333,8 +330,6 @@ class _PropertyDetailPageState extends State<PropertyDetailPage> {
                   ),
                 ),
                 const SizedBox(height: AppSpacing.lg),
-
-                // Boîte Code logement avec partage
                 HousingCodeBox(
                   code: housing.code,
                   helper: isRented
@@ -343,8 +338,6 @@ class _PropertyDetailPageState extends State<PropertyDetailPage> {
                   onShare: () => _shareCode(housing.code, housing.title),
                 ),
                 const SizedBox(height: AppSpacing.xl),
-
-                // Actions d'administration du bail
                 if (isRented && activeRental != null) ...[
                   AppButton(
                     label: 'Retirer ce locataire',

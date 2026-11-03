@@ -3,24 +3,36 @@ import 'package:get/get.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
-import '../../components/skeletons/onboarding_scaffold.dart';
 import '../../components/molecules/selection_chip.dart';
+import '../../components/skeletons/onboarding_scaffold.dart';
 import 'ville_controller.dart';
 
-/// Écran E2 · Locataire 1 : où ? (choix de ville et de quartiers).
-///
-/// Reprend la maquette E2 : une barre verte puis deux barres beiges,
-/// titre aligné à gauche, pastilles de villes et de quartiers, bouton
-/// « Utiliser ma position » et bouton « Continuer » en pied d'écran.
-class VillePage extends GetView<VilleController> {
+class VillePage extends StatefulWidget {
   const VillePage({super.key});
+
+  @override
+  State<VillePage> createState() => _VillePageState();
+}
+
+class _VillePageState extends State<VillePage> {
+  final controller = Get.find<VilleController>();
+  bool _isNavigatingBack = false;
+
+  void _safeBack() {
+    if (_isNavigatingBack) return;
+    _isNavigatingBack = true;
+    Get.back();
+    Future<void>.delayed(const Duration(milliseconds: 400), () {
+      if (mounted) _isNavigatingBack = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return OnboardingScaffold(
       step: 0,
       totalSteps: 3,
-      onBack: () => Get.back(),
+      onBack: _safeBack,
       onSkip: controller.passer,
       title: 'Où voulez-vous habiter ?',
       subtitle: 'Nous vous montrerons d\'abord les logements de ces zones.',
@@ -29,22 +41,22 @@ class VillePage extends GetView<VilleController> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Pastilles de villes
           Obx(
             () => Wrap(
               spacing: 10,
               runSpacing: 10,
               children: controller.cities
-                  .map((String city) => SelectionChip(
-                        label: city,
-                        selected: controller.isCitySelected(city),
-                        onTap: () => controller.selectCity(city),
-                      ))
+                  .map(
+                    (String city) => SelectionChip(
+                      label: city,
+                      selected: controller.isCitySelected(city),
+                      onTap: () => controller.selectCity(city),
+                    ),
+                  )
                   .toList(),
             ),
           ),
           const SizedBox(height: 22),
-          // Quartiers (uniquement quand une ville propose des quartiers)
           Obx(
             () => controller.neighborhoods.isEmpty
                 ? const SizedBox.shrink()
@@ -64,11 +76,13 @@ class VillePage extends GetView<VilleController> {
                         spacing: 10,
                         runSpacing: 10,
                         children: controller.neighborhoods
-                            .map((String n) => SelectionChip(
-                                  label: n,
-                                  selected: controller.isNeighborhoodSelected(n),
-                                  onTap: () => controller.toggleNeighborhood(n),
-                                ))
+                            .map(
+                              (String n) => SelectionChip(
+                                label: n,
+                                selected: controller.isNeighborhoodSelected(n),
+                                onTap: () => controller.toggleNeighborhood(n),
+                              ),
+                            )
                             .toList(),
                       ),
                     ],
@@ -83,51 +97,69 @@ class VillePage extends GetView<VilleController> {
   }
 }
 
-/// Bouton « Utiliser ma position » (contour vert, largeur intrinsèque).
 class _UseLocationButton extends StatelessWidget {
   const _UseLocationButton();
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.find<VilleController>();
     return Align(
       alignment: Alignment.centerLeft,
-      child: SizedBox(
-        height: 48,
-        child: OutlinedButton(
-          onPressed: () {
-            Get.snackbar(
-              'Position',
-              'Utilisation de votre position actuelle...',
-              snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: AppColors.green.withValues(alpha: 0.9),
-              colorText: AppColors.surface,
-              duration: const Duration(seconds: 2),
-            );
-          },
-          style: OutlinedButton.styleFrom(
-            foregroundColor: AppColors.green,
-            side: const BorderSide(color: AppColors.green, width: 2),
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.location_on, size: 22, color: AppColors.green),
-              const SizedBox(width: 8),
-              Text(
-                'Utiliser ma position',
-                style: AppTextStyles.body.copyWith(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.green,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            height: 48,
+            child: Obx(
+              () => OutlinedButton(
+                onPressed: controller.locating.value ? null : controller.useMyLocation,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.green,
+                  disabledForegroundColor: AppColors.muted,
+                  side: const BorderSide(color: AppColors.green, width: 2),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (controller.locating.value)
+                      const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.green),
+                      )
+                    else
+                      const Icon(Icons.location_on, size: 22, color: AppColors.green),
+                    const SizedBox(width: 8),
+                    Text(
+                      controller.locating.value ? 'Localisation...' : 'Utiliser ma position',
+                      style: AppTextStyles.body.copyWith(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: controller.locating.value ? AppColors.muted : AppColors.green,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
+            ),
           ),
-        ),
+          // Message d'information ou d'erreur (position non reconnue, refus...).
+          Obx(
+            () => controller.locationMessage.value == null
+                ? const SizedBox.shrink()
+                : Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Text(
+                      controller.locationMessage.value!,
+                      style: AppTextStyles.caption.copyWith(color: AppColors.statusBad),
+                    ),
+                  ),
+          ),
+        ],
       ),
     );
   }

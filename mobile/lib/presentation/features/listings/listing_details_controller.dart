@@ -3,21 +3,24 @@ import 'package:get/get.dart';
 import '../../../core/errors/app_exception.dart';
 import '../../../data/cache/auth_storage.dart';
 import '../../../data/repo/announcement_repository.dart';
+import '../../../data/repo/report_repository.dart';
 import '../../../domain/models/announcement_model.dart';
 import '../../../domain/models/enums.dart';
 import '../../routes/app_routes.dart';
 import '../../shared/load_status.dart';
 import 'listings_controller.dart';
 
-/// Détail d'une annonce (A3). L'identifiant vient du chemin : /listings/details/:id.
 class ListingDetailsController extends GetxController {
   ListingDetailsController({
     required AnnouncementRepository repository,
+    required ReportRepository reportRepository,
     required AuthStorage authStorage,
-  })  : _repository = repository,
-        _auth = authStorage;
+  }) : _repository = repository,
+       _reportRepository = reportRepository,
+       _auth = authStorage;
 
   final AnnouncementRepository _repository;
+  final ReportRepository _reportRepository;
   final AuthStorage _auth;
 
   final id = Get.parameters['id'] ?? '';
@@ -26,6 +29,7 @@ class ListingDetailsController extends GetxController {
   final errorMessage = RxnString();
   final isFavorite = false.obs;
   final photoIndex = 0.obs;
+  final isReporting = false.obs;
 
   @override
   void onInit() {
@@ -72,6 +76,48 @@ class ListingDetailsController extends GetxController {
     } on AppException catch (e) {
       isFavorite.value = !wanted;
       Get.snackbar('Erreur', e.message, snackPosition: SnackPosition.BOTTOM);
+    }
+  }
+
+  Future<bool> report({required String reason, String? details}) async {
+    if (!_auth.hasSession) {
+      Get.snackbar(
+        'Connexion requise',
+        'Veuillez vous connecter pour signaler une annonce.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      Get.toNamed(AppRoutes.login);
+      return false;
+    }
+
+    if (isReporting.value) return false;
+    isReporting.value = true;
+
+    try {
+      final msg = await _reportRepository.submitReport(
+        announcementId: id,
+        reason: reason,
+        details: details,
+      );
+      Get.snackbar(
+        'Signalement transmis',
+        msg,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      isReporting.value = false;
+      return true;
+    } on AppException catch (e) {
+      isReporting.value = false;
+      Get.snackbar('Erreur', e.message, snackPosition: SnackPosition.BOTTOM);
+      return false;
+    } catch (_) {
+      isReporting.value = false;
+      Get.snackbar(
+        'Erreur',
+        'Impossible d’envoyer le signalement.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return false;
     }
   }
 }

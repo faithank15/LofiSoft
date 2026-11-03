@@ -4,7 +4,6 @@ import 'app_colors.dart';
 import 'app_radius.dart';
 import 'app_text_styles.dart';
 
-
 ///   GetMaterialApp(theme: AppTheme.light, ...)
 ///
 /// Les composants utilisent d'abord AppColors / AppTextStyles directement.
