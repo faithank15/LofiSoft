@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\UserRole;
+use App\Notifications\ResetPasswordNotification;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -72,5 +73,16 @@ class User extends Authenticatable
     public function identityRequests(): HasMany
     {
         return $this->hasMany(IdentityRequest::class, 'owner_id');
+    }
+
+    /**
+     * Envoi du lien de réinitialisation du mot de passe.
+     *
+     * On remplace la notification par défaut de Laravel (anglaise) par la
+     * nôtre, qui renvoie vers la page web de réinitialisation.
+     */
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new ResetPasswordNotification($token));
     }
 }

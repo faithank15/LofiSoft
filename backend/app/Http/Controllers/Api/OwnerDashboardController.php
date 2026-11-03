@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use App\Models\Rental;
 use App\Models\RentPeriod;
+use App\Notifications\RentReminderNotification;
 use App\Services\RentBalance;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -97,6 +98,9 @@ class OwnerDashboardController extends Controller
                 'tenant_name' => trim(($rental->tenant?->prenoms ?? '') . ' ' . ($rental->tenant?->nom ?? '')),
                 'housing' => $rental->housing->title,
                 'due' => $due,
+                // Déjà calculé plus haut : sans cette ligne, l'application ne
+                // peut pas afficher « 90 000 sur 150 000 » et retombe sur le dû.
+                'paid' => $paid,
                 'carried_over' => $carriedOver,
                 'status' => $status,
             ];
@@ -180,11 +184,31 @@ class OwnerDashboardController extends Controller
         return response()->json(['message' => 'Demande refusée.']);
     }
 
-    public function remind(Request $request, Rental $rental): JsonResponse
+    public function remind(Request $request, Rental $rental, RentBalance $balance): JsonResponse
     {
         if ($rental->housing->owner_id !== $request->user()->id) {
             return response()->json(['message' => 'Accès non autorisé.'], Response::HTTP_FORBIDDEN);
         }
+
+        $rental->loadMissing('tenant');
+        $tenant = $rental->tenant;
+
+        if (! $tenant || ! $tenant->email) {
+            return response()->json([
+                'message' => 'Le locataire n\'a pas d\'adresse e-mail : le rappel ne peut pas lui être envoyé.',
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $period = now()->format('Y-m');
+        $dueDay = str_pad((string) $rental->housing->due_day, 2, '0', STR_PAD_LEFT);
+
+        $tenant->notify(new RentReminderNotification(
+            housingTitle: $rental->housing->title,
+            due: $balance->due($rental, $period),
+            remaining: $balance->remaining($rental, $period),
+            dueDate: $period.'-'.$dueDay,
+            ownerName: trim(($request->user()->prenoms ?? '') . ' ' . ($request->user()->nom ?? '')),
+        ));
 
         return response()->json(['message' => 'Rappel envoyé au locataire.']);
     }
@@ -213,12 +237,23 @@ class OwnerDashboardController extends Controller
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
+        $rental->loadMissing('tenant');
+        $tenantPhone = $rental->tenant?->telephone;
+
+        if (! $tenantPhone) {
+            // Jamais de numéro inventé : un numéro qui n'appartient à personne
+            // serait attribué à tort au locataire.
+            return response()->json([
+                'message' => 'Le locataire n\'a pas de numéro de téléphone enregistré.',
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
         $payment = Payment::create([
             'rental_id' => $rental->id,
             'period' => $validated['period'],
             'amount' => $validated['amount'],
             'operator' => 'CASH',
-            'phone' => $rental->tenant?->telephone ?? '0100000000',
+            'phone' => $tenantPhone,
             'status' => 'SUCCESS',
             'paid_at' => now(),
             'reference' => 'CASH-' . date('Ymd') . '-' . Str::upper(Str::random(4)),

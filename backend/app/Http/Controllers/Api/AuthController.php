@@ -7,9 +7,12 @@ use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Resources\UserResource;
 use App\Models\IdentityRequest;
 use App\Models\User;
+use Illuminate\Auth\Passwords\PasswordResetException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
+use InvalidArgumentException;
 use Symfony\Component\HttpFoundation\Response;
 
 class AuthController extends Controller
@@ -77,7 +80,15 @@ class AuthController extends Controller
 
     public function forgotPassword(Request $request): JsonResponse
     {
-        $request->validate(['email' => ['required', 'email']]);
+        $validated = $request->validate(['email' => ['required', 'email']]);
+
+        // On ne dit jamais si l'adresse existe : la réponse est identique dans
+        // tous les cas. Un e-mail est réellement envoyé si le compte existe.
+        try {
+            Password::sendResetLink(['email' => strtolower($validated['email'])]);
+        } catch (InvalidArgumentException|PasswordResetException) {
+            // Adresse inconnue, ou trop de demandes : on reste silencieux.
+        }
 
         return response()->json([
             'message' => 'Si cette adresse existe, un lien de réinitialisation a été envoyé.',
