@@ -124,3 +124,43 @@ Nouveaux constats :
 | Gênant | Le géocodage inverse de « Utiliser ma position » envoie les coordonnées de l'utilisateur à `nominatim.openstreetmap.org` (ou à Google si une clé est fournie). À mentionner dans la politique de confidentialité. |
 | Mineur | `FakeReportService` est défini dans `report_service.dart`, alors que les faux services vivent dans `data/remote/fakes/`. |
 | Mineur | Un test (`listing_form_test`) a échoué une fois sur trois exécutions complètes (sensible à l'ordre), puis réussi deux fois de suite : à surveiller. |
+
+## Vérification globale finale (4 novembre)
+
+Base testée : `main` après intégration du lot 6, plus les correctifs ci-dessous.
+
+| Contrôle | Résultat |
+|---|---|
+| Tests mobile | 386 passent, 6 ignorés |
+| Tests backend | 251 passent |
+| Analyse statique | 34 remarques d'information, aucun avertissement |
+| Scénario de bout en bout sur le vrai backend (MySQL) | 203 vérifications sur 203 |
+| 40 robots sur la version web (45 s chacun) | aucune erreur réelle (reste du bruit : champs libres qui acceptent n'importe quel texte) |
+| Test final sur le TECNO (API réelle, MySQL, Cloudinary installé) | voir ci-dessous |
+
+### Défauts trouvés pendant cette vérification, corrigés
+
+| Gravité | Défaut | Correction |
+|---|---|---|
+| **Grave** | **B4 « Paiement réussi » s'affichait vide** (« Aucun paiement à afficher ») après un vrai paiement. La route de succès ne transportait pas l'identifiant, B3 est détruit à la navigation et GetX recrée un contrôleur vide. Les tests du lot ne le voyaient pas, car ils remplaçaient B4 par un `SizedBox`. | `PaymentController.pay` passe `parameters: {'id': ...}` ; nouveau test du parcours réel `test/payment/payment_flow_test.dart` (échoue sans la correction). |
+| **Grave** | Après un paiement, **Mon loyer gardait les anciens chiffres** (73 % au lieu de 80 %). | Mon loyer se relit au retour de l'écran de paiement ; « Retour à mon loyer » revient à la page existante. |
+| **Grave** | **Un utilisateur connecté qui ouvrait « Réinitialiser mon mot de passe » (nouveau lien du Profil) était déconnecté** : `AuthController` ferme la session à sa création. | Contrôleur dédié `ForgotPasswordController` (5 tests, dont la régression). |
+| Gênant | Un double appui sur « Retour » dépilait deux pages, voire quittait la dernière (exception ; même cause que celle d'onboarding signalée plus haut). La flèche était inerte après une déconnexion. | `AppBackButton` : un seul retour par appui, aucun s'il n'y a plus de page précédente (test avec vraie transition, échoue sans la correction). |
+
+### Restent à faire (confirmés sur l'appareil ou dans le code)
+
+| Gravité | Point | Où |
+|---|---|---|
+| **Grave** | « Appeler » et « WhatsApp » du détail d'annonce ne lancent rien : le numéro du propriétaire n'est pas dans la réponse de l'API (décision de confidentialité à prendre, voir `POINT-RESTE-A-FAIRE.md` §2.1). | `listing_details_page.dart`, `AnnouncementResource.php` |
+| **Grave** | « Envoyer un rappel » (`POST /owner/rentals/{id}/remind`) et « mot de passe oublié » **répondent comme si un message était parti, mais rien n'est envoyé**. | `OwnerDashboardController`, `AuthController` |
+| Gênant | C6 « Ajouter un locataire » : valeurs en dur (350 000, 700 000) et date de début toujours `01/03/2026`. | `property_form_page.dart` lignes 63 à 68 |
+| Gênant | `manualPayment` invente le numéro `0100000000` quand le locataire n'en a pas. | `OwnerDashboardController` ligne 221 |
+| Gênant | Le webhook accepte n'importe quelle requête quand le secret KKiaPay est vide (hors production : bloqué en production par un 503). | `PaymentController::webhook` |
+| Mineur | Pas d'index unique `(announcement_id, reporter_id)` sur les signalements (doublon possible en cas de requêtes simultanées). | migration `reports` |
+| Mineur | Le menu de développement et `PlaceholderPage` sont toujours dans le code. | `dev_menu_page.dart`, `placeholder_page.dart` |
+| Information | Les tests `UploadTest` échouent sur les postes sans extension PHP GD (7 erreurs chez l'équipe, 0 ici). | environnement |
+
+### Test final sur le TECNO
+
+Vérifié à la main avec les requêtes reçues par le serveur : installation propre, connexion des trois rôles, paiement complet (formulaire, refus de saisie, succès, B4, reçu, retour), échec simulé, « Mot de passe oublié » depuis le Profil sans perte de session, détail d'annonce, signalement (envoi puis doublon refusé), propriétaire (logements Loué/Libre cohérents, encaissements), administrateur (signalements, vérifications, utilisateurs).
+Non vérifié : appel téléphonique et WhatsApp (non branchés, voir plus haut), envoi de photo depuis la galerie, gardes de route par lien direct.
