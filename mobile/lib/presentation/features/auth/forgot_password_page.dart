@@ -8,7 +8,7 @@ import '../../../core/utils/validators.dart';
 import '../../components/atoms/app_button.dart';
 import '../../components/atoms/app_text_field.dart';
 import '../../components/skeletons/auth_scaffold.dart';
-import 'auth_controller.dart';
+import 'forgot_password_controller.dart';
 
 /// Mot de passe oublié : on saisit son e-mail, le serveur envoie un lien.
 /// StatefulWidget : le TextEditingController vit dans la page, pas dans le contrôleur.
@@ -22,15 +22,7 @@ class ForgotPasswordPage extends StatefulWidget {
 class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   final _formKey = GlobalKey<FormState>();
   final _email = TextEditingController();
-  final AuthController controller = Get.find<AuthController>();
-
-  @override
-  void initState() {
-    super.initState();
-    // Le contrôleur est partagé avec la page de connexion : on repart d'un état propre.
-    controller.resetSent.value = false;
-    controller.errorMessage.value = null;
-  }
+  final ForgotPasswordController controller = Get.find<ForgotPasswordController>();
 
   @override
   void dispose() {
@@ -40,7 +32,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
   void _submit() {
     if (!(_formKey.currentState?.validate() ?? false)) return;
-    controller.sendResetLink(_email.text);
+    controller.send(_email.text);
   }
 
   @override
@@ -49,7 +41,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       title: 'Mot de passe oublié',
       subtitle: 'Nous vous envoyons un lien pour en choisir un nouveau.',
       child: Obx(() {
-        if (controller.resetSent.value) return _sent();
+        if (controller.sent.value) return _sent();
         return Form(
           key: _formKey,
           child: Column(

@@ -7,6 +7,7 @@ import '../features/admin/admin_reports_page.dart';
 import '../features/admin/admin_users_page.dart';
 import '../features/admin/admin_verifications_page.dart';
 import '../features/auth/auth_binding.dart';
+import '../features/auth/forgot_password_binding.dart';
 import '../features/auth/forgot_password_page.dart';
 import '../features/auth/login_page.dart';
 import '../features/auth/register_page.dart';
@@ -139,7 +140,7 @@ abstract final class AppPages {
     GetPage(
       name: AppRoutes.forgotPassword,
       page: () => const ForgotPasswordPage(),
-      binding: AuthBinding(),
+      binding: ForgotPasswordBinding(),
     ),
 
     // ---- Lots 3 et 4 : onboarding ----

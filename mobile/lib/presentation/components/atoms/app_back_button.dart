@@ -24,6 +24,19 @@ class AppBackButton extends StatelessWidget {
   /// Couleur personnalisée explicite (prioritaire sur [isLight]).
   final Color? color;
 
+  /// Délai minimal entre deux retours : un double appui ne dépile qu'une seule page.
+  static const _debounce = Duration(milliseconds: 450);
+  static DateTime _lastBack = DateTime.fromMillisecondsSinceEpoch(0);
+
+  /// Retour par défaut. Sans cela, un double appui dépile deux pages, et le second retour
+  /// tente de quitter la dernière page (exception). Rien ne se passe s'il n'y a plus de page précédente.
+  static void _back(BuildContext context) {
+    final now = DateTime.now();
+    if (now.difference(_lastBack) < _debounce) return;
+    _lastBack = now;
+    if (Navigator.of(context).canPop()) Get.back();
+  }
+
   @override
   Widget build(BuildContext context) {
     final effectiveColor =
@@ -35,7 +48,7 @@ class AppBackButton extends StatelessWidget {
       child: IconButton(
         padding: EdgeInsets.zero,
         splashRadius: 22,
-        onPressed: onPressed ?? () => Get.back(),
+        onPressed: onPressed ?? () => _back(context),
         icon: Icon(
           Icons.arrow_back_ios_new_rounded,
           size: 20,

@@ -21,9 +21,6 @@ class AuthController extends GetxController {
   final Rx<LoadStatus> status = LoadStatus.initial.obs;
   final RxnString errorMessage = RxnString();
 
-  /// Vrai quand la demande de réinitialisation a été envoyée (écran « Mot de passe oublié »).
-  final RxBool resetSent = false.obs;
-
   /// Ouvrir la connexion ferme toute session restante : on repart toujours de zéro.
   @override
   void onInit() {
@@ -81,23 +78,6 @@ class AuthController extends GetxController {
             ? AppRoutes.onboardingProprietaire
             : AppRoutes.onboardingVille,
       );
-    } on AppException catch (e) {
-      _fail(e.message);
-    } catch (_) {
-      _fail('Une erreur inattendue est survenue.');
-    }
-  }
-
-  /// Demande un lien de réinitialisation. Le serveur répond pareil que l'adresse existe ou non
-  /// (on ne révèle pas quels comptes existent).
-  Future<void> sendResetLink(String email) async {
-    if (isLoading) return;
-    status.value = LoadStatus.loading;
-    errorMessage.value = null;
-    try {
-      await _repository.forgotPassword(email.trim());
-      status.value = LoadStatus.loaded;
-      resetSent.value = true;
     } on AppException catch (e) {
       _fail(e.message);
     } catch (_) {
