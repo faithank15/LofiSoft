@@ -1,7 +1,9 @@
 export 'admin_model.dart';
 export 'announcement_model.dart';
 export 'enums.dart';
+export 'installment_model.dart';
 export 'property_model.dart';
+export 'receipt_model.dart';
 export 'rental_model.dart';
 export 'tenant_rent_model.dart';
 export 'user_model.dart';

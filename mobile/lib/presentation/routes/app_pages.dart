@@ -34,6 +34,9 @@ import '../features/owner_properties/property_form_page.dart';
 import '../features/owner_properties/property_list_page.dart';
 import '../features/profile/profile_binding.dart';
 import '../features/profile/profile_page.dart';
+import '../features/payment/payment_binding.dart';
+import '../features/payment/payment_checkout_page.dart';
+import '../features/payment/receipt_details_page.dart';
 import '../features/rent_tracking/payment_history_page.dart';
 import '../features/rent_tracking/rent_tracking_binding.dart';
 import '../features/rent_tracking/rent_tracking_page.dart';
@@ -90,6 +93,16 @@ abstract final class AppPages {
       name: AppRoutes.paymentHistory,
       page: () => const PaymentHistoryPage(),
       binding: RentTrackingBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.payment,
+      page: () => const PaymentCheckoutPage(),
+      binding: PaymentBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.paymentSuccess,
+      page: () => const ReceiptDetailsPage(),
+      binding: PaymentBinding(),
     ),
     GetPage(
       name: AppRoutes.admin,

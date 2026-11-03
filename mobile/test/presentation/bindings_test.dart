@@ -15,6 +15,8 @@ import 'package:mobile/presentation/features/owner_dashboard/owner_dashboard_bin
 import 'package:mobile/presentation/features/owner_dashboard/owner_dashboard_controller.dart';
 import 'package:mobile/presentation/features/owner_properties/property_binding.dart';
 import 'package:mobile/presentation/features/owner_properties/property_controller.dart';
+import 'package:mobile/presentation/features/payment/payment_binding.dart';
+import 'package:mobile/presentation/features/payment/payment_controller.dart';
 import 'package:mobile/presentation/features/profile/profile_binding.dart';
 import 'package:mobile/presentation/features/profile/profile_controller.dart';
 import 'package:mobile/presentation/features/rent_tracking/rent_tracking_binding.dart';
@@ -49,6 +51,7 @@ void main() {
     'JoinHousingBinding': (JoinHousingBinding(), () => Get.find<JoinHousingController>()),
     'ProfileBinding': (ProfileBinding(), () => Get.find<ProfileController>()),
     'AdminBinding': (AdminBinding(), () => Get.find<AdminController>()),
+    'PaymentBinding': (PaymentBinding(), () => Get.find<PaymentController>()),
   };
 
   cases.forEach((name, c) {

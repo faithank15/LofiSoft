@@ -12,19 +12,21 @@ import '../../routes/app_routes.dart';
 class DevMenuPage extends StatelessWidget {
   const DevMenuPage({super.key});
 
-  static const _entries = <(String, String)>[
-    ('Lancement (splash)', AppRoutes.splash),
-    ('Connexion', AppRoutes.login),
-    ('Inscription', AppRoutes.register),
-    ('Onboarding', AppRoutes.onboarding),
-    ('Onboarding locataire (ville)', AppRoutes.onboardingVille),
-    ('Onboarding propriétaire', AppRoutes.onboardingProprietaire),
-    ('Rejoindre mon logement', AppRoutes.joinHousing),
-    ('Annonces', AppRoutes.listings),
-    ('Favoris', AppRoutes.favorites),
-    ('Suivi du loyer', AppRoutes.rentTracking),
-    ('Tableau de bord propriétaire', AppRoutes.ownerDashboard),
-    ('Administration', AppRoutes.admin),
+  static const _entries = <(String, String, Map<String, String>?)>[
+    ('Lancement (splash)', AppRoutes.splash, null),
+    ('Connexion', AppRoutes.login, null),
+    ('Inscription', AppRoutes.register, null),
+    ('Onboarding', AppRoutes.onboarding, null),
+    ('Onboarding locataire (ville)', AppRoutes.onboardingVille, null),
+    ('Onboarding propriétaire', AppRoutes.onboardingProprietaire, null),
+    ('Rejoindre mon logement', AppRoutes.joinHousing, null),
+    ('Annonces', AppRoutes.listings, null),
+    ('Favoris', AppRoutes.favorites, null),
+    ('Suivi du loyer', AppRoutes.rentTracking, null),
+    ('Payer mon loyer (B3)', AppRoutes.payment, null),
+    ('Paiement réussi (B4 démo)', AppRoutes.paymentSuccess, {'id': 'demo'}),
+    ('Tableau de bord propriétaire', AppRoutes.ownerDashboard, null),
+    ('Administration', AppRoutes.admin, null),
   ];
 
   @override
@@ -42,11 +44,11 @@ class DevMenuPage extends StatelessWidget {
               style: AppTextStyles.subtitle,
             ),
             const SizedBox(height: AppSpacing.lg),
-            for (final (label, route) in _entries) ...[
+            for (final (label, route, params) in _entries) ...[
               AppButton(
                 label: label,
                 variant: AppButtonVariant.outline,
-                onPressed: () => Get.toNamed(route),
+                onPressed: () => Get.toNamed(route, parameters: params),
               ),
               const SizedBox(height: AppSpacing.md),
             ],
