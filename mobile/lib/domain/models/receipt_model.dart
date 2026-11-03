@@ -1,5 +1,3 @@
-import '../../core/utils/json_utils.dart';
-
 int _int(Object? v) => v is num ? v.round() : int.tryParse('${v ?? ''}') ?? 0;
 
 DateTime? _date(Object? raw) => DateTime.tryParse('${raw ?? ''}')?.toLocal();

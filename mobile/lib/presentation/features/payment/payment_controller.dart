@@ -118,9 +118,9 @@ class PaymentController extends GetxController {
   /// "Reste 60 000 FCFA"
   String get rentCardRemaining => 'Reste ${CurrencyFormatter.format(remaining)}';
 
-  /// "90 000 déjà payés sur 150 000 . avant le 5 novembre"
+  /// "90 000 déjà payés sur 150 000 · avant le 5 novembre"
   String get progressLegend =>
-      '${CurrencyFormatter.number(paidSoFar)} déjà payés sur ${CurrencyFormatter.number(total)} . $dueLabel';
+      '${CurrencyFormatter.number(paidSoFar)} déjà payés sur ${CurrencyFormatter.number(total)} · $dueLabel';
 
   double get progressValue => total <= 0 ? 0 : paidSoFar / total;
 

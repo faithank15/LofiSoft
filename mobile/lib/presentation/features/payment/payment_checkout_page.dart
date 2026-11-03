@@ -120,15 +120,26 @@ class _Form extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.baseline,
                   textBaseline: TextBaseline.alphabetic,
                   children: [
-                    Flexible(
+                    // Le titre cède la place au montant : il passe à la ligne
+                    // plutôt que de tronquer « Reste 60 000 FCFA ».
+                    Expanded(
                       child: Text(controller.rentCardTitle, style: AppTextStyles.subtitle),
                     ),
                     const SizedBox(width: AppSpacing.sm),
-                    Text(controller.rentCardRemaining, style: AppTextStyles.bodyStrong),
+                    Flexible(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerRight,
+                        child: Text(
+                          controller.rentCardRemaining,
+                          style: AppTextStyles.bodyStrong,
+                          maxLines: 1,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 10),

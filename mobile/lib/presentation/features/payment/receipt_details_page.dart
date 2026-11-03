@@ -62,10 +62,15 @@ class _ReceiptDetailsPageState extends State<ReceiptDetailsPage> {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _hero(paid),
               Expanded(
                 child: SingleChildScrollView(
-                  child: Transform.translate(
+                  // Le bandeau vit dans le contenu défilant : la carte peut
+                  // alors le chevaucher sans être rognée par le viewport.
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _hero(paid),
+                      Transform.translate(
                     offset: const Offset(0, -26),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screen),
@@ -81,21 +86,24 @@ class _ReceiptDetailsPageState extends State<ReceiptDetailsPage> {
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   crossAxisAlignment: CrossAxisAlignment.baseline,
                                   textBaseline: TextBaseline.alphabetic,
                                   children: [
-                                    Flexible(
+                                    // Le titre cède la place au montant : il passe
+                                    // à la ligne plutôt que de le tronquer.
+                                    Expanded(
                                       child: Text(controller.rentCardTitle, style: AppTextStyles.subtitle),
                                     ),
                                     const SizedBox(width: AppSpacing.sm),
                                     Flexible(
-                                      child: Text(
-                                        controller.rentCardRemaining,
-                                        style: AppTextStyles.bodyStrong,
-                                        textAlign: TextAlign.end,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
+                                      child: FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        alignment: Alignment.centerRight,
+                                        child: Text(
+                                          controller.rentCardRemaining,
+                                          style: AppTextStyles.bodyStrong,
+                                          maxLines: 1,
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -161,8 +169,10 @@ class _ReceiptDetailsPageState extends State<ReceiptDetailsPage> {
                     ), // Column
                   ), // Padding
                 ), // Transform.translate
-              ), // SingleChildScrollView
-            ), // Expanded
+                    ],
+                  ), // Column (contenu défilant)
+                ), // SingleChildScrollView
+              ), // Expanded
             _bottomBar(),
           ],
         );

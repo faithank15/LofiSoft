@@ -7,6 +7,7 @@ import 'package:mobile/data/repo/payment_repository.dart';
 import 'package:mobile/data/repo/tenant_rent_repository.dart';
 import 'package:mobile/domain/models/installment_model.dart';
 import 'package:mobile/domain/models/receipt_model.dart';
+import 'package:mobile/presentation/components/atoms/app_card.dart';
 import 'package:mobile/presentation/components/molecules/amount_field.dart';
 import 'package:mobile/presentation/components/molecules/operator_card.dart';
 import 'package:mobile/presentation/features/payment/payment_checkout_page.dart';
@@ -183,8 +184,24 @@ void main() {
       expect(find.text('Retour à mon loyer'), findsOneWidget);
     });
 
-    testWidgets('sans paiement : état vide', (tester) async {
+    testWidgets('la carte du loyer n\'est pas rognée et le montant est complet', (tester) async {
       stubActive();
+      await pumpPage(tester);
+
+      // Le montant ne doit pas être tronqué (« Reste 60 000 F… »).
+      // CurrencyFormatter utilise des espaces insécables.
+      final reste = tester.widget<Text>(find.textContaining('Reste'));
+      expect(reste.data, contains('60 000'.replaceAll(' ', ' ')));
+      expect(reste.data, isNot(contains('…')));
+
+      // La carte ne doit pas être coupée par le bord de la zone défilante :
+      // son bord haut doit rester dans le viewport.
+      final card = tester.getRect(find.byType(AppCard).first);
+      final viewport = tester.getRect(find.byType(SingleChildScrollView).first);
+      expect(card.top, greaterThanOrEqualTo(viewport.top));
+    });
+
+    testWidgets('sans paiement : état vide', (tester) async {      stubActive();
       await tester.binding.setSurfaceSize(const Size(390, 844));
       final c = PaymentController(
         repository: PaymentRepository(PaymentService(server.client)),

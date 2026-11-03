@@ -359,7 +359,7 @@ void main() {
       // Attendre le délai (réduit pour test)
       FakePaymentService.delay = const Duration(milliseconds: 10);
       await Future<void>.delayed(const Duration(milliseconds: 20));
-      final p = await f.status(FakePaymentService.demoId); // demoId n'est pas celui créé, mais on teste le principe
+      final _ = await f.status(FakePaymentService.demoId); // demoId n'est pas celui créé, mais on teste le principe
       // Note: le fake garde en mémoire par ID, on ne peut pas tester facilement sans exposer le map
       // Ce test vérifie juste que la logique de délai existe
       expect(FakePaymentService.delay, const Duration(milliseconds: 10));
