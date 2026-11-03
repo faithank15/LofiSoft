@@ -57,6 +57,8 @@ Responsable : à renseigner.
 
 | Gravité | Constat | Où |
 |---|---|---|
+| **Grave** | Écran C6 « Ajouter un locataire » : quand aucun logement n'est présélectionné, le formulaire est rempli avec des valeurs de démonstration écrites en dur (loyer 350 000, caution 700 000) qui ne correspondent pas au logement affiché. La **date de début est toujours « 01/03/2026 »**, même avec un logement choisi. Vu sur le TECNO. | `property_form_page.dart` lignes 63 à 68 (`_syncFieldsWithHousing`) |
+| Gênant | La liste des logements marquait tous les logements « Libre », même celui d'un locataire actif (le backend n'envoyait pas `active_rental` dans la liste). | corrigé côté backend (`HousingController::index`) |
 | Gênant | Variable `success` inutilisée (avertissement d'analyse). | `property_detail_page.dart` ligne 96 |
 | Mineur | Imports inutilisés `app_radius.dart` et `app_shadows.dart`. | `property_list_page.dart` lignes 5 et 6 |
 | Mineur | `Share` est déprécié, à remplacer par `SharePlus.instance.share()`. | `property_detail_page.dart` ligne 44, `property_form_page.dart` ligne 183 |
@@ -67,6 +69,7 @@ Responsable : à renseigner.
 |---|---|---|
 | Gênant | « Mot de passe oublié » était une page provisoire. | corrigé : écran réel `forgot_password_page.dart`, appelle `POST /auth/forgot-password` |
 | Gênant | Aucun middleware de route : `auth_middleware.dart` et `role_middleware.dart` sont vides. Une URL protégée (`/admin`, `/owner/...`) s'ouvre sans session ni contrôle de rôle côté app. Le backend, lui, refuse bien (401/403). | corrigé : `AuthMiddleware` et `RoleMiddleware` appliqués aux routes locataire, propriétaire, admin et profil. Un mauvais rôle est renvoyé vers sa propre accueil. |
+| Mineur | Sur la page de connexion atteinte après une déconnexion, la flèche « Retour » est affichée mais ne fait rien (il n'y a plus de page précédente). Vu sur le TECNO. | `login_page.dart` / `AuthScaffold` |
 | Corrigé | Les robots ont trouvé une erreur « not found » en se déconnectant depuis le Profil si l'on quittait la page pendant la confirmation. | corrigé, commit `406aeca` |
 
 ## Lot 9 — Administration (D1, D2) et Profil — Faith
@@ -93,3 +96,10 @@ Points vérifiés sans défaut côté backend : authentification et jetons, cloi
 - Tests automatiques : `cd mobile && flutter test`, puis `cd backend && php artisan test`.
 - Bout en bout sur le vrai backend : lancer MySQL et l'API, puis `python3 .testeurs/e2e_backend.py`. Il crée des comptes `@t.bj` (un `migrate:fresh --seed` les efface).
 - Robots : compiler `flutter build web --dart-define=USE_FAKE_API=true`, servir `build/web`, puis lancer le skill `/testeurs`.
+
+## Test sur le téléphone (TECNO CAMON 30, API réelle sur MySQL, Cloudinary installé)
+
+Parcours vérifiés à la main sur l'appareil, avec les requêtes reçues par le serveur : connexion locataire, propriétaire et administrateur ; Mon loyer et historique avec les vraies données ; déconnexion (annuler puis confirmer) ; « Mot de passe oublié » (validation puis `POST /auth/forgot-password`) ; création d'un logement et code ; saisie du code par un autre locataire (aperçu, demande `PENDING`) ; acceptation par le propriétaire ; location active chez le locataire ; D1, D2 et onglet Utilisateurs (suspension confirmée en base, puis réactivation) ; catalogue public, détail d'annonce, favori sans connexion (renvoie à la connexion).
+
+Constat confirmé sur l'appareil : le bouton « Payer mon loyer » ne fait rien (pas de page B3).
+Non vérifié sur l'appareil : appel téléphonique, envoi de photo (galerie), gardes de route par lien direct.

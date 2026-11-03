@@ -51,6 +51,21 @@ class HousingTest extends TestCase
         ];
     }
 
+    public function test_list_exposes_active_rental_so_occupied_housing_is_not_shown_free(): void
+    {
+        $owner = $this->actingAsRole('OWNER');
+        $occupied = $this->housing($owner, ['title' => 'Occupé']);
+        $free = $this->housing($owner, ['title' => 'Libre']);
+        $this->rental($occupied, $this->user('TENANT'), 'ACTIVE');
+        $this->rental($free, $this->user('TENANT'), 'PENDING'); // une demande n'occupe pas le logement
+
+        $rows = collect($this->getJson('/api/housings')->assertOk()->json('data'))->keyBy('title');
+
+        $this->assertNotNull($rows['Occupé']['active_rental']);
+        $this->assertSame('ACTIVE', $rows['Occupé']['active_rental']['status']);
+        $this->assertNull($rows['Libre']['active_rental']);
+    }
+
     public function test_due_day_boundaries_are_accepted(): void
     {
         $this->actingAsRole('OWNER');
