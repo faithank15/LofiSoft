@@ -1,40 +1,56 @@
-import '../../core/utils/json_utils.dart';
+int _int(Object? v) => v is num ? v.round() : int.tryParse('${v ?? ''}') ?? 0;
 
-class ReceiptModel {
-  const ReceiptModel({
+DateTime? _date(Object? raw) => DateTime.tryParse('${raw ?? ''}')?.toLocal();
+
+/// Reçu d'un paiement réussi (réponse de `GET /payments/{id}/receipt`).
+class Receipt {
+  const Receipt({
     required this.reference,
     required this.amount,
-    required this.paidAt,
-    required this.operator,
-    required this.housing,
-    required this.period,
+    this.paidAt,
+    this.operator = '',
+    this.housing = '',
+    this.period = '',
   });
+
+  /// Ex. « RC-20261102-A1B2 ».
   final String reference;
   final int amount;
-  final DateTime paidAt;
+  final DateTime? paidAt;
+
+  /// Libellé complet : « MTN Mobile Money ».
   final String operator;
+
+  /// Titre du logement concerné.
   final String housing;
+
+  /// Mois de loyer payé : « 2026-11 ».
   final String period;
-  factory ReceiptModel.fromJson(Map<String, dynamic> json) {
-    return ReceiptModel(
-      reference: '${json['reference'] ?? ''}',
-      amount: json['amount'] is num
-          ? (json['amount'] as num).round()
-          : int.tryParse('${json['amount'] ?? ''}') ?? 0,
-      paidAt:
-          DateTime.tryParse('${json['paid_at'] ?? ''}')?.toLocal() ??
-          DateTime.now(),
-      operator: '${json['operator'] ?? ''}',
-      housing: '${json['housing'] ?? ''}',
-      period: '${json['period'] ?? ''}',
+
+  DateTime get periodDate {
+    final parts = period.split('-');
+    final fallback = paidAt ?? DateTime.now();
+    return DateTime(
+      int.tryParse(parts.first) ?? fallback.year,
+      parts.length > 1 ? (int.tryParse(parts[1]) ?? fallback.month) : fallback.month,
     );
   }
+
+  factory Receipt.fromJson(Map<String, dynamic> json) => Receipt(
+        reference: '${json['reference'] ?? ''}',
+        amount: _int(json['amount']),
+        paidAt: _date(json['paid_at']),
+        operator: '${json['operator'] ?? ''}',
+        housing: '${json['housing'] ?? ''}',
+        period: '${json['period'] ?? ''}',
+      );
+
   Map<String, dynamic> toJson() => {
-    'reference': reference,
-    'amount': amount,
-    'paid_at': paidAt.toIso8601String(),
-    'operator': operator,
-    'housing': housing,
-    'period': period,
-  };
+        'reference': reference,
+        'amount': amount,
+        'paid_at': paidAt?.toIso8601String(),
+        'operator': operator,
+        'housing': housing,
+        'period': period,
+      };
 }

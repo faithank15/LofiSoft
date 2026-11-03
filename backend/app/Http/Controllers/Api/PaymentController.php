@@ -59,6 +59,7 @@ class PaymentController extends Controller
                 'status' => 'PENDING',
                 'amount' => (int) $payment->amount,
                 'operator' => $payment->operator->value,
+                'phone' => $payment->phone,
             ],
         ], Response::HTTP_CREATED);
     }
@@ -73,6 +74,7 @@ class PaymentController extends Controller
             'status' => $payment->status->value,
             'amount' => (int) $payment->amount,
             'operator' => $payment->operator->value,
+            'phone' => $payment->phone,
         ]);
     }
 

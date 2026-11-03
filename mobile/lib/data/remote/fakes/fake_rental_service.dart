@@ -1,5 +1,6 @@
 import '../../../core/errors/app_exception.dart';
 import '../services/rental_service.dart';
+import 'fake_payment_service.dart';
 
 /// FAUX service de location, pour développer sans API.
 /// Codes de test : `M4T-83P` (logement trouvé), `JOI-N00` (déjà une location -> erreur 409).
@@ -48,6 +49,13 @@ class FakeRentalService extends RentalService {
   static String _phase = 'NONE';
   static int _reads = 0;
 
+  /// Force une location active (menu de dev) : les écrans de loyer et de
+  /// paiement affichent des valeurs cohérentes sans passer par le parcours.
+  static void devActive() {
+    _phase = 'ACTIVE';
+    _reads = 0;
+  }
+
   @override
   Future<Map<String, dynamic>> situation() async {
     await Future<void>.delayed(_delay);
@@ -72,13 +80,18 @@ class FakeRentalService extends RentalService {
   Future<Map<String, dynamic>> currentRent() async {
     await Future<void>.delayed(_delay);
     final now = DateTime.now();
+    final period = '${now.year}-${now.month.toString().padLeft(2, '0')}';
+    // Les paiements réussis de la période réduisent le reste à payer.
+    const total = 150000;
+    final paid = 90000 + FakePaymentService.successfulAmount(period);
+    final remaining = (total - paid).clamp(0, total);
     return {
-      'period': '${now.year}-${now.month.toString().padLeft(2, '0')}',
-      'total': 150000,
-      'paid': 90000,
-      'remaining': 60000,
+      'period': period,
+      'total': total,
+      'paid': paid,
+      'remaining': remaining,
       'due_date': DateTime(now.year, now.month, 5).toIso8601String().substring(0, 10),
-      'status': 'PARTIAL',
+      'status': remaining == 0 ? 'PAID' : (paid == 0 ? 'UNPAID' : 'PARTIAL'),
     };
   }
 

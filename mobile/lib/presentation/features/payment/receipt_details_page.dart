@@ -1,188 +1,315 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:share_plus/share_plus.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_shadows.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/currency_formatter.dart';
 import '../../../core/utils/date_format.dart';
-import '../../components/atoms/app_button.dart';
+import '../../../domain/models/installment_model.dart';
+import '../../../domain/models/receipt_model.dart';
 import '../../components/atoms/app_card.dart';
+import '../../components/atoms/progress_bar.dart';
 import '../../components/atoms/skyline_band.dart';
+import '../../components/molecules/bottom_cta_bar.dart';
 import '../../components/molecules/info_row.dart';
-import '../../routes/app_routes.dart';
+import '../../components/molecules/receipt_summary.dart';
+import '../../shared/empty_view.dart';
 import 'payment_controller.dart';
 
-class ReceiptDetailsPage extends StatelessWidget {
+/// B4 « Paiement réussi » (lot 6) : confirmation, loyer à jour, détails et reçu.
+class ReceiptDetailsPage extends StatefulWidget {
   const ReceiptDetailsPage({super.key});
 
-  void _shareReceipt(receipt) {
-    final text =
-        'Reçu de paiement LofiSoft\n'
-        'Référence : ${receipt.reference}\n'
-        'Montant : ${CurrencyFormatter.format(receipt.amount)}\n'
-        'Date : ${AppDateFormat.long(receipt.paidAt)}\n'
-        'Opérateur : ${receipt.operator}\n'
-        'Logement : ${receipt.housing}\n'
-        'Période : ${receipt.period}';
+  @override
+  State<ReceiptDetailsPage> createState() => _ReceiptDetailsPageState();
+}
 
-    SharePlus.instance.share(
-      ShareParams(text: text, subject: 'Reçu de loyer LofiSoft'),
-    );
+class _ReceiptDetailsPageState extends State<ReceiptDetailsPage> {
+  late final PaymentController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = Get.find<PaymentController>();
+    // Ouvert directement (menu de dev) : recharger le paiement de la route.
+    controller.ensurePaid();
   }
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.find<PaymentController>();
-    final receipt = controller.receipt.value;
-
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) {
-          Get.offAllNamed(AppRoutes.rentTracking);
-        }
-      },
-      child: Scaffold(
-        backgroundColor: AppColors.paper,
-        body: Column(
-          children: [
-            // Bandeau d'en-tête vert foncé avec illustration skyline
-            Container(
-              height: 340,
-              width: double.infinity,
-              color: AppColors.greenDeep,
-              child: Stack(
-                children: [
-                  const Positioned(
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    child: SkylineBand(height: 80),
+    return Scaffold(
+      backgroundColor: AppColors.paper,
+      body: SafeArea(
+        bottom: false,
+        child: Obx(() {
+          final paid = controller.paid.value;
+          if (paid == null) {
+            return Column(
+              children: [
+                const Expanded(
+                  child: EmptyView(
+                    label: 'Aucun paiement à afficher',
+                    hint: 'Effectuez un paiement depuis « Mon loyer ».',
                   ),
-                  SafeArea(
-                    child: Center(
+                ),
+                _bottomBar(),
+              ],
+            );
+          }
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  // Le bandeau vit dans le contenu défilant : la carte peut
+                  // alors le chevaucher sans être rognée par le viewport.
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _hero(paid),
+                      Transform.translate(
+                    offset: const Offset(0, -26),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screen),
                       child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            width: 84,
-                            height: 84,
-                            decoration: const BoxDecoration(
-                              color: AppColors.paper,
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.check_rounded,
-                              size: 48,
-                              color: AppColors.green,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // Carte loyer à jour : seulement si un résumé est disponible
+                        // (sinon la location n'est pas active, rien à afficher).
+                        if (controller.summary.value != null) ...[
+                          AppCard(
+                            padding: const EdgeInsets.all(AppSpacing.lg),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                                  textBaseline: TextBaseline.alphabetic,
+                                  children: [
+                                    // Le titre cède la place au montant : il passe
+                                    // à la ligne plutôt que de le tronquer.
+                                    Expanded(
+                                      child: Text(controller.rentCardTitle, style: AppTextStyles.subtitle),
+                                    ),
+                                    const SizedBox(width: AppSpacing.sm),
+                                    Flexible(
+                                      child: FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        alignment: Alignment.centerRight,
+                                        child: Text(
+                                          controller.rentCardRemaining,
+                                          style: AppTextStyles.bodyStrong,
+                                          maxLines: 1,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 10),
+                                ProgressBar(value: controller.progressValue),
+                                const SizedBox(height: 10),
+                                Text(controller.progressLegend, style: AppTextStyles.caption),
+                              ],
                             ),
                           ),
-                          const SizedBox(height: AppSpacing.md),
-                          Text(
-                            'Paiement réussi',
-                            style: AppTextStyles.title.copyWith(
-                              color: AppColors.surface,
+                          const SizedBox(height: 14),
+                        ] else ...[
+                          AppCard(
+                            padding: const EdgeInsets.all(AppSpacing.lg),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Aucune location active', style: AppTextStyles.subtitle),
+                                const SizedBox(height: 6),
+                                Text(
+                                  'Votre paiement est enregistré, le reçu reste disponible.',
+                                  style: AppTextStyles.caption,
+                                ),
+                              ],
                             ),
                           ),
-                          const SizedBox(height: AppSpacing.xs),
-                          Text(
-                            CurrencyFormatter.format(receipt?.amount ?? 0),
-                            style: AppTextStyles.amount.copyWith(
-                              color: AppColors.surface,
-                              fontSize: 38,
-                            ),
-                          ),
+                          const SizedBox(height: 14),
                         ],
+                        // Détails du paiement (4 lignes sans dividers).
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(6, 4, 6, 4),
+                          child: Column(
+                            children: [
+                              InfoRow(
+                                label: 'Date',
+                                value: _dateLabel(controller.receipt.value),
+                                showDivider: false,
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+                              ),
+                              InfoRow(
+                                label: 'Payé avec',
+                                value: paid.operatorLabel,
+                                showDivider: false,
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+                              ),
+                              InfoRow(
+                                label: 'Numéro',
+                                value: controller.paidPhoneLabel.isEmpty ? '—' : controller.paidPhoneLabel,
+                                showDivider: false,
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+                              ),
+                              InfoRow(
+                                label: 'Référence',
+                                value: controller.receipt.value?.reference ?? '',
+                                showDivider: false,
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ), // Column
+                  ), // Padding
+                ), // Transform.translate
+                    ],
+                  ), // Column (contenu défilant)
+                ), // SingleChildScrollView
+              ), // Expanded
+            _bottomBar(),
+          ],
+        );
+        }),
+      ),
+    );
+  }
+
+  Widget _hero(Installment paid) {
+    return Container(
+      height: 380,
+      color: AppColors.greenDeep,
+      child: Stack(
+        children: [
+          const Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: SkylineBand(height: 90),
+          ),
+          // `Positioned.fill` : sans lui, le Padding est dimensionné par son
+          // contenu et le bloc se cale à gauche du bandeau.
+          Positioned.fill(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(AppSpacing.screen, 70, AppSpacing.screen, 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                Container(
+                  width: 96,
+                  height: 96,
+                  decoration: BoxDecoration(
+                    color: AppColors.paper,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.ink.withValues(alpha: 0.5),
+                        blurRadius: 30,
+                        spreadRadius: -10,
+                        offset: const Offset(0, 16),
                       ),
-                    ),
+                    ],
                   ),
+                  child: const Icon(Icons.check_rounded, size: 54, color: AppColors.green),
+                ),
+                const SizedBox(height: 16),
+                // Le titre et le montant s'adaptent à la largeur de l'écran.
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    'Paiement réussi',
+                    style: AppTextStyles.display.copyWith(fontSize: 30, color: AppColors.surface),
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text.rich(
+                    TextSpan(
+                      children: [
+                        TextSpan(
+                          text: CurrencyFormatter.number(paid.amount),
+                          style: AppTextStyles.amount.copyWith(color: AppColors.surface),
+                        ),
+                        TextSpan(
+                          text: ' ${AppConstants.currency}',
+                          style: AppTextStyles.bodyStrong.copyWith(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.surface,
+                          ),
+                        ),
+                      ],
+                    ),
+                    maxLines: 1,
+                  ),
+                ),
                 ],
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
 
-            // Détails du reçu
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(AppSpacing.screen),
-                child: Column(
-                  children: [
-                    AppCard(
-                      padding: EdgeInsets.zero,
-                      child: Column(
-                        children: [
-                          InfoRow(
-                            label: 'Date',
-                            value: AppDateFormat.long(
-                              receipt?.paidAt ?? DateTime.now(),
-                            ),
-                            showDivider: true,
-                          ),
-                          InfoRow(
-                            label: 'Payé avec',
-                            value: receipt?.operator ?? 'Mobile Money',
-                            showDivider: true,
-                          ),
-                          InfoRow(
-                            label: 'Logement',
-                            value: receipt?.housing.isNotEmpty == true
-                                ? receipt!.housing
-                                : controller.housingTitle.value,
-                            showDivider: true,
-                          ),
-                          InfoRow(
-                            label: 'Période',
-                            value: receipt?.period ?? controller.period.value,
-                            showDivider: true,
-                          ),
-                          InfoRow(
-                            label: 'Référence',
-                            value: receipt?.reference ?? 'RC-2026-N/A',
-                            showDivider: false,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+  String _dateLabel(Receipt? receipt) {
+    final paidAt = receipt?.paidAt;
+    return AppDateFormat.long(paidAt ?? DateTime.now());
+  }
 
-            // Barre d'actions basse
-            Container(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.screen,
-                AppSpacing.md,
-                AppSpacing.screen,
-                AppSpacing.xl,
-              ),
-              decoration: const BoxDecoration(
-                color: AppColors.surface,
-                border: Border(top: BorderSide(color: AppColors.line)),
-              ),
-              child: SafeArea(
-                top: false,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (receipt != null)
-                      AppButton(
-                        label: 'Partager le reçu',
-                        onPressed: () => _shareReceipt(receipt),
-                      ),
-                    const SizedBox(height: AppSpacing.xs),
-                    AppButton(
-                      label: 'Retour à mon loyer',
-                      variant: AppButtonVariant.text,
-                      onPressed: () => Get.offAllNamed(AppRoutes.rentTracking),
-                    ),
-                  ],
-                ),
-              ),
+  Widget _bottomBar() {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        border: const Border(top: BorderSide(color: AppColors.line)),
+        boxShadow: AppShadows.up,
+      ),
+      child: SafeArea(
+        top: false,
+        child: BottomCtaBar(
+          primaryLabel: 'Voir mon reçu',
+          onPrimary: _showReceipt,
+          secondaryLabel: 'Retour à mon loyer',
+          onSecondary: controller.backToRent,
+        ),
+      ),
+    );
+  }
+
+  void _showReceipt() {
+    final paid = controller.paid.value;
+    if (paid == null) return;
+    final receipt = controller.receipt.value;
+    final height = MediaQuery.sizeOf(context).height;
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: AppColors.paper,
+      isScrollControlled: true,
+      builder: (_) => SafeArea(
+        child: ConstrainedBox(
+          // Le reçu ne doit jamais déborder de l'écran.
+          constraints: BoxConstraints(maxHeight: height * 0.85),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(AppSpacing.screen),
+            child: ReceiptSummary(
+              amount: paid.amount,
+              lines: [
+                ReceiptLine('Date', _dateLabel(receipt)),
+                ReceiptLine('Payé avec', paid.operatorLabel),
+                ReceiptLine('Numéro', controller.paidPhoneLabel.isEmpty ? '—' : controller.paidPhoneLabel),
+                ReceiptLine('Référence', receipt?.reference ?? ''),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

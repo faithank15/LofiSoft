@@ -119,6 +119,12 @@ abstract final class AppPages {
       binding: PaymentBinding(),
     ),
     GetPage(
+      name: AppRoutes.paymentSuccess,
+      middlewares: _tenant,
+      page: () => const ReceiptDetailsPage(),
+      binding: PaymentBinding(),
+    ),
+    GetPage(
       name: AppRoutes.paymentReceipt,
       middlewares: _tenant,
       page: () => const ReceiptDetailsPage(),

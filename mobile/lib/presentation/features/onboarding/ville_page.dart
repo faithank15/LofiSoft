@@ -102,45 +102,64 @@ class _UseLocationButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.find<VilleController>();
     return Align(
       alignment: Alignment.centerLeft,
-      child: SizedBox(
-        height: 48,
-        child: OutlinedButton(
-          onPressed: () {
-            Get.snackbar(
-              'Position',
-              'Utilisation de votre position actuelle...',
-              snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: AppColors.green.withValues(alpha: 0.9),
-              colorText: AppColors.surface,
-              duration: const Duration(seconds: 2),
-            );
-          },
-          style: OutlinedButton.styleFrom(
-            foregroundColor: AppColors.green,
-            side: const BorderSide(color: AppColors.green, width: 2),
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.location_on, size: 22, color: AppColors.green),
-              const SizedBox(width: 8),
-              Text(
-                'Utiliser ma position',
-                style: AppTextStyles.body.copyWith(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.green,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            height: 48,
+            child: Obx(
+              () => OutlinedButton(
+                onPressed: controller.locating.value ? null : controller.useMyLocation,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.green,
+                  disabledForegroundColor: AppColors.muted,
+                  side: const BorderSide(color: AppColors.green, width: 2),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (controller.locating.value)
+                      const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.green),
+                      )
+                    else
+                      const Icon(Icons.location_on, size: 22, color: AppColors.green),
+                    const SizedBox(width: 8),
+                    Text(
+                      controller.locating.value ? 'Localisation...' : 'Utiliser ma position',
+                      style: AppTextStyles.body.copyWith(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: controller.locating.value ? AppColors.muted : AppColors.green,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
+            ),
           ),
-        ),
+          // Message d'information ou d'erreur (position non reconnue, refus...).
+          Obx(
+            () => controller.locationMessage.value == null
+                ? const SizedBox.shrink()
+                : Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Text(
+                      controller.locationMessage.value!,
+                      style: AppTextStyles.caption.copyWith(color: AppColors.statusBad),
+                    ),
+                  ),
+          ),
+        ],
       ),
     );
   }

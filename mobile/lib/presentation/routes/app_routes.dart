@@ -23,6 +23,7 @@ abstract final class AppRoutes {
   static const rentTracking = '/rent-tracking';
   static const paymentHistory = '/rent-tracking/history';
   static const payment = '/payment';
+  static const paymentSuccess = '/payment/success';
   static const paymentReceipt = '/payment/receipt';
 
   // Espace Propriétaire (lots 7 et 8)
