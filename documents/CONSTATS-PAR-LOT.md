@@ -103,3 +103,24 @@ Parcours vérifiés à la main sur l'appareil, avec les requêtes reçues par le
 
 Constat confirmé sur l'appareil : le bouton « Payer mon loyer » ne fait rien (pas de page B3).
 Non vérifié sur l'appareil : appel téléphonique, envoi de photo (galerie), gardes de route par lien direct.
+
+## Vérification après l'intégration du lot 6 (3 novembre, soir)
+
+| Constat précédent | État |
+|---|---|
+| B3 « Payer » et B4 « Paiement réussi » absents (lot 5/6) | **Fait.** Testé contre le vrai backend : création `PENDING`, relecture jusqu'à `SUCCESS`, reçu complet, loyer 0 → 10 000, échec simulé (numéro en `00`), refus d'un montant au-delà du reste. 3 fichiers de tests ajoutés (`test/payment`). |
+| Bouton « Signaler » absent | **Fait** (`listing_details_page.dart`, `ReportService`, `ReportRepository`). |
+| Itinéraire, Appeler, WhatsApp en « Bientôt » | **Fait** dans le détail d'annonce. Reste « Bientôt » sur l'accueil propriétaire. |
+| Exception sur l'onboarding « Où voulez-vous habiter ? » | Plus reproduite par les 20 robots (écran refait avec géolocalisation). |
+| Imports et variable inutiles (lot 8) | Imports retirés ; l'analyse passe de 48 à 34 remarques. |
+| **C6 : valeurs en dur (350 000, 700 000, date 01/03/2026)** | **Toujours présent** (`property_form_page.dart` lignes 63 à 68). |
+
+Nouveaux constats :
+
+| Gravité | Constat |
+|---|---|
+| **Grave** | `AppConfig.apiBaseUrl` était repassé à l'adresse d'un coéquipier (`10.140.106.79`) après le merge, ce qui casse la connexion du téléphone en USB. Rétabli à `127.0.0.1`. À ne plus écraser lors des merges : chacun doit passer son adresse par `--dart-define=API_BASE_URL=...`. |
+| **Grave** | La permission `INTERNET` n'était déclarée que dans les manifestes `debug` et `profile` : une version `release` n'aurait eu aucun accès réseau. Ajoutée dans `android/app/src/main/AndroidManifest.xml`. |
+| Gênant | Le géocodage inverse de « Utiliser ma position » envoie les coordonnées de l'utilisateur à `nominatim.openstreetmap.org` (ou à Google si une clé est fournie). À mentionner dans la politique de confidentialité. |
+| Mineur | `FakeReportService` est défini dans `report_service.dart`, alors que les faux services vivent dans `data/remote/fakes/`. |
+| Mineur | Un test (`listing_form_test`) a échoué une fois sur trois exécutions complètes (sensible à l'ordre), puis réussi deux fois de suite : à surveiller. |
