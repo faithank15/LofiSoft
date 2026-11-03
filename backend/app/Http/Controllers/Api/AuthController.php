@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\RegisterRequest;
+use App\Http\Resources\UserResource;
 use App\Models\IdentityRequest;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -32,15 +33,7 @@ class AuthController extends Controller
 
         return response()->json([
             'token' => $token,
-            'user' => [
-                'id' => (string) $user->id,
-                'nom' => $user->nom,
-                'prenoms' => $user->prenoms,
-                'email' => $user->email,
-                'telephone' => $user->telephone,
-                'role' => $user->role->value,
-                'actif' => (bool) $user->actif,
-            ],
+            'user' => new UserResource($user),
         ], Response::HTTP_CREATED);
     }
 
@@ -69,15 +62,7 @@ class AuthController extends Controller
 
         return response()->json([
             'token' => $token,
-            'user' => [
-                'id' => (string) $user->id,
-                'nom' => $user->nom,
-                'prenoms' => $user->prenoms,
-                'email' => $user->email,
-                'telephone' => $user->telephone,
-                'role' => $user->role->value,
-                'actif' => (bool) $user->actif,
-            ],
+            'user' => new UserResource($user),
         ]);
     }
 
@@ -86,15 +71,7 @@ class AuthController extends Controller
         $user = $request->user();
 
         return response()->json([
-            'user' => [
-                'id' => (string) $user->id,
-                'nom' => $user->nom,
-                'prenoms' => $user->prenoms,
-                'email' => $user->email,
-                'telephone' => $user->telephone,
-                'role' => $user->role->value,
-                'actif' => (bool) $user->actif,
-            ],
+            'user' => new UserResource($user),
         ]);
     }
 
@@ -126,15 +103,7 @@ class AuthController extends Controller
         $user->update($validated);
 
         return response()->json([
-            'user' => [
-                'id' => (string) $user->id,
-                'nom' => $user->nom,
-                'prenoms' => $user->prenoms,
-                'email' => $user->email,
-                'telephone' => $user->telephone,
-                'role' => $user->role->value,
-                'actif' => (bool) $user->actif,
-            ],
+            'user' => new UserResource($user),
         ]);
     }
 

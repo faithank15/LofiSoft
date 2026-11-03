@@ -10,13 +10,14 @@ class UserResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id,
+            'id' => (string) $this->id,
             'nom' => $this->nom,
             'prenoms' => $this->prenoms,
             'email' => $this->email,
             'telephone' => $this->telephone,
             'role' => $this->role instanceof \BackedEnum ? $this->role->value : (string) $this->role,
             'actif' => (bool) $this->actif,
+            'identity_verified' => (bool) $this->identity_verified,
             'created_at' => $this->created_at?->toISOString(),
         ];
     }
