@@ -156,7 +156,9 @@ class RentTrackingPage extends StatelessWidget {
                             : 'Payer mon loyer',
                         onPressed: offline
                             ? null
-                            : () => Get.toNamed(AppRoutes.payment),
+                            // Au retour du paiement (réussi ou abandonné), on relit le loyer :
+                            // sans cela l'écran garde les anciens chiffres.
+                            : () => Get.toNamed(AppRoutes.payment)?.then((_) => controller.load()),
                       ),
                       const SizedBox(height: AppSpacing.xl),
                       Row(

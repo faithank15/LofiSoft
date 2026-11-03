@@ -205,7 +205,9 @@ class PaymentController extends GetxController {
         } on AppException {
           receipt.value = null; // le reçu reste disponible plus tard
         }
-        Get.offNamed(AppRoutes.paymentSuccess);
+        // L'identifiant voyage dans la route : B3 est détruit à la navigation, GetX recrée alors
+        // un contrôleur vide pour B4, qui recharge le paiement grâce à cet identifiant (ensurePaid).
+        Get.offNamed(AppRoutes.paymentSuccess, parameters: {'id': current.id});
       } else if (current.status == PaymentStatus.FAILED) {
         _notify('Paiement échoué', "L'opérateur a refusé le paiement. Vérifiez le numéro et réessayez.");
       } else {
@@ -247,7 +249,14 @@ class PaymentController extends GetxController {
   }
 
   /// "Retour à mon loyer" (B4).
-  void backToRent() => Get.offNamed(AppRoutes.rentTracking);
+  void backToRent() {
+    // « Mon loyer » est déjà dessous : on y revient au lieu d'en empiler une seconde copie.
+    if (Get.previousRoute == AppRoutes.rentTracking) {
+      Get.back();
+    } else {
+      Get.offAllNamed(AppRoutes.rentTracking);
+    }
+  }
 
   void _notify(String title, String message) {
     // Hors widget test (pas d'overlay), aucune snackbar possible.
