@@ -30,7 +30,7 @@ class WelcomePage extends GetView<WelcomeController> {
                   // descendent jamais sous une hauteur lisible : sur un petit
                   // écran la page défile au lieu de déborder.
                   final double cardHeight =
-                      ((constraints.maxHeight - AppSpacing.lg) / 2)
+                      ((constraints.maxHeight - AppSpacing.lg) / 2.2)
                           .clamp(176.0, 400.0);
 
                   return SingleChildScrollView(
@@ -310,7 +310,7 @@ class _ProfileCard extends StatelessWidget {
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 190),
+                      constraints: BoxConstraints(maxWidth: Get.width*0.7),
                       child: Text(
                         subtitle,
                         style: AppTextStyles.body.copyWith(

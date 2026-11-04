@@ -43,46 +43,56 @@ class PaymentHistoryPage extends StatelessWidget {
                 return ListView(
                   padding: const EdgeInsets.all(AppSpacing.screen),
                   children: [
-                    for (final month in months) ...[
-                      // Titre du mois + statut
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              monthName(month.period),
-                              style: AppTextStyles.section,
-                            ),
+                    if (months.isEmpty)
+                       Container(
+                        margin: EdgeInsets.only(top: Get.height / 3 ),
+                        child: 
+                          Center(
+                            child: Text('Aucun historique de paiement', style: TextStyle(fontSize: 20),),
                           ),
-                          StatusText(
-                            _statusLabel(month),
-                            kind: _statusKind(month.status),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-
-                      // Les paiements du mois
-                      Container(
-                        decoration: BoxDecoration(
-                          color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(AppRadius.card),
-                          border: Border.all(color: AppColors.line),
-                          boxShadow: AppShadows.soft,
-                        ),
-                        child: Column(
+                        
+                      )
+                    else
+                      for (final month in months) ...[
+                        // Titre du mois + statut
+                        Row(
                           children: [
-                            for (var i = 0; i < month.payments.length; i++)
-                              PaymentRow(
-                                date: month.payments[i].date,
-                                amount: month.payments[i].amount,
-                                operator: month.payments[i].operator,
-                                isLast: i == month.payments.length - 1,
-                              ),
+                            Expanded(
+                              child: Text(
+                                monthName(month.period),
+                                style: AppTextStyles.section,
+                               ),
+                            ),
+                            StatusText(
+                              _statusLabel(month),
+                              kind: _statusKind(month.status),
+                            ),
                           ],
                         ),
-                      ),
-                      const SizedBox(height: AppSpacing.xl),
-                    ],
+                        const SizedBox(height: AppSpacing.sm),
+
+                        // Les paiements du mois
+                        Container(
+                          decoration: BoxDecoration(
+                            color: AppColors.surface,
+                            borderRadius: BorderRadius.circular(AppRadius.card),
+                            border: Border.all(color: AppColors.line),
+                            boxShadow: AppShadows.soft,
+                          ),
+                          child: Column(
+                            children: [
+                              for (var i = 0; i < month.payments.length; i++)
+                                PaymentRow(
+                                  date: month.payments[i].date,
+                                  amount: month.payments[i].amount,
+                                  operator: month.payments[i].operator,
+                                  isLast: i == month.payments.length - 1,
+                                ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.xl),
+                      ],
                   ],
                 );
               }),
