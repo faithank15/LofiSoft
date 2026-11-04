@@ -18,7 +18,7 @@ RUN composer install --no-dev --no-interaction --no-progress --no-scripts --opti
 
 COPY . .
 
-RUN composer dump-autoload --no-dev --no-interaction --no-progress --optimize
+RUN composer dump-autoload --no-dev --no-interaction --optimize
 
 EXPOSE 10000
 
